@@ -1,0 +1,15 @@
+---
+type Props = {
+  title: string;
+  message?: string;
+};
+
+const { title, message } = Astro.props;
+---
+
+<section class="card">
+  <h1 style="margin-top: 0;">{title}</h1>
+  <p class="muted">
+    {message ?? "We’re preparing this page. More information will be here soon."}
+  </p>
+</section>

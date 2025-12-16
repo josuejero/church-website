@@ -1,0 +1,26 @@
+---
+import { site } from "../data/site";
+---
+
+<header class="header">
+  <div class="container" style="padding: 0.9rem 0; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+    <div>
+      <a href="/" style="text-decoration: none; font-weight: 700;">
+        {site.shortName}
+      </a>
+      <div class="small muted">Site under construction (MVP)</div>
+    </div>
+
+    <nav class="nav" aria-label="Primary navigation">
+      {site.nav.map((item) => (
+        <a href={item.href}>{item.label}</a>
+      ))}
+    </nav>
+
+    <nav class="nav" aria-label="Quick actions">
+      {site.quickActions.map((item) => (
+        <a href={item.href} style="font-weight: 600;">{item.label}</a>
+      ))}
+    </nav>
+  </div>
+</header>

@@ -1,0 +1,47 @@
+---
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
+// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+---
+
+<BaseLayout
+  title="Springfield Hispanic SDA Church"
+  description="Official website of Springfield Hispanic SDA Church."
+>
+  <h1>Welcome</h1>
+  <p class="muted">This site is under construction. We’ll have all the information here soon.</p>
+
+  <div class="card" style="margin-top: 1rem;">
+    <h2 style="margin-top: 0;">This Saturday</h2>
+    <ul>
+      <li><strong>Sabbath School:</strong> 9:30 AM</li>
+      <li><strong>Worship Service:</strong> 11:00 AM</li>
+    </ul>
+    <p class="small muted">(Times subject to verification in Phase 3)</p>
+  </div>
+
+  <div style="margin-top: 1rem; display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+    <div class="card">
+      <div style="font-weight: 700;">Watch Live</div>
+      <p class="small muted">Watch the service online.</p>
+      <a href="/media/live">Go</a>
+    </div>
+    <div class="card">
+      <div style="font-weight: 700;">Plan Your Visit</div>
+      <p class="small muted">Address, parking, and what to expect.</p>
+      <a href="/connect/plan-a-visit">Go</a>
+    </div>
+    <div class="card">
+      <div style="font-weight: 700;">Prayer</div>
+      <p class="small muted">Send a prayer request.</p>
+      <a href="/connect/prayer">Go</a>
+    </div>
+    <div class="card">
+      <div style="font-weight: 700;">Give</div>
+      <p class="small muted">Support the mission of the church.</p>
+      <a href="/give">Go</a>
+    </div>
+  </div>
+</BaseLayout>

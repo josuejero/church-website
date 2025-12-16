@@ -1,0 +1,1637 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.github/
+  ISSUE_TEMPLATE/
+    content-update.md
+  PULL_REQUEST_TEMPLATE.md
+cold-dawn-85a2/
+  .vscode/
+    settings.json
+  public/
+    index.html
+  src/
+    index.ts
+  test/
+    index.spec.ts
+    tsconfig.json
+  .editorconfig
+  .gitignore
+  .prettierrc
+  package.json
+  tsconfig.json
+  vitest.config.mts
+  wrangler.jsonc
+docs/
+  decisions/
+    ADR-TEMPLATE.md
+  phase-0/
+    content-inventory.md
+    gaps-register.md
+    mvp-definition.md
+    README.md
+    risk-register.md
+    sitemap.md
+    source-of-truth.yml
+    working-agreement.md
+web/
+  .github/
+    workflows/
+      ci.yml
+  .vscode/
+    extensions.json
+    launch.json
+  src/
+    components/
+      Footer.astro
+      Header.astro
+      PlaceholderPage.astro
+      Welcome.astro
+    data/
+      site.ts
+    layouts/
+      BaseLayout.astro
+      Layout.astro
+    pages/
+      connect/
+        index.astro
+      join/
+        index.astro
+      media/
+        index.astro
+      ministries/
+        index.astro
+      resources/
+        index.astro
+      serve/
+        index.astro
+      404.astro
+      index.astro
+    styles/
+      global.css
+  .env.example
+  .gitignore
+  astro.config.mjs
+  package.json
+  README.md
+  tsconfig.json
+.editorconfig
+.gitignore
+.nvmrc
+.repomixignore
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="web/.github/workflows/ci.yml">
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Type check
+        run: npm run check
+</file>
+
+<file path="web/.vscode/extensions.json">
+{
+  "recommendations": ["astro-build.astro-vscode"],
+  "unwantedRecommendations": []
+}
+</file>
+
+<file path="web/.vscode/launch.json">
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "command": "./node_modules/.bin/astro dev",
+      "name": "Development server",
+      "request": "launch",
+      "type": "node-terminal"
+    }
+  ]
+}
+</file>
+
+<file path="web/src/components/Footer.astro">
+---
+import { site } from "../data/site";
+
+const contact = {
+  address: "124 Putnam Cir, Springfield, MA 01104",
+  // Fill these in once verified in Phase 3
+  phone: "(000) 000-0000",
+  email: "info@example.com"
+};
+---
+
+<footer class="footer">
+  <div class="container" style="padding: 1.25rem 0; display: grid; gap: 0.75rem;">
+    <div style="display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+      <div>
+        <div style="font-weight: 700;">{site.name}</div>
+        <div class="small muted">{contact.address}</div>
+      </div>
+      <div class="small">
+        <div><strong>Phone:</strong> {contact.phone}</div>
+        <div><strong>Email:</strong> {contact.email}</div>
+      </div>
+    </div>
+
+    <div class="nav" aria-label="Footer links">
+      <a href="/connect/contact">Contact</a>
+      <a href="/give">Give</a>
+      <a href="/media/live">Watch Live</a>
+      <a href="/connect/prayer">Prayer</a>
+    </div>
+
+    <div class="small muted">© {new Date().getFullYear()} {site.name}</div>
+  </div>
+</footer>
+</file>
+
+<file path="web/src/components/Header.astro">
+---
+import { site } from "../data/site";
+---
+
+<header class="header">
+  <div class="container" style="padding: 0.9rem 0; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+    <div>
+      <a href="/" style="text-decoration: none; font-weight: 700;">
+        {site.shortName}
+      </a>
+      <div class="small muted">Site under construction (MVP)</div>
+    </div>
+
+    <nav class="nav" aria-label="Primary navigation">
+      {site.nav.map((item) => (
+        <a href={item.href}>{item.label}</a>
+      ))}
+    </nav>
+
+    <nav class="nav" aria-label="Quick actions">
+      {site.quickActions.map((item) => (
+        <a href={item.href} style="font-weight: 600;">{item.label}</a>
+      ))}
+    </nav>
+  </div>
+</header>
+</file>
+
+<file path="web/src/components/PlaceholderPage.astro">
+---
+type Props = {
+  title: string;
+  message?: string;
+};
+
+const { title, message } = Astro.props;
+---
+
+<section class="card">
+  <h1 style="margin-top: 0;">{title}</h1>
+  <p class="muted">
+    {message ?? "We’re preparing this page. More information will be here soon."}
+  </p>
+</section>
+</file>
+
+<file path="web/src/components/Welcome.astro">
+---
+import astroLogo from '../assets/astro.svg';
+import background from '../assets/background.svg';
+---
+
+<div id="container">
+	<img id="background" src={background.src} alt="" fetchpriority="high" />
+	<main>
+		<section id="hero">
+			<a href="https://astro.build"
+				><img src={astroLogo.src} width="115" height="48" alt="Astro Homepage" /></a
+			>
+			<h1>
+				To get started, open the <code><pre>src/pages</pre></code> directory in your project.
+			</h1>
+			<section id="links">
+				<a class="button" href="https://docs.astro.build">Read our docs</a>
+				<a href="https://astro.build/chat"
+					>Join our Discord <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36"
+						><path
+							fill="currentColor"
+							d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"
+						></path></svg
+					>
+				</a>
+			</section>
+		</section>
+	</main>
+
+	<a href="https://astro.build/blog/astro-5/" id="news" class="box">
+		<svg width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"
+			><path
+				d="M24.667 12c1.333 1.414 2 3.192 2 5.334 0 4.62-4.934 5.7-7.334 12C18.444 28.567 18 27.456 18 26c0-4.642 6.667-7.053 6.667-14Zm-5.334-5.333c1.6 1.65 2.4 3.43 2.4 5.333 0 6.602-8.06 7.59-6.4 17.334C13.111 27.787 12 25.564 12 22.666c0-4.434 7.333-8 7.333-16Zm-6-5.333C15.111 3.555 16 5.556 16 7.333c0 8.333-11.333 10.962-5.333 22-3.488-.774-6-4-6-8 0-8.667 8.666-10 8.666-20Z"
+				fill="#111827"></path></svg
+		>
+		<h2>What's New in Astro 5.0?</h2>
+		<p>
+			From content layers to server islands, click to learn more about the new features and
+			improvements in Astro 5.0
+		</p>
+	</a>
+</div>
+
+<style>
+	#background {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: -1;
+		filter: blur(100px);
+	}
+
+	#container {
+		font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
+		height: 100%;
+	}
+
+	main {
+		height: 100%;
+		display: flex;
+		justify-content: center;
+	}
+
+	#hero {
+		display: flex;
+		align-items: start;
+		flex-direction: column;
+		justify-content: center;
+		padding: 16px;
+	}
+
+	h1 {
+		font-size: 22px;
+		margin-top: 0.25em;
+	}
+
+	#links {
+		display: flex;
+		gap: 16px;
+	}
+
+	#links a {
+		display: flex;
+		align-items: center;
+		padding: 10px 12px;
+		color: #111827;
+		text-decoration: none;
+		transition: color 0.2s;
+	}
+
+	#links a:hover {
+		color: rgb(78, 80, 86);
+	}
+
+	#links a svg {
+		height: 1em;
+		margin-left: 8px;
+	}
+
+	#links a.button {
+		color: white;
+		background: linear-gradient(83.21deg, #3245ff 0%, #bc52ee 100%);
+		box-shadow:
+			inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+			inset 0 -2px 0 rgba(0, 0, 0, 0.24);
+		border-radius: 10px;
+	}
+
+	#links a.button:hover {
+		color: rgb(230, 230, 230);
+		box-shadow: none;
+	}
+
+	pre {
+		font-family:
+			ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono',
+			monospace;
+		font-weight: normal;
+		background: linear-gradient(14deg, #d83333 0%, #f041ff 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		margin: 0;
+	}
+
+	h2 {
+		margin: 0 0 1em;
+		font-weight: normal;
+		color: #111827;
+		font-size: 20px;
+	}
+
+	p {
+		color: #4b5563;
+		font-size: 16px;
+		line-height: 24px;
+		letter-spacing: -0.006em;
+		margin: 0;
+	}
+
+	code {
+		display: inline-block;
+		background:
+			linear-gradient(66.77deg, #f3cddd 0%, #f5cee7 100%) padding-box,
+			linear-gradient(155deg, #d83333 0%, #f041ff 18%, #f5cee7 45%) border-box;
+		border-radius: 8px;
+		border: 1px solid transparent;
+		padding: 6px 8px;
+	}
+
+	.box {
+		padding: 16px;
+		background: rgba(255, 255, 255, 1);
+		border-radius: 16px;
+		border: 1px solid white;
+	}
+
+	#news {
+		position: absolute;
+		bottom: 16px;
+		right: 16px;
+		max-width: 300px;
+		text-decoration: none;
+		transition: background 0.2s;
+		backdrop-filter: blur(50px);
+	}
+
+	#news:hover {
+		background: rgba(255, 255, 255, 0.55);
+	}
+
+	@media screen and (max-height: 368px) {
+		#news {
+			display: none;
+		}
+	}
+
+	@media screen and (max-width: 768px) {
+		#container {
+			display: flex;
+			flex-direction: column;
+		}
+
+		#hero {
+			display: block;
+			padding-top: 10%;
+		}
+
+		#links {
+			flex-wrap: wrap;
+		}
+
+		#links a.button {
+			padding: 14px 18px;
+		}
+
+		#news {
+			right: 16px;
+			left: 16px;
+			bottom: 2.5rem;
+			max-width: 100%;
+		}
+
+		h1 {
+			line-height: 1.5;
+		}
+	}
+</style>
+</file>
+
+<file path="web/src/data/site.ts">
+export const site = {
+  name: "Springfield Hispanic SDA Church",
+  shortName: "Springfield Hispanic SDA",
+  locale: "en-US",
+  timeZone: "America/New_York",
+  nav: [
+    { label: "Home", href: "/" },
+    { label: "Connect", href: "/connect" },
+    { label: "Join", href: "/join" },
+    { label: "Ministries", href: "/ministries" },
+    { label: "Resources", href: "/resources" },
+    { label: "Serve", href: "/serve" },
+    { label: "Media", href: "/media" }
+  ],
+  quickActions: [
+    { label: "Watch Live", href: "/media/live" },
+    { label: "Give", href: "/give" },
+    { label: "Prayer", href: "/connect/prayer" },
+    { label: "Bulletin", href: "/resources/bulletins" }
+  ]
+};
+</file>
+
+<file path="web/src/layouts/BaseLayout.astro">
+---
+import "../styles/global.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+type Props = {
+  title: string;
+  description?: string;
+};
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+  </head>
+  <body>
+    <Header />
+    <main class="main">
+      <div class="container">
+        <slot />
+      </div>
+    </main>
+    <Footer />
+  </body>
+</html>
+</file>
+
+<file path="web/src/layouts/Layout.astro">
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Astro Basics</title>
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>
+
+<style>
+	html,
+	body {
+		margin: 0;
+		width: 100%;
+		height: 100%;
+	}
+</style>
+</file>
+
+<file path="web/src/pages/connect/index.astro">
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PlaceholderPage from "../../components/PlaceholderPage.astro";
+---
+
+<BaseLayout title="Connect">
+  <PlaceholderPage title="Connect" />
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/join/index.astro">
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PlaceholderPage from "../../components/PlaceholderPage.astro";
+---
+
+<BaseLayout title="Join">
+  <PlaceholderPage title="Join" />
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/media/index.astro">
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PlaceholderPage from "../../components/PlaceholderPage.astro";
+---
+
+<BaseLayout title="Media">
+  <PlaceholderPage title="Media" />
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/ministries/index.astro">
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PlaceholderPage from "../../components/PlaceholderPage.astro";
+---
+
+<BaseLayout title="Ministries">
+  <PlaceholderPage title="Ministries" />
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/resources/index.astro">
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PlaceholderPage from "../../components/PlaceholderPage.astro";
+---
+
+<BaseLayout title="Resources">
+  <PlaceholderPage title="Resources" />
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/serve/index.astro">
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PlaceholderPage from "../../components/PlaceholderPage.astro";
+---
+
+<BaseLayout title="Serve">
+  <PlaceholderPage title="Serve" />
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/404.astro">
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Page not found">
+  <h1>Page not found</h1>
+  <p class="muted">We couldn’t find that page. Try one of these options:</p>
+
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="/media">Media</a></li>
+    <li><a href="/give">Give</a></li>
+    <li><a href="/connect">Connect</a></li>
+  </ul>
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/index.astro">
+---
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
+// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+---
+
+<BaseLayout
+  title="Springfield Hispanic SDA Church"
+  description="Official website of Springfield Hispanic SDA Church."
+>
+  <h1>Welcome</h1>
+  <p class="muted">This site is under construction. We’ll have all the information here soon.</p>
+
+  <div class="card" style="margin-top: 1rem;">
+    <h2 style="margin-top: 0;">This Saturday</h2>
+    <ul>
+      <li><strong>Sabbath School:</strong> 9:30 AM</li>
+      <li><strong>Worship Service:</strong> 11:00 AM</li>
+    </ul>
+    <p class="small muted">(Times subject to verification in Phase 3)</p>
+  </div>
+
+  <div style="margin-top: 1rem; display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+    <div class="card">
+      <div style="font-weight: 700;">Watch Live</div>
+      <p class="small muted">Watch the service online.</p>
+      <a href="/media/live">Go</a>
+    </div>
+    <div class="card">
+      <div style="font-weight: 700;">Plan Your Visit</div>
+      <p class="small muted">Address, parking, and what to expect.</p>
+      <a href="/connect/plan-a-visit">Go</a>
+    </div>
+    <div class="card">
+      <div style="font-weight: 700;">Prayer</div>
+      <p class="small muted">Send a prayer request.</p>
+      <a href="/connect/prayer">Go</a>
+    </div>
+    <div class="card">
+      <div style="font-weight: 700;">Give</div>
+      <p class="small muted">Support the mission of the church.</p>
+      <a href="/give">Go</a>
+    </div>
+  </div>
+</BaseLayout>
+</file>
+
+<file path="web/src/styles/global.css">
+:root { color-scheme: light; }
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+a { color: inherit; }
+
+.container {
+  width: min(1100px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.header, .footer {
+  border-bottom: 1px solid rgba(0,0,0,0.12);
+}
+
+.footer {
+  border-top: 1px solid rgba(0,0,0,0.12);
+  border-bottom: none;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.nav a {
+  text-decoration: none;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.4rem;
+}
+
+.nav a:hover {
+  background: rgba(0,0,0,0.06);
+}
+
+.main { padding: 1.5rem 0; }
+
+.small { font-size: 0.95rem; opacity: 0.9; }
+.muted { opacity: 0.75; }
+
+.card {
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+</file>
+
+<file path="web/.env.example">
+# Future use (Phase 5+)
+# PUBLIC_SITE_URL=https://example.com
+</file>
+
+<file path="web/.gitignore">
+# build output
+dist/
+
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment variables
+.env
+.env.production
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+</file>
+
+<file path="web/astro.config.mjs">
+// @ts-check
+import { defineConfig } from 'astro/config';
+
+// https://astro.build/config
+export default defineConfig({});
+</file>
+
+<file path="web/package.json">
+{
+  "name": "web",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/check": "0.9.6",
+    "astro": "^5.16.6",
+    "typescript": "5.9.3"
+  }
+}
+</file>
+
+<file path="web/README.md">
+# Astro Starter Kit: Basics
+
+```sh
+npm create astro@latest -- --template basics
+```
+
+> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+
+## 🚀 Project Structure
+
+Inside of your Astro project, you'll see the following folders and files:
+
+```text
+/
+├── public/
+│   └── favicon.svg
+├── src
+│   ├── assets
+│   │   └── astro.svg
+│   ├── components
+│   │   └── Welcome.astro
+│   ├── layouts
+│   │   └── Layout.astro
+│   └── pages
+│       └── index.astro
+└── package.json
+```
+
+To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+
+## 🧞 Commands
+
+All commands are run from the root of the project, from a terminal:
+
+| Command                   | Action                                           |
+| :------------------------ | :----------------------------------------------- |
+| `npm install`             | Installs dependencies                            |
+| `npm run dev`             | Starts local dev server at `localhost:4321`      |
+| `npm run build`           | Build your production site to `./dist/`          |
+| `npm run preview`         | Preview your build locally, before deploying     |
+| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
+| `npm run astro -- --help` | Get help using the Astro CLI                     |
+
+## 👀 Want to learn more?
+
+Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+</file>
+
+<file path="web/tsconfig.json">
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"]
+}
+</file>
+
+<file path=".gitignore">
+# Node
+node_modules/
+
+# Astro
+web/dist/
+web/.astro/
+
+# OS
+.DS_Store
+</file>
+
+<file path=".nvmrc">
+20
+</file>
+
+<file path=".repomixignore">
+*.d.ts
+*.svg
+</file>
+
+<file path=".github/ISSUE_TEMPLATE/content-update.md">
+---
+name: Content update
+about: Update copy, dates, service times, or links
+---
+
+## What needs updating?
+
+## Where on the site?
+
+## Source of truth
+(Who confirmed this information?)
+
+## Deadline
+</file>
+
+<file path=".github/PULL_REQUEST_TEMPLATE.md">
+## What changed?
+
+- 
+
+## Why?
+
+- 
+
+## How to verify
+
+- [ ] I verified links work
+- [ ] I checked for obvious copy/typos
+- [ ] I confirmed dates/times are correct
+
+## Screenshots (if applicable)
+</file>
+
+<file path="cold-dawn-85a2/.vscode/settings.json">
+{
+	"files.associations": {
+		"wrangler.json": "jsonc"
+	}
+}
+</file>
+
+<file path="cold-dawn-85a2/public/index.html">
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Hello, World!</title>
+	</head>
+	<body>
+		<h1 id="heading"></h1>
+		<p>This page comes from a static asset stored at `public/index.html` as configured in `wrangler.jsonc`.</p>
+		<button id="button" type="button">Fetch a random UUID</button>
+		<output id="random" for="button"></output>
+		<script>
+			fetch('/message')
+				.then((resp) => resp.text())
+				.then((text) => {
+					const h1 = document.getElementById('heading');
+					h1.textContent = text;
+				});
+
+			const button = document.getElementById("button");
+			button.addEventListener("click", () => {
+				fetch('/random')
+					.then((resp) => resp.text())
+					.then((text) => {
+						const random = document.getElementById('random');
+						random.textContent = text;
+					});
+			});
+		</script>
+	</body>
+</html>
+</file>
+
+<file path="cold-dawn-85a2/src/index.ts">
+/**
+ * Welcome to Cloudflare Workers! This is your first worker.
+ *
+ * - Run `npm run dev` in your terminal to start a development server
+ * - Open a browser tab at http://localhost:8787/ to see your worker in action
+ * - Run `npm run deploy` to publish your worker
+ *
+ * Bind resources to your worker in `wrangler.jsonc`. After adding bindings, a type definition for the
+ * `Env` object can be regenerated with `npm run cf-typegen`.
+ *
+ * Learn more at https://developers.cloudflare.com/workers/
+ */
+
+export default {
+	async fetch(request, env, ctx): Promise<Response> {
+		const url = new URL(request.url);
+		switch (url.pathname) {
+			case '/message':
+				return new Response('Hello, World!');
+			case '/random':
+				return new Response(crypto.randomUUID());
+			default:
+				return new Response('Not Found', { status: 404 });
+		}
+	},
+} satisfies ExportedHandler<Env>;
+</file>
+
+<file path="cold-dawn-85a2/test/index.spec.ts">
+import { env, createExecutionContext, waitOnExecutionContext, SELF } from 'cloudflare:test';
+import { describe, it, expect } from 'vitest';
+import worker from '../src';
+
+describe('Hello World user worker', () => {
+	describe('request for /message', () => {
+		it('/ responds with "Hello, World!" (unit style)', async () => {
+			const request = new Request<unknown, IncomingRequestCfProperties>('http://example.com/message');
+			// Create an empty context to pass to `worker.fetch()`.
+			const ctx = createExecutionContext();
+			const response = await worker.fetch(request, env, ctx);
+			// Wait for all `Promise`s passed to `ctx.waitUntil()` to settle before running test assertions
+			await waitOnExecutionContext(ctx);
+			expect(await response.text()).toMatchInlineSnapshot(`"Hello, World!"`);
+		});
+
+		it('responds with "Hello, World!" (integration style)', async () => {
+			const request = new Request('http://example.com/message');
+			const response = await SELF.fetch(request);
+			expect(await response.text()).toMatchInlineSnapshot(`"Hello, World!"`);
+		});
+	});
+
+	describe('request for /random', () => {
+		it('/ responds with a random UUID (unit style)', async () => {
+			const request = new Request<unknown, IncomingRequestCfProperties>('http://example.com/random');
+			// Create an empty context to pass to `worker.fetch()`.
+			const ctx = createExecutionContext();
+			const response = await worker.fetch(request, env, ctx);
+			// Wait for all `Promise`s passed to `ctx.waitUntil()` to settle before running test assertions
+			await waitOnExecutionContext(ctx);
+			expect(await response.text()).toMatch(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/);
+		});
+
+		it('responds with a random UUID (integration style)', async () => {
+			const request = new Request('http://example.com/random');
+			const response = await SELF.fetch(request);
+			expect(await response.text()).toMatch(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/);
+		});
+	});
+});
+</file>
+
+<file path="cold-dawn-85a2/test/tsconfig.json">
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"types": ["@cloudflare/vitest-pool-workers"]
+	},
+	"include": ["./**/*.ts", "../worker-configuration.d.ts"],
+	"exclude": []
+}
+</file>
+
+<file path="cold-dawn-85a2/.editorconfig">
+# http://editorconfig.org
+root = true
+
+[*]
+indent_style = tab
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.yml]
+indent_style = space
+</file>
+
+<file path="cold-dawn-85a2/.gitignore">
+# Logs
+
+logs
+_.log
+npm-debug.log_
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+
+report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+
+# Runtime data
+
+pids
+_.pid
+_.seed
+\*.pid.lock
+
+# Directory for instrumented libs generated by jscoverage/JSCover
+
+lib-cov
+
+# Coverage directory used by tools like istanbul
+
+coverage
+\*.lcov
+
+# nyc test coverage
+
+.nyc_output
+
+# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
+
+.grunt
+
+# Bower dependency directory (https://bower.io/)
+
+bower_components
+
+# node-waf configuration
+
+.lock-wscript
+
+# Compiled binary addons (https://nodejs.org/api/addons.html)
+
+build/Release
+
+# Dependency directories
+
+node_modules/
+jspm_packages/
+
+# Snowpack dependency directory (https://snowpack.dev/)
+
+web_modules/
+
+# TypeScript cache
+
+\*.tsbuildinfo
+
+# Optional npm cache directory
+
+.npm
+
+# Optional eslint cache
+
+.eslintcache
+
+# Optional stylelint cache
+
+.stylelintcache
+
+# Microbundle cache
+
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+
+.node_repl_history
+
+# Output of 'npm pack'
+
+\*.tgz
+
+# Yarn Integrity file
+
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+
+.cache
+.parcel-cache
+
+# Next.js build output
+
+.next
+out
+
+# Nuxt.js build / generate output
+
+.nuxt
+dist
+
+# Gatsby files
+
+.cache/
+
+# Comment in the public line in if your project uses Gatsby and not Next.js
+
+# https://nextjs.org/blog/next-9-1#public-directory-support
+
+# public
+
+# vuepress build output
+
+.vuepress/dist
+
+# vuepress v2.x temp and cache directory
+
+.temp
+.cache
+
+# Docusaurus cache and generated files
+
+.docusaurus
+
+# Serverless directories
+
+.serverless/
+
+# FuseBox cache
+
+.fusebox/
+
+# DynamoDB Local files
+
+.dynamodb/
+
+# TernJS port file
+
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+
+.vscode-test
+
+# yarn v2
+
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.\*
+
+# wrangler project
+
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
+.wrangler/
+</file>
+
+<file path="cold-dawn-85a2/.prettierrc">
+{
+	"printWidth": 140,
+	"singleQuote": true,
+	"semi": true,
+	"useTabs": true
+}
+</file>
+
+<file path="cold-dawn-85a2/package.json">
+{
+	"name": "cold-dawn-85a2",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev",
+		"start": "wrangler dev",
+		"test": "vitest",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.8.19",
+		"typescript": "^5.5.2",
+		"vitest": "~3.2.0",
+		"wrangler": "4.55.0"
+	}
+}
+</file>
+
+<file path="cold-dawn-85a2/tsconfig.json">
+{
+	"compilerOptions": {
+		/* Visit https://aka.ms/tsconfig.json to read more about this file */
+
+    /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+		"target": "es2024",
+    /* Specify a set of bundled library declaration files that describe the target runtime environment. */
+		"lib": ["es2024"],
+    /* Specify what JSX code is generated. */
+		"jsx": "react-jsx",
+
+    /* Specify what module code is generated. */
+		"module": "es2022",
+    /* Specify how TypeScript looks up a file from a given module specifier. */
+		"moduleResolution": "Bundler",
+    /* Enable importing .json files */
+		"resolveJsonModule": true,
+
+    /* Allow JavaScript files to be a part of your program. Use the `checkJS` option to get errors from these files. */
+		"allowJs": true,
+    /* Enable error reporting in type-checked JavaScript files. */
+		"checkJs": false,
+
+    /* Disable emitting files from a compilation. */
+		"noEmit": true,
+
+    /* Ensure that each file can be safely transpiled without relying on other imports. */
+		"isolatedModules": true,
+    /* Allow 'import x from y' when a module doesn't have a default export. */
+		"allowSyntheticDefaultImports": true,
+    /* Ensure that casing is correct in imports. */
+		"forceConsistentCasingInFileNames": true,
+
+    /* Enable all strict type-checking options. */
+		"strict": true,
+
+    /* Skip type checking all .d.ts files. */
+		"skipLibCheck": true,
+		"types": [
+			"./worker-configuration.d.ts"
+		]
+	},
+	"exclude": ["test"],
+	"include": ["worker-configuration.d.ts", "src/**/*.ts"]
+}
+</file>
+
+<file path="cold-dawn-85a2/vitest.config.mts">
+import { defineWorkersConfig } from '@cloudflare/vitest-pool-workers/config';
+
+export default defineWorkersConfig({
+	test: {
+		poolOptions: {
+			workers: {
+				wrangler: { configPath: './wrangler.jsonc' },
+			},
+		},
+	},
+});
+</file>
+
+<file path="cold-dawn-85a2/wrangler.jsonc">
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "cold-dawn-85a2",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-12-16",
+	"compatibility_flags": [
+		"global_fetch_strictly_public"
+	],
+	"assets": {
+		// The path to the directory containing the `index.html` file to be served at `/`
+		"directory": "./public"
+	},
+	"observability": {
+		"enabled": true
+	}
+	/**
+	 * Smart Placement
+	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
+	 */
+	// "placement": {  "mode": "smart" }
+	/**
+	 * Bindings
+	 * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
+	 * databases, object storage, AI inference, real-time communication and more.
+	 * https://developers.cloudflare.com/workers/runtime-apis/bindings/
+	 */
+	/**
+	 * Environment Variables
+	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
+	 * Note: Use secrets to store sensitive data.
+	 * https://developers.cloudflare.com/workers/configuration/secrets/
+	 */
+	// "vars": {  "MY_VARIABLE": "production_value" }
+	/**
+	 * Service Bindings (communicate between multiple Workers)
+	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
+	 */
+	// "services": [  {   "binding": "MY_SERVICE",   "service": "my-service"  } ]
+}
+</file>
+
+<file path="docs/decisions/ADR-TEMPLATE.md">
+# ADR: <Title>
+
+## Status
+Proposed | Accepted | Superseded
+
+## Context
+What problem are we solving?
+
+## Decision
+What did we decide?
+
+## Consequences
+What tradeoffs does this create?
+
+## Date
+YYYY-MM-DD
+</file>
+
+<file path="docs/phase-0/content-inventory.md">
+# Content + Asset Inventory
+
+## Brand assets
+- [ ] Logo (full color)
+- [ ] Logo (white)
+- [ ] Logo (black)
+- [ ] Favicon / square mark
+
+## Photography
+Minimum goal: 10–20 photos
+- [ ] Exterior building shot
+- [ ] Sanctuary/worship
+- [ ] Small group / fellowship
+- [ ] Pastoral/leadership portrait (if published)
+- [ ] Ministry activity photos
+
+## Bulletins
+- [ ] Current bulletin PDF
+- [ ] Archive PDFs (start date: TBD)
+
+### Bulletin naming rule (proposal)
+- `YYYY-MM-DD-bulletin.pdf`
+
+## Ministries
+Starter set (TBD):
+- [ ] Youth
+- [ ] Women
+- [ ] Men
+- [ ] Kids
+- [ ] Music
+
+## Events
+- [ ] List next 5–10 events with title, date/time, short description, location
+
+## Publishing permissions
+- [ ] Confirm whether we can publish photos with children/faces
+- [ ] Confirm if we need written consent for close-ups
+</file>
+
+<file path="docs/phase-0/gaps-register.md">
+# Gaps Register
+
+| Gap | Why it matters | Owner | Due date | Status | Where it will be stored |
+|---|---|---:|---:|---|---|
+| Public contact email | Contact + footer consistency | TBD | TBD | Open | source-of-truth.yml |
+| Leadership list | Team page + ministry contacts | TBD | TBD | Open | source-of-truth.yml / content files |
+| Bulletin archive start date | Archive page + naming rules | TBD | TBD | Open | content-inventory.md |
+| Official social links | Header/footer + trust | TBD | TBD | Open | site-links.json |
+| Language policy | Site IA + content workflow | TBD | TBD | Open | working-agreement.md |
+| Photo permissions policy | Privacy + trust | TBD | TBD | Open | content-inventory.md |
+| Analytics choice | Reporting + privacy posture | TBD | TBD | Open | ADR |
+</file>
+
+<file path="docs/phase-0/mvp-definition.md">
+# MVP Definition
+
+## Primary visitor goals
+1. Find service times in under 10 seconds.
+2. Get directions and contact the church.
+3. Watch live or access the latest videos.
+4. See upcoming events.
+5. Find the giving link.
+6. Submit a prayer request or contact form (external portal acceptable).
+
+## MVP pages
+- Home
+- Plan a Visit
+- Worship With Us
+- About
+- Contact
+- Live
+- Videos
+- Events (hub + detail)
+- Ministries (hub + detail)
+- Bulletins (current + archive)
+
+## MVP portals (external)
+- Giving
+- Prayer request form
+- Contact form (if separate)
+
+## MVP acceptance criteria (high-level)
+- Home page shows service times + address + Watch Live + Give.
+- Contact page includes at least one working method (email or phone) and directions.
+- Live page includes embedded YouTube (when available) and a fallback link to the channel.
+- Every portal link is tested on mobile.
+
+## Out of scope for MVP
+- Member login
+- Payment processing on-site
+- Custom database/admin panel
+- Custom admin UI
+</file>
+
+<file path="docs/phase-0/README.md">
+# Phase 0 (Initiation)
+
+This folder contains the documents that unblock Phase 1.
+
+**Exit criteria:**
+- MVP scope + sitemap approved
+- gaps assigned with owners + due dates
+- source-of-truth file created
+- domain approach decided
+- content inventory plan created
+- working agreement captured
+</file>
+
+<file path="docs/phase-0/risk-register.md">
+# Risk Register
+
+| Risk | Likelihood | Impact | Mitigation | Owner |
+|---|---|---|---|---|
+| Missing critical content (email, photos, bulletins) | Med | High | Assign owners + due dates in Gaps Register | TBD |
+| Live embed fails on mobile networks | Med | High | Always include fallback link + “If stream doesn’t load” copy | TBD |
+| Form spam | Med | Med | Start with Google Forms; consider Turnstile later for custom endpoint | TBD |
+| Volunteer bandwidth drops | High | Med | Keep MVP small; defer nice-to-haves to backlog | TBD |
+| Portal URLs change | Med | Med | Centralize links in a single config and re-check monthly | TBD |
+| Wrong service times posted | Low | High | Source-of-truth file + explicit approver for schedule changes | TBD |
+| Copyright/media issues | Low | High | Use only approved photos/music thumbnails; document source/permission | TBD |
+</file>
+
+<file path="docs/phase-0/sitemap.md">
+# Sitemap (Draft)
+
+## Primary navigation
+- Home (/)
+- Connect
+  - Plan a Visit (/connect/plan-a-visit)
+  - Worship With Us (/connect/worship-with-us)
+  - About (/connect/about)
+  - Events (/connect/events)
+  - Team (/connect/team)
+  - Contact (/connect/contact)
+- Join
+  - Membership (/join/membership)
+  - Baptism (/join/baptism)
+- Ministries
+  - Directory (/ministries)
+  - Detail pages (/ministries/<slug>)
+- Resources
+  - Forms (/resources/forms)
+  - Prayer (/resources/prayer)
+  - Study (/resources/study)
+  - Bulletins (/resources/bulletin)
+- Serve
+  - Volunteer (/serve)
+- Media
+  - Live (/media/live)
+  - Videos (/media/videos)
+
+## Quick actions (header)
+- Give (external)
+- Request Prayer (external or /resources/prayer)
+- Bulletin (/resources/bulletin)
+- Forms (/resources/forms)
+- Watch Live (/media/live)
+
+## Notes
+- Keep labels short and familiar.
+- Avoid making visitors guess. Use “Plan a Visit” not “New Here?” if that fits your audience.
+</file>
+
+<file path="docs/phase-0/source-of-truth.yml">
+church:
+  public_name: "Springfield Hispanic SDA Church"
+  address:
+    street: "124 Putnam Cir"
+    city: "Springfield"
+    state: "MA"
+    zip: "01104"
+  phone: "(413) 788-9130"
+  languages:
+    primary: "Spanish"
+
+schedule:
+  sabbath_school:
+    day: "Saturday"
+    time: "9:30 AM"
+  worship_service:
+    day: "Saturday"
+    time: "11:00 AM"
+  prayer_meeting:
+    day: "Wednesday"
+    time: "7:30 PM"
+
+portals:
+  giving_url: "https://adventistgiving.org/"
+  youtube_channel_url: "https://www.youtube.com/@A7DON"
+  facebook_url: "https://www.facebook.com/SpringfieldIASD/"
+  prayer_form_url: "TBD"
+  contact_form_url: "TBD"
+  volunteer_form_url: "TBD"
+
+copy:
+  homepage_tagline: "TBD"
+  welcome_message: "TBD"
+</file>
+
+<file path="docs/phase-0/working-agreement.md">
+# Working Agreement
+
+## Decision-making
+- Project owner: TBD
+- Content approver: TBD
+- Technical maintainer: TBD
+
+## Change workflow
+- Small edits (typos, broken links): maintainer can ship same day.
+- Schedule changes: require content approver confirmation.
+- New pages/sections: require project owner approval.
+
+## Review cadence
+- Weekly 15–30 min check-in during Phase 1.
+- Emergency fixes as needed.
+
+## Definition of Ready (for Phase 1 tasks)
+A task is ready when:
+- goal is clear
+- acceptance criteria exist
+- content (or placeholder) exists
+- owner/approver is known
+</file>
+
+<file path=".editorconfig">
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.md]
+trim_trailing_whitespace = false
+</file>
+
+</files>
