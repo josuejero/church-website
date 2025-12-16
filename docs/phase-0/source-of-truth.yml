@@ -1,0 +1,33 @@
+church:
+  public_name: "Springfield Hispanic SDA Church"
+  address:
+    street: "124 Putnam Cir"
+    city: "Springfield"
+    state: "MA"
+    zip: "01104"
+  phone: "(413) 788-9130"
+  languages:
+    primary: "Spanish"
+
+schedule:
+  sabbath_school:
+    day: "Saturday"
+    time: "9:30 AM"
+  worship_service:
+    day: "Saturday"
+    time: "11:00 AM"
+  prayer_meeting:
+    day: "Wednesday"
+    time: "7:30 PM"
+
+portals:
+  giving_url: "https://adventistgiving.org/"
+  youtube_channel_url: "https://www.youtube.com/@A7DON"
+  facebook_url: "https://www.facebook.com/SpringfieldIASD/"
+  prayer_form_url: "TBD"
+  contact_form_url: "TBD"
+  volunteer_form_url: "TBD"
+
+copy:
+  homepage_tagline: "TBD"
+  welcome_message: "TBD"
