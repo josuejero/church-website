@@ -1,3 +1,6 @@
+import links from "./site-links.json";
+import weekSchedule from "./week-schedule.json";
+
 export type NavItem = {
   label: string;
   href: string;
@@ -10,6 +13,16 @@ export type ScheduleItem = {
   time: string;
 };
 
+export type PortalLinks = {
+  givingUrl: string;
+  youtubeChannelUrl: string;
+  facebookUrl: string;
+  prayerFormUrl: string;
+  contactFormUrl: string;
+  volunteerFormUrl: string;
+  oldWebsiteUrl?: string;
+};
+
 export const site = {
   name: "Springfield Hispanic SDA Church",
   shortName: "Springfield Hispanic SDA",
@@ -18,25 +31,32 @@ export const site = {
 
   contact: {
     address: "124 Putnam Cir, Springfield, MA 01104",
+    mailingAddress: "PO Box 80598, Springfield, MA 01138-0598",
     mapsUrl: "https://www.google.com/maps?q=124+Putnam+Cir,+Springfield,+MA+01104",
     phone: "(413) 788-9130",
     email: "info@example.com" // Replace once verified
   },
 
-  schedule: [
-    { label: "Sabbath School", day: "Saturday", time: "9:30 AM" },
-    { label: "Worship Service", day: "Saturday", time: "11:00 AM" },
-    { label: "Prayer Meeting", day: "Wednesday", time: "7:30 PM" }
-  ] satisfies ScheduleItem[],
-
-  portals: {
-    givingUrl: "https://adventistgiving.org/",
-    youtubeChannelUrl: "https://www.youtube.com/@A7DON",
-    facebookUrl: "https://www.facebook.com/SpringfieldIASD/",
-    prayerFormUrl: "TBD",
-    contactFormUrl: "TBD",
-    volunteerFormUrl: "TBD"
+  leadership: {
+    pastorName: "Pastor Manuel Medina" // Replace if/when updated
   },
+
+  visit: {
+    languageNote: "Services are primarily in Spanish. Everyone is welcome.",
+    parkingNote: "Parking is typically available near the church. If you need help when you arrive, call ahead.",
+    accessibilityNote:
+      "If you need accessibility accommodations, please contact the church so we can help you plan your visit.",
+    directions: [
+      "From I-95 North, take I-91 North.",
+      "Take I-291 East (Exit 8).",
+      "Proceed through the light and follow St. James Ave.",
+      "Turn right onto Carew Street.",
+      "Go 4 blocks to Putnam Circle and turn left to the church."
+    ]
+  },
+
+  schedule: weekSchedule satisfies ScheduleItem[],
+  portals: links satisfies PortalLinks,
 
   nav: [
     { label: "Home", href: "/" },

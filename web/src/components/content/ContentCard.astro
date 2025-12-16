@@ -1,0 +1,46 @@
+---
+export interface Props {
+  href: string;
+  title: string;
+  summary: string;
+  meta?: string;
+  tags?: string[];
+}
+
+const { href, title, summary, meta, tags } = Astro.props;
+const safeTags = tags ?? [];
+---
+
+<article class="card">
+  {meta && <p class="muted" style="margin: 0; font-size: 0.95rem;">{meta}</p>}
+  <h3 style="margin: 0.25rem 0;">
+    <a href={href} class="link">{title}</a>
+  </h3>
+  <p class="muted" style="margin: 0.25rem 0 0;">{summary}</p>
+
+  {safeTags.length > 0 && (
+    <ul class="tags" aria-label="Tags">
+      {safeTags.map((t) => (
+        <li class="tag">{t}</li>
+      ))}
+    </ul>
+  )}
+</article>
+
+<style>
+  .tags {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0;
+    margin: 0.75rem 0 0;
+  }
+  .tag {
+    font-size: 0.85rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--surface) 90%, white 10%);
+  }
+</style>

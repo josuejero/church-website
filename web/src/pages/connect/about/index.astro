@@ -1,0 +1,65 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Button from "../../../components/ui/Button.astro";
+import { site } from "../../../data/site";
+---
+
+<BaseLayout
+  title="About"
+  description="About Springfield Hispanic Seventh-day Adventist Church in Springfield, Massachusetts."
+>
+  <div class="stack">
+    <h1 style="margin: 0;">About</h1>
+    <p class="muted" style="margin: 0;">
+      We are a local congregation of the Seventh-day Adventist Church in Springfield, Massachusetts.
+    </p>
+
+    <section class="card" aria-labelledby="about-mission">
+      <h2 id="about-mission" style="margin-top: 0;">Our mission</h2>
+      <p class="muted" style="margin: var(--space-2) 0 0;">
+        To know Jesus, grow in faith through Scripture, and serve our community with compassion.
+      </p>
+      <p class="small muted" style="margin: var(--space-3) 0 0;">
+        This page should stay short and welcoming. Longer history and leadership bios can be added in later phases.
+      </p>
+    </section>
+
+    <section class="card" aria-labelledby="about-quick-facts">
+      <h2 id="about-quick-facts" style="margin-top: 0;">Quick facts</h2>
+      <ul style="margin: var(--space-3) 0 0; padding-left: 1.1rem;">
+        <li><strong>Pastor:</strong> {site.leadership.pastorName}</li>
+        <li><strong>Language:</strong> Spanish (visitors welcome)</li>
+        <li><strong>Address:</strong> <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">{site.contact.address}</a></li>
+        <li><strong>Mail:</strong> {site.contact.mailingAddress}</li>
+        <li><strong>Phone:</strong> <a href={`tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`}>{site.contact.phone}</a></li>
+      </ul>
+    </section>
+
+    <section class="card" aria-labelledby="about-beliefs">
+      <h2 id="about-beliefs" style="margin-top: 0;">What we believe</h2>
+      <p class="muted" style="margin: var(--space-2) 0 0;">
+        Seventh-day Adventists are Christians who value the Bible, worship on Saturday (the Sabbath), and seek to live faithfully and serve others.
+      </p>
+      <p class="muted" style="margin: var(--space-2) 0 0;">
+        If you’re exploring faith or returning to church after a long time, you are welcome. You do not need to have everything figured out to visit.
+      </p>
+      <p class="small muted" style="margin: var(--space-3) 0 0;">
+        Want to learn more? Visit the official denomination site.
+      </p>
+      <div style="margin-top: var(--space-3);">
+        <Button href="https://www.adventist.org/" external variant="secondary">Learn more</Button>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="about-contact">
+      <h2 id="about-contact" style="margin-top: 0;">Get in touch</h2>
+      <p class="muted" style="margin: var(--space-2) 0 0;">
+        Questions before you visit? We’d love to help.
+      </p>
+      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
+        <Button href="/connect/plan-a-visit" variant="secondary">Plan a visit</Button>
+        <Button href="/connect/contact" variant="ghost">Contact</Button>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

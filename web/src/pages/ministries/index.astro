@@ -1,8 +1,33 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import PlaceholderPage from "../../components/PlaceholderPage.astro";
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/ui/Hero.astro';
+import ContentCard from '../../components/content/ContentCard.astro';
+import { getCollection } from 'astro:content';
+
+const ministries = await getCollection('ministries', ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+const sorted = ministries.sort((a, b) => a.data.title.localeCompare(b.data.title));
 ---
 
-<BaseLayout title="Ministries">
-  <PlaceholderPage title="Ministries" />
+<BaseLayout title="Ministries" description="Ways to serve and grow together.">
+  <Hero title="Ministries" subtitle="Find a place to belong and serve." />
+
+  <section class="container stack">
+    {sorted.length === 0 ? (
+      <p class="muted">No ministries are published yet.</p>
+    ) : (
+      <div class="grid--cards">
+        {sorted.map((m) => (
+          <ContentCard
+            href={`/ministries/${m.id}/`}
+            title={m.data.title}
+            summary={m.data.summary}
+            tags={m.data.tags}
+          />
+        ))}
+      </div>
+    )}
+  </section>
 </BaseLayout>

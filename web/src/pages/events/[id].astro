@@ -1,0 +1,56 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/ui/Hero.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const events = await getCollection('events', ({ data }) => {
+    return import.meta.env.PROD ? data.draft !== true : true;
+  });
+
+  return events.map((event) => ({
+    params: { id: event.id },
+    props: { event },
+  }));
+}
+
+const { event } = Astro.props;
+const { Content } = await render(event);
+
+const fmtDate = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'full',
+  timeStyle: 'short',
+  timeZone: 'America/New_York',
+});
+
+const when = event.data.end
+  ? `${fmtDate.format(event.data.start)} – ${fmtDate.format(event.data.end)}`
+  : fmtDate.format(event.data.start);
+---
+
+<BaseLayout title={event.data.title} description={event.data.summary}>
+  <Hero title={event.data.title} subtitle={event.data.summary} />
+
+  <section class="container stack">
+    <div class="card stack" style="gap: 0.5rem;">
+      <p class="muted" style="margin: 0;"><strong>When:</strong> {when}</p>
+      {event.data.locationName && (
+        <p class="muted" style="margin: 0;"><strong>Where:</strong> {event.data.locationName}</p>
+      )}
+      {event.data.address && (
+        <p class="muted" style="margin: 0;"><strong>Address:</strong> {event.data.address}</p>
+      )}
+      {event.data.registrationUrl && (
+        <p style="margin: 0;">
+          <a class="link" href={event.data.registrationUrl} rel="noopener noreferrer">Register / Learn more</a>
+        </p>
+      )}
+    </div>
+
+    <article class="card stack">
+      <Content />
+    </article>
+
+    <p><a class="link" href="/events/">← Back to Events</a></p>
+  </section>
+</BaseLayout>

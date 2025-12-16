@@ -1,8 +1,51 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import PlaceholderPage from "../../components/PlaceholderPage.astro";
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/ui/Hero.astro';
+import ContentCard from '../../components/content/ContentCard.astro';
+import { getCollection } from 'astro:content';
+
+const resources = await getCollection('resources', ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+const latest = resources
+  .sort((a, b) => b.data.published.valueOf() - a.data.published.valueOf())
+  .slice(0, 15);
+
+const fmt = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'America/New_York' });
 ---
 
-<BaseLayout title="Resources">
-  <PlaceholderPage title="Resources" />
+<BaseLayout title="Resources" description="Helpful links, forms, bulletins, and downloads.">
+  <Hero title="Resources" subtitle="Downloads, forms, and helpful info." />
+
+  <section class="container stack">
+    <div class="grid--cards">
+      <article class="card">
+        <h3 style="margin: 0.25rem 0;"><a class="link" href="/resources/bulletins/">Bulletins</a></h3>
+        <p class="muted" style="margin: 0;">Weekly PDFs and archives.</p>
+      </article>
+      <article class="card">
+        <h3 style="margin: 0.25rem 0;"><a class="link" href="/resources/forms/">Forms</a></h3>
+        <p class="muted" style="margin: 0;">Requests, sign-ups, and contact info.</p>
+      </article>
+    </div>
+
+    <h2 style="margin-top: 2.5rem;">Latest resources</h2>
+
+    {latest.length === 0 ? (
+      <p class="muted">No resources are published yet.</p>
+    ) : (
+      <div class="grid--cards">
+        {latest.map((r) => (
+          <ContentCard
+            href={`/resources/${r.id}/`}
+            title={r.data.title}
+            summary={r.data.summary}
+            meta={fmt.format(r.data.published)}
+            tags={r.data.tags}
+          />
+        ))}
+      </div>
+    )}
+  </section>
 </BaseLayout>

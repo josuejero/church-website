@@ -1,0 +1,54 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/ui/Hero.astro';
+import ButtonLink from '../../components/ui/ButtonLink.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const ministries = await getCollection('ministries', ({ data }) => {
+    return import.meta.env.PROD ? data.draft !== true : true;
+  });
+
+  return ministries.map((ministry) => ({
+    params: { id: ministry.id },
+    props: { ministry },
+  }));
+}
+
+const { ministry } = Astro.props;
+const { Content } = await render(ministry);
+
+const ctaLabel = ministry.data.ctaLabel ?? 'Get in touch';
+const ctaHref = ministry.data.ctaHref ?? '/connect/contact/';
+---
+
+<BaseLayout title={ministry.data.title} description={ministry.data.summary}>
+  <Hero title={ministry.data.title} subtitle={ministry.data.summary} />
+
+  <section class="container stack">
+    <div class="card stack" style="gap: 0.5rem;">
+      {ministry.data.leaderName && (
+        <p class="muted" style="margin: 0;"><strong>Leader:</strong> {ministry.data.leaderName}</p>
+      )}
+      {ministry.data.meetingTime && (
+        <p class="muted" style="margin: 0;"><strong>Meets:</strong> {ministry.data.meetingTime}</p>
+      )}
+      {ministry.data.contactEmail && (
+        <p class="muted" style="margin: 0;"><strong>Email:</strong> {ministry.data.contactEmail}</p>
+      )}
+      {ministry.data.contactPhone && (
+        <p class="muted" style="margin: 0;"><strong>Phone:</strong> {ministry.data.contactPhone}</p>
+      )}
+
+      <div style="margin-top: 0.5rem;">
+        <ButtonLink href={ctaHref}>{ctaLabel}</ButtonLink>
+      </div>
+    </div>
+
+    <article class="card stack">
+      <Content />
+    </article>
+
+    <p><a class="link" href="/ministries/">← Back to Ministries</a></p>
+  </section>
+</BaseLayout>

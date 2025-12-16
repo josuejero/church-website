@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/ui/Hero.astro';
+import ContentCard from '../../components/content/ContentCard.astro';
+import { getCollection } from 'astro:content';
+
+const events = await getCollection('events', ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+const now = new Date();
+const upcoming = events
+  .filter((e) => e.data.start >= now)
+  .sort((a, b) => a.data.start.valueOf() - b.data.start.valueOf());
+
+const past = events
+  .filter((e) => e.data.start < now)
+  .sort((a, b) => b.data.start.valueOf() - a.data.start.valueOf())
+  .slice(0, 12);
+
+const fmt = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+  timeZone: 'America/New_York',
+});
+---
+
+<BaseLayout title="Events" description="What’s happening at church.">
+  <Hero
+    title="Events"
+    subtitle="See what’s coming up and what we’ve recently hosted."
+  />
+
+  <section class="container stack">
+    <h2>Upcoming</h2>
+
+    {upcoming.length === 0 ? (
+      <p class="muted">No upcoming events are published yet.</p>
+    ) : (
+      <div class="grid--cards">
+        {upcoming.map((e) => (
+          <ContentCard
+            href={`/events/${e.id}/`}
+            title={e.data.title}
+            summary={e.data.summary}
+            meta={fmt.format(e.data.start)}
+            tags={e.data.tags}
+          />
+        ))}
+      </div>
+    )}
+
+    <h2 style="margin-top: 2.5rem;">Recent</h2>
+    {past.length === 0 ? (
+      <p class="muted">No past events are published yet.</p>
+    ) : (
+      <div class="grid--cards">
+        {past.map((e) => (
+          <ContentCard
+            href={`/events/${e.id}/`}
+            title={e.data.title}
+            summary={e.data.summary}
+            meta={fmt.format(e.data.start)}
+            tags={e.data.tags}
+          />
+        ))}
+      </div>
+    )}
+  </section>
+</BaseLayout>

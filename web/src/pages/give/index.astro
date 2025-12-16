@@ -1,17 +1,41 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Button from "../../components/ui/Button.astro";
+import Card from "../../components/ui/Card.astro";
+import CardGrid from "../../components/ui/CardGrid.astro";
 import { site } from "../../data/site";
 ---
 
-<BaseLayout title="Give">
+<BaseLayout title="Give" description="Support Springfield Hispanic SDA Church through online giving.">
   <div class="stack">
     <h1 style="margin: 0;">Give</h1>
     <p class="muted" style="margin: 0;">
-      Online giving is handled through our external giving platform.
+      Thank you for supporting the mission of the church. Online giving is handled through our external giving platform.
     </p>
-    <div>
-      <Button href={site.portals.givingUrl} external>Give online</Button>
+
+    <div class="card">
+      <div style="font-weight: 800;">Online giving</div>
+      <p class="muted" style="margin: var(--space-2) 0 0;">
+        Use the secure giving link below.
+      </p>
+      <div style="margin-top: var(--space-4);">
+        <Button href={site.portals.givingUrl} external variant="secondary">Give online</Button>
+      </div>
+      <p class="small muted" style="margin: var(--space-3) 0 0;">
+        If you prefer, you can also give in person during services.
+      </p>
     </div>
+
+    <section aria-labelledby="give-more">
+      <h2 id="give-more" style="margin: 0;">More ways to help</h2>
+      <p class="muted" style="margin: var(--space-2) 0 0;">
+        Beyond financial giving, you can also serve through volunteering and community support.
+      </p>
+      <CardGrid columns={3}>
+        <Card title="Volunteer" description="Interested in serving? Use our volunteer form." href="/resources/forms" />
+        <Card title="Prayer" description="Need support or follow-up? Submit a prayer request." href="/connect/prayer" />
+        <Card title="Contact" description="Questions about giving? Reach out to the church." href="/connect/contact" />
+      </CardGrid>
+    </section>
   </div>
 </BaseLayout>

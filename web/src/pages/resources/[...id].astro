@@ -1,0 +1,55 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/ui/Hero.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const resources = await getCollection('resources', ({ data }) => {
+    return import.meta.env.PROD ? data.draft !== true : true;
+  });
+
+  return resources.map((resource) => ({
+    params: { id: resource.id },
+    props: { resource },
+  }));
+}
+
+const { resource } = Astro.props;
+const { Content } = await render(resource);
+
+const fmt = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'full',
+  timeZone: 'America/New_York',
+});
+---
+
+<BaseLayout title={resource.data.title} description={resource.data.summary}>
+  <Hero title={resource.data.title} subtitle={resource.data.summary} />
+
+  <section class="container stack">
+    <div class="card stack" style="gap: 0.5rem;">
+      <p class="muted" style="margin: 0;"><strong>Published:</strong> {fmt.format(resource.data.published)}</p>
+      {resource.data.category && (
+        <p class="muted" style="margin: 0;"><strong>Category:</strong> {resource.data.category}</p>
+      )}
+
+      {resource.data.attachmentUrl && (
+        <p style="margin: 0;">
+          <a class="link" href={resource.data.attachmentUrl}>Download / Open attachment</a>
+        </p>
+      )}
+
+      {resource.data.externalUrl && (
+        <p style="margin: 0;">
+          <a class="link" href={resource.data.externalUrl} rel="noopener noreferrer">Open external link</a>
+        </p>
+      )}
+    </div>
+
+    <article class="card stack">
+      <Content />
+    </article>
+
+    <p><a class="link" href="/resources/">← Back to Resources</a></p>
+  </section>
+</BaseLayout>

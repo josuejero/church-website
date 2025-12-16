@@ -7,11 +7,16 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "check": "astro check"
+    "check": "astro check",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@astrojs/check": "0.9.6",
     "astro": "^5.16.6",
     "typescript": "5.9.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.57.0"
   }
 }
