@@ -1,0 +1,33 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { site } from "../../../data/site";
+---
+
+<BaseLayout title="Contact">
+  <div class="stack">
+    <h1 style="margin: 0;">Contact</h1>
+    <div class="card">
+      <div style="font-weight: 800;">Address</div>
+      <p class="muted" style="margin: var(--space-2) 0 0;">
+        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">{site.contact.address}</a>
+      </p>
+    </div>
+
+    <div class="card">
+      <div style="font-weight: 800;">Phone</div>
+      <p class="muted" style="margin: var(--space-2) 0 0;">
+        <a href={`tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`}>{site.contact.phone}</a>
+      </p>
+    </div>
+
+    <div class="card">
+      <div style="font-weight: 800;">Email</div>
+      <p class="muted" style="margin: var(--space-2) 0 0;">
+        <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+      </p>
+      <p class="small muted" style="margin-bottom: 0;">
+        Replace this email once the church confirms the preferred public contact method.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

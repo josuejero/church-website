@@ -1,0 +1,11 @@
+---
+type Props = {
+  columnsMin?: number;
+};
+
+const { columnsMin = 220 } = Astro.props;
+---
+
+<div class="grid" style={`grid-template-columns: repeat(auto-fit, minmax(${columnsMin}px, 1fr));`}>
+  <slot />
+</div>

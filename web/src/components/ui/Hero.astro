@@ -1,0 +1,65 @@
+---
+import Button from "./Button.astro";
+
+type Props = {
+  title: string;
+  subtitle?: string;
+  primaryCtaLabel?: string;
+  primaryCtaHref?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+};
+
+const {
+  title,
+  subtitle,
+  primaryCtaLabel,
+  primaryCtaHref,
+  secondaryCtaLabel,
+  secondaryCtaHref
+} = Astro.props;
+---
+
+<section class="hero card">
+  <div class="hero__inner">
+    <div>
+      <h1 class="hero__title">{title}</h1>
+      {subtitle && <p class="hero__subtitle muted">{subtitle}</p>}
+    </div>
+
+    {(primaryCtaLabel && primaryCtaHref) || (secondaryCtaLabel && secondaryCtaHref) ? (
+      <div class="hero__actions">
+        {primaryCtaLabel && primaryCtaHref && (
+          <Button href={primaryCtaHref} variant="primary">{primaryCtaLabel}</Button>
+        )}
+        {secondaryCtaLabel && secondaryCtaHref && (
+          <Button href={secondaryCtaHref} variant="secondary">{secondaryCtaLabel}</Button>
+        )}
+      </div>
+    ) : null}
+  </div>
+</section>
+
+<style>
+  .hero__inner {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .hero__title {
+    margin: 0;
+    font-size: var(--font-size-5);
+    line-height: 1.15;
+  }
+
+  .hero__subtitle {
+    margin: var(--space-2) 0 0;
+    font-size: var(--font-size-2);
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+</style>

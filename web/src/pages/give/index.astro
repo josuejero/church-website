@@ -1,0 +1,17 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Button from "../../components/ui/Button.astro";
+import { site } from "../../data/site";
+---
+
+<BaseLayout title="Give">
+  <div class="stack">
+    <h1 style="margin: 0;">Give</h1>
+    <p class="muted" style="margin: 0;">
+      Online giving is handled through our external giving platform.
+    </p>
+    <div>
+      <Button href={site.portals.givingUrl} external>Give online</Button>
+    </div>
+  </div>
+</BaseLayout>

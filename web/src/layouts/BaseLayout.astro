@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import { site } from "../data/site";
 
 type Props = {
   title: string;
@@ -9,19 +10,22 @@ type Props = {
 };
 
 const { title, description } = Astro.props;
+
+const pageTitle = title === site.name || title === "Home" ? site.name : `${title} | ${site.shortName}`;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={site.locale}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
+    <title>{pageTitle}</title>
     {description && <meta name="description" content={description} />}
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <Header />
-    <main class="main">
+    <main id="main-content" class="main">
       <div class="container">
         <slot />
       </div>

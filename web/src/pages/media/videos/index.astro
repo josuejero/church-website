@@ -1,0 +1,17 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Button from "../../../components/ui/Button.astro";
+import { site } from "../../../data/site";
+---
+
+<BaseLayout title="Videos">
+  <div class="stack">
+    <h1 style="margin: 0;">Videos</h1>
+    <p class="muted" style="margin: 0;">
+      Recent videos and playlists will appear here in Phase 5.
+    </p>
+    <div>
+      <Button href={site.portals.youtubeChannelUrl} external variant="secondary">Browse on YouTube</Button>
+    </div>
+  </div>
+</BaseLayout>

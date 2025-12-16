@@ -1,47 +1,59 @@
 ---
-
 import BaseLayout from "../layouts/BaseLayout.astro";
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import Hero from "../components/ui/Hero.astro";
+import Schedule from "../components/ui/Schedule.astro";
+import Card from "../components/ui/Card.astro";
+import CardGrid from "../components/ui/CardGrid.astro";
+import Banner from "../components/ui/Banner.astro";
+import { site } from "../data/site";
 ---
 
 <BaseLayout
-  title="Springfield Hispanic SDA Church"
+  title={site.name}
   description="Official website of Springfield Hispanic SDA Church."
 >
-  <h1>Welcome</h1>
-  <p class="muted">This site is under construction. We’ll have all the information here soon.</p>
+  <div class="stack">
+    <Banner
+      message="This site is under construction. Some pages may still be in progress."
+      ctaLabel="Contact"
+      ctaHref="/connect/contact"
+    />
 
-  <div class="card" style="margin-top: 1rem;">
-    <h2 style="margin-top: 0;">This Saturday</h2>
-    <ul>
-      <li><strong>Sabbath School:</strong> 9:30 AM</li>
-      <li><strong>Worship Service:</strong> 11:00 AM</li>
-    </ul>
-    <p class="small muted">(Times subject to verification in Phase 3)</p>
-  </div>
+    <Hero
+      title="Welcome"
+      subtitle="Service times, directions, and ways to connect with our church community."
+      primaryCtaLabel="Plan a visit"
+      primaryCtaHref="/connect/plan-a-visit"
+      secondaryCtaLabel="Watch live"
+      secondaryCtaHref="/media/live"
+    />
 
-  <div style="margin-top: 1rem; display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
-    <div class="card">
-      <div style="font-weight: 700;">Watch Live</div>
-      <p class="small muted">Watch the service online.</p>
-      <a href="/media/live">Go</a>
-    </div>
-    <div class="card">
-      <div style="font-weight: 700;">Plan Your Visit</div>
-      <p class="small muted">Address, parking, and what to expect.</p>
-      <a href="/connect/plan-a-visit">Go</a>
-    </div>
-    <div class="card">
-      <div style="font-weight: 700;">Prayer</div>
-      <p class="small muted">Send a prayer request.</p>
-      <a href="/connect/prayer">Go</a>
-    </div>
-    <div class="card">
-      <div style="font-weight: 700;">Give</div>
-      <p class="small muted">Support the mission of the church.</p>
-      <a href="/give">Go</a>
-    </div>
+    <Schedule title="This week" items={site.schedule} />
+
+    <section class="stack" style="gap: var(--space-4);">
+      <h2 style="margin: 0;">Next steps</h2>
+      <CardGrid>
+        <Card
+          title="Watch Live"
+          description="Join online services and find recent videos."
+          href="/media/live"
+        />
+        <Card
+          title="Prayer"
+          description="Send a prayer request or ask for support."
+          href="/connect/prayer"
+        />
+        <Card
+          title="Give"
+          description="Support the mission of the church online."
+          href="/give"
+        />
+        <Card
+          title="Forms"
+          description="Access official church forms and signups."
+          href="/resources/forms"
+        />
+      </CardGrid>
+    </section>
   </div>
 </BaseLayout>

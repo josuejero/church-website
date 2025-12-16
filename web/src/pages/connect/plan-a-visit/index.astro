@@ -1,0 +1,29 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { site } from "../../../data/site";
+---
+
+<BaseLayout title="Plan a Visit">
+  <div class="stack">
+    <h1 style="margin: 0;">Plan a Visit</h1>
+    <p class="muted" style="margin: 0;">
+      This page will include what to expect, parking, directions, and accessibility notes in Phase 3.
+    </p>
+
+    <div class="card">
+      <div style="font-weight: 800;">Address</div>
+      <p class="muted" style="margin: var(--space-2) 0 0;">
+        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">{site.contact.address}</a>
+      </p>
+    </div>
+
+    <div class="card">
+      <div style="font-weight: 800;">Service times</div>
+      <ul style="margin: var(--space-2) 0 0;">
+        {site.schedule.map((item) => (
+          <li><strong>{item.label}:</strong> {item.day} - {item.time}</li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</BaseLayout>

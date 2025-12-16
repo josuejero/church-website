@@ -1,0 +1,48 @@
+---
+import type { ScheduleItem } from "../../data/site";
+
+type Props = {
+  title?: string;
+  items: ScheduleItem[];
+};
+
+const { title = "This Week", items } = Astro.props;
+---
+
+<section class="card">
+  <h2 style="margin-top: 0;">{title}</h2>
+  <ul class="schedule">
+    {items.map((item) => (
+      <li class="schedule__item">
+        <div class="schedule__label">{item.label}</div>
+        <div class="schedule__meta muted">{item.day} - {item.time}</div>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .schedule {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .schedule__item {
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-3);
+    background: var(--color-surface-muted);
+  }
+
+  .schedule__label {
+    font-weight: 800;
+  }
+
+  .schedule__meta {
+    font-size: var(--font-size-0);
+    margin-top: var(--space-1);
+  }
+</style>

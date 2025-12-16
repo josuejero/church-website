@@ -1,0 +1,17 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Button from "../../../components/ui/Button.astro";
+import { site } from "../../../data/site";
+---
+
+<BaseLayout title="Watch Live">
+  <div class="stack">
+    <h1 style="margin: 0;">Watch Live</h1>
+    <p class="muted" style="margin: 0;">
+      Live video will be embedded here in Phase 5. For now, use the channel link.
+    </p>
+    <div>
+      <Button href={site.portals.youtubeChannelUrl} external variant="secondary">Open YouTube channel</Button>
+    </div>
+  </div>
+</BaseLayout>

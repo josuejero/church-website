@@ -1,0 +1,41 @@
+---
+import Button from "./Button.astro";
+
+type Props = {
+  message: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+};
+
+const { message, ctaLabel, ctaHref } = Astro.props;
+---
+
+<section class="banner" role="status">
+  <div class="banner__inner">
+    <div class="banner__msg">{message}</div>
+    {ctaLabel && ctaHref ? (
+      <Button href={ctaHref} variant="ghost" size="sm">{ctaLabel}</Button>
+    ) : null}
+  </div>
+</section>
+
+<style>
+  .banner {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-gray-50);
+  }
+
+  .banner__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .banner__msg {
+    font-weight: 700;
+  }
+</style>
