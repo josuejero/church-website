@@ -1,0 +1,16 @@
+---
+import Button from "./Button.astro";
+
+type Props = {
+  href: string;
+  external?: boolean;
+  variant?: "primary" | "secondary";
+  size?: "sm" | "md" | "lg";
+};
+
+const { href, external, variant = "primary", size = "md" } = Astro.props;
+---
+
+<Button href={href} external={external} variant={variant} size={size}>
+  <slot />
+</Button>

@@ -1,11 +1,80 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
-import PlaceholderPage from "../../../components/PlaceholderPage.astro";
+import Button from "../../../components/ui/Button.astro";
+import CardGrid from "../../../components/ui/CardGrid.astro";
+import Card from "../../../components/ui/Card.astro";
+import { site } from "../../../data/site";
+
+const phoneHref = `tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`;
+
+const hasPrayerForm = site.portals.prayerFormUrl && site.portals.prayerFormUrl !== "TBD";
+const hasContactForm = site.portals.contactFormUrl && site.portals.contactFormUrl !== "TBD";
+const hasVolunteerForm = site.portals.volunteerFormUrl && site.portals.volunteerFormUrl !== "TBD";
 ---
 
-<BaseLayout title="Forms">
-  <PlaceholderPage
-    title="Forms"
-    message="We are organizing our official forms. This page will list signups and requests soon."
-  />
+<BaseLayout title="Forms" description="Official request and signup forms.">
+  <div class="stack">
+    <h1 style="margin: 0;">Forms</h1>
+    <p class="muted" style="margin: 0;">
+      Official request and signup forms. If a form is not available, you can always contact the church.
+    </p>
+
+    <section class="card" aria-labelledby="forms-help">
+      <h2 id="forms-help" style="margin-top: 0;">Need help right now?</h2>
+      <p class="muted" style="margin: var(--space-2) 0 0;">
+        Call us at <a href={phoneHref}>{site.contact.phone}</a> or visit the <a href="/connect/contact">Contact</a> page.
+      </p>
+    </section>
+
+    <section aria-labelledby="forms-list">
+      <h2 id="forms-list" style="margin: 0;">Available forms</h2>
+
+      <CardGrid columnsMin={260}>
+        {hasPrayerForm && (
+          <Card
+            title="Prayer request"
+            description="Share a prayer request. Optionally ask for follow-up."
+            href={site.portals.prayerFormUrl}
+          />
+        )}
+
+        {hasContactForm && (
+          <Card
+            title="Contact / Questions"
+            description="Send a message to the church."
+            href={site.portals.contactFormUrl}
+          />
+        )}
+
+        {hasVolunteerForm && (
+          <Card
+            title="Volunteer interest"
+            description="Let us know how you’d like to serve."
+            href={site.portals.volunteerFormUrl}
+          />
+        )}
+
+        {(!hasPrayerForm || !hasContactForm || !hasVolunteerForm) && (
+          <Card
+            title="Other requests"
+            description="If you don’t see a form you need, contact us and we’ll help."
+            href="/connect/contact"
+          />
+        )}
+      </CardGrid>
+
+      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
+        {hasPrayerForm && (
+          <Button href={site.portals.prayerFormUrl} external variant="secondary">Open prayer form</Button>
+        )}
+        {hasVolunteerForm && (
+          <Button href={site.portals.volunteerFormUrl} external variant="secondary">Open volunteer form</Button>
+        )}
+      </div>
+
+      <p class="small muted" style="margin: var(--space-4) 0 0;">
+        Privacy note: only share information you’re comfortable sharing with a church prayer/team inbox.
+      </p>
+    </section>
+  </div>
 </BaseLayout>

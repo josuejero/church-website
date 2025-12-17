@@ -16,6 +16,7 @@ export type ScheduleItem = {
 export type PortalLinks = {
   givingUrl: string;
   youtubeChannelUrl: string;
+  youtubeLiveEmbedUrl: string;
   facebookUrl: string;
   prayerFormUrl: string;
   contactFormUrl: string;
@@ -28,7 +29,8 @@ export const site = {
   shortName: "Springfield Hispanic SDA",
   locale: "en-US",
   timeZone: "America/New_York",
-
+  description:
+    "Service times, directions, and resources for Springfield Hispanic Seventh-day Adventist Church in Springfield, Massachusetts.",
   contact: {
     address: "124 Putnam Cir, Springfield, MA 01104",
     mailingAddress: "PO Box 80598, Springfield, MA 01138-0598",

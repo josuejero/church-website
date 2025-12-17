@@ -1,5 +1,15 @@
-// @ts-check
-import { defineConfig } from 'astro/config';
+import pagefind from "astro-pagefind";
+import { defineConfig, passthroughImageService } from "astro/config";
 
-// https://astro.build/config
-export default defineConfig({});
+export default defineConfig({
+  output: "static",
+  integrations: [pagefind()],
+  image: {
+    service: passthroughImageService(),
+  },
+  vite: {
+    ssr: {
+      noExternal: ["@fontsource-variable/inter"],
+    },
+  },
+});

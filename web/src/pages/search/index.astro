@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Hero from "../../components/ui/Hero.astro";
+import Search from "astro-pagefind/components/Search";
+---
+
+<BaseLayout title="Search" description="Search pages, resources, and bulletins.">
+  <div class="stack">
+    <Hero title="Search" subtitle="Search resources, bulletins, and site pages." />
+
+    <section aria-label="Site search" class="card" style="padding: var(--space-4);">
+      <Search
+        id="site-search"
+        className="pagefind-ui"
+        uiOptions={{
+          showImages: false,
+          showSubResults: true,
+          // Optional: display a hint under the search box
+          placeholder: "Search the site…",
+        }}
+      />
+
+      <details class="small muted" style="margin: var(--space-3) 0 0;">
+        <summary>How search works</summary>
+        <p style="margin: var(--space-2) 0 0;">
+          Search runs in your browser using a static index generated at build time.
+          Your search terms are not sent to the site server.
+        </p>
+      </details>
+    </section>
+  </div>
+</BaseLayout>

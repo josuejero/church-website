@@ -1,0 +1,49 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Hero from "../../components/ui/Hero.astro";
+
+const analyticsEnabled = import.meta.env.PROD && Boolean(import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN);
+---
+
+<BaseLayout title="Privacy" description="Privacy and data use">
+  <div class="stack">
+    <Hero title="Privacy" subtitle="How this website handles data." />
+
+    <section class="card" style="padding: var(--space-4);">
+      <h2 style="margin-top: 0;">Analytics</h2>
+      {analyticsEnabled ? (
+        <>
+          <p class="muted">
+            This site uses Cloudflare Web Analytics to understand overall traffic (for example: page views and referrers).
+            We use this information to improve content and navigation.
+          </p>
+          <ul class="muted" style="margin-top: var(--space-2);">
+            <li>We measure aggregated traffic, not individual user behavior.</li>
+            <li>We do not sell personal information.</li>
+            <li>We do not use this analytics setup for ad targeting.</li>
+          </ul>
+        </>
+      ) : (
+        <p class="muted">
+          This site currently has analytics disabled. If enabled in the future, this page will be updated.
+        </p>
+      )}
+
+      <h2>Search</h2>
+      <p class="muted">
+        Search is powered by a static index and runs in your browser. Search queries are not sent to a server.
+      </p>
+
+      <h2>External links</h2>
+      <p class="muted">
+        Some buttons and links may send you to external platforms (for example: online giving, YouTube, or forms).
+        Those services have their own privacy policies.
+      </p>
+
+      <h2>Contact</h2>
+      <p class="muted" style="margin-bottom: 0;">
+        If you have privacy questions, please contact the church.
+      </p>
+    </section>
+  </div>
+</BaseLayout>

@@ -1,11 +1,69 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
-import PlaceholderPage from "../../../components/PlaceholderPage.astro";
+import Button from "../../../components/ui/Button.astro";
+import Card from "../../../components/ui/Card.astro";
+import CardGrid from "../../../components/ui/CardGrid.astro";
+import { site } from "../../../data/site";
+import { getCollection } from "astro:content";
+
+const bulletins = await getCollection("bulletins", ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+const sorted = bulletins.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const current = sorted[0];
+const archive = sorted.slice(1);
+
+const fmt = new Intl.DateTimeFormat("en-US", { dateStyle: "full", timeZone: site.timeZone });
 ---
 
-<BaseLayout title="Bulletins">
-  <PlaceholderPage
-    title="Bulletins"
-    message="The current bulletin and an archive will be published here in Phase 5."
-  />
+<BaseLayout title="Bulletins" description="Weekly bulletins and archives.">
+  <div class="stack">
+    <h1 style="margin: 0;">Bulletins</h1>
+    <p class="muted" style="margin: 0;">Weekly PDFs and an archive.</p>
+
+    {sorted.length === 0 ? (
+      <section class="card">
+        <p class="muted" style="margin: 0;">No bulletins have been posted yet.</p>
+      </section>
+    ) : (
+      <>
+        <section class="card" aria-labelledby="bulletins-current">
+          <h2 id="bulletins-current" style="margin-top: 0;">Current bulletin</h2>
+          <p class="muted" style="margin: var(--space-2) 0 0;">
+            {current.data.title} • {fmt.format(current.data.date)}
+          </p>
+          {current.data.summary && (
+            <p class="muted" style="margin: var(--space-2) 0 0;">{current.data.summary}</p>
+          )}
+
+          <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
+            <Button href={current.data.pdfUrl} variant="secondary">Open PDF</Button>
+          </div>
+        </section>
+
+        <section aria-labelledby="bulletins-archive">
+          <h2 id="bulletins-archive" style="margin: 0;">Archive</h2>
+
+          {archive.length === 0 ? (
+            <p class="muted" style="margin: var(--space-2) 0 0;">No archived bulletins yet.</p>
+          ) : (
+            <CardGrid columnsMin={260}>
+              {archive.map((b) => (
+                <Card
+                  title={b.data.title}
+                  description={fmt.format(b.data.date)}
+                  href={b.data.pdfUrl}
+                />
+              ))}
+            </CardGrid>
+          )}
+        </section>
+      </>
+    )}
+
+    <p class="small muted" style="margin: 0;">
+      For church members: if you need a bulletin from a past week that isn’t listed, please contact the church.
+    </p>
+  </div>
 </BaseLayout>

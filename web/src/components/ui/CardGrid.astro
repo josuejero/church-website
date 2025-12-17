@@ -1,11 +1,26 @@
 ---
 type Props = {
+  /** Fixed number of columns (e.g. 3). */
+  columns?: number;
+  /** Responsive min column width in px (auto-fit). */
   columnsMin?: number;
 };
 
-const { columnsMin = 220 } = Astro.props;
+const { columns, columnsMin = 240 } = Astro.props;
+
+const template =
+  typeof columns === "number"
+    ? `repeat(${columns}, minmax(0, 1fr))`
+    : `repeat(auto-fit, minmax(${columnsMin}px, 1fr))`;
 ---
 
-<div class="grid" style={`grid-template-columns: repeat(auto-fit, minmax(${columnsMin}px, 1fr));`}>
+<div class="grid" style={`grid-template-columns: ${template};`}>
   <slot />
 </div>
+
+<style>
+  .grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+</style>

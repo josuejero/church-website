@@ -1,17 +1,60 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Button from "../../../components/ui/Button.astro";
+import CardGrid from "../../../components/ui/CardGrid.astro";
+import Card from "../../../components/ui/Card.astro";
 import { site } from "../../../data/site";
+import videos from "../../../data/videos.json";
+
+type Video = {
+  title: string;
+  date: string;
+  youtubeId: string;
+  summary?: string;
+};
+
+const list = (videos as Video[])
+  .filter((v) => v.youtubeId && v.youtubeId !== "TBD")
+  .sort((a, b) => new Date(b.date).valueOf() - new Date(a.date).valueOf());
+
+const fmt = new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: site.timeZone });
+
+const watchUrl = (id: string) => `https://www.youtube.com/watch?v=${id}`;
 ---
 
-<BaseLayout title="Videos">
+<BaseLayout title="Videos" description="Recent videos from Springfield Hispanic SDA Church.">
   <div class="stack">
     <h1 style="margin: 0;">Videos</h1>
-    <p class="muted" style="margin: 0;">
-      Recent videos and playlists will appear here in Phase 5.
-    </p>
-    <div>
-      <Button href={site.portals.youtubeChannelUrl} external variant="secondary">Browse on YouTube</Button>
-    </div>
+    <p class="muted" style="margin: 0;">Recent services and programs.</p>
+
+    <section class="card" aria-labelledby="videos-browse">
+      <h2 id="videos-browse" style="margin-top: 0;">Browse</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: var(--space-3);">
+        <Button href={site.portals.youtubeChannelUrl} external variant="secondary">Browse on YouTube</Button>
+      </div>
+      <p class="small muted" style="margin: var(--space-3) 0 0;">
+        If you don’t see recent videos below, update <code>web/src/data/videos.json</code> with the latest YouTube IDs.
+      </p>
+    </section>
+
+    <section aria-labelledby="videos-recent">
+      <h2 id="videos-recent" style="margin: 0;">Recent videos</h2>
+
+      {list.length === 0 ? (
+        <p class="muted" style="margin: var(--space-2) 0 0;">
+          No videos are configured yet.
+        </p>
+      ) : (
+        <CardGrid columnsMin={260}>
+          {list.map((v) => (
+            <Card
+              title={v.title}
+              description={`${fmt.format(new Date(v.date))}${v.summary ? ` • ${v.summary}` : ""}`}
+              href={watchUrl(v.youtubeId)}
+            />
+          ))}
+        </CardGrid>
+      )}
+    </section>
   </div>
 </BaseLayout>
