@@ -1,64 +1,40 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import Card from "../../components/ui/Card.astro";
-import CardGrid from "../../components/ui/CardGrid.astro";
-import Button from "../../components/ui/Button.astro";
+import CardGrid from "../../components/sections/CardGrid.astro";
 import { site } from "../../data/site";
 ---
 
 <BaseLayout
   title="Connect"
-  description="Plan a visit, learn about worship, request prayer, and get in touch with Springfield Hispanic SDA Church."
+  description={`Plan a visit, learn about worship, request prayer, and get in touch with ${site.name}.`}
 >
   <div class="stack">
     <h1 style="margin: 0;">Connect</h1>
-    <p class="muted" style="margin: 0;">
-      New here? Start with Plan a Visit. Need support? Use Prayer or Contact.
-    </p>
 
-    <CardGrid columns={3}>
-      <Card
-        title="Plan a Visit"
-        description="Directions, what to expect, and service times."
-        href="/connect/plan-a-visit"
-      />
-      <Card
-        title="Worship With Us"
-        description="What happens at Sabbath School, Worship Service, and Prayer Meeting."
-        href="/connect/worship-with-us"
-      />
-      <Card
-        title="About"
-        description="Learn who we are and what we believe."
-        href="/connect/about"
-      />
-      <Card
-        title="Contact"
-        description="Address, phone, email, and reliable ways to reach us."
-        href="/connect/contact"
-      />
-      <Card
-        title="Prayer"
-        description="Submit a prayer request or ask for follow-up."
-        href="/connect/prayer"
-      />
-      <Card
-        title="Give"
-        description="Support the mission of the church online."
-        href="/give"
-      />
-    </CardGrid>
-
-    <div class="card">
-      <div style="font-weight: 800;">Quick actions</div>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        Watch online, open directions, or reach out right now.
-      </p>
-      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
-        <Button href="/media/live" variant="secondary">Watch live</Button>
-        <Button href={site.contact.mapsUrl} external variant="secondary">Open maps</Button>
-        <Button href="/connect/contact" variant="ghost">Contact</Button>
-      </div>
-    </div>
+    <CardGrid
+      title="Ways to connect"
+      cards={[
+        {
+          title: "Plan a Visit",
+          description: "Service times, directions, and what to expect.",
+          href: "/connect/plan-a-visit"
+        },
+        {
+          title: "Worship With Us",
+          description: "Learn about Sabbath School and worship service.",
+          href: "/connect/worship-with-us"
+        },
+        {
+          title: "Prayer",
+          description: "Share a prayer request with our prayer team.",
+          href: "/connect/prayer"
+        },
+        {
+          title: "Contact",
+          description: "Phone, email, and how to reach us.",
+          href: "/connect/contact"
+        }
+      ]}
+    />
   </div>
 </BaseLayout>

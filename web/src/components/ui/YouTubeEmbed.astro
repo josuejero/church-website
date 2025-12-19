@@ -1,0 +1,13 @@
+---
+import YouTubeEmbedMedia from "../media/YouTubeEmbed.astro";
+
+export type Props = {
+  title: string;
+  /** Full YouTube embed URL, e.g. https://www.youtube.com/embed/VIDEO_ID */
+  embedUrl: string;
+};
+
+const props = Astro.props as Props;
+---
+
+<YouTubeEmbedMedia {...props} />

@@ -3,57 +3,33 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Button from "../../../components/ui/Button.astro";
 import { site } from "../../../data/site";
 
-const hasPrayerForm = site.portals.prayerFormUrl && site.portals.prayerFormUrl !== "TBD";
+const prayerFormUrl = site.portals?.prayerFormUrl;
+const hasPrayerForm = Boolean(prayerFormUrl && prayerFormUrl !== "TBD");
 ---
 
-<BaseLayout
-  title="Prayer"
-  description="Submit a prayer request to Springfield Hispanic SDA Church."
->
+<BaseLayout title="Prayer" description={`Submit a prayer request to ${site.name}.`}>
   <div class="stack">
     <h1 style="margin: 0;">Prayer</h1>
-    <p class="muted" style="margin: 0;">
-      We would be honored to pray for you. You can submit a request below.
-    </p>
 
-    <section class="card" aria-labelledby="prayer-submit">
-      <h2 id="prayer-submit" style="margin-top: 0;">Submit a prayer request</h2>
-
-      {hasPrayerForm ? (
-        <div>
-          <p class="muted" style="margin: var(--space-2) 0 0;">
-            Use the prayer request form. If you’d like someone to follow up, include your contact details.
-          </p>
-          <div style="margin-top: var(--space-4);">
-            <Button href={site.portals.prayerFormUrl} external variant="secondary">Open prayer request form</Button>
-          </div>
-        </div>
-      ) : (
-        <div>
-          <p class="muted" style="margin: var(--space-2) 0 0;">
-            A prayer request form link can be added here once it’s ready.
-          </p>
-          <p class="muted" style="margin: var(--space-2) 0 0;">
-            For now, you can call us at {" "}
-            <a href={`tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`}>{site.contact.phone}</a>{" "}
-            or email {" "}
-            <a href={`mailto:${site.contact.email}?subject=Prayer%20request`}>{site.contact.email}</a>.
-          </p>
-        </div>
-      )}
-
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        If your request is urgent or you need immediate help, please call.
+    <section class="card">
+      <h2 style="margin-top: 0;">How can we pray for you?</h2>
+      <p class="muted">
+        We believe prayer matters. Share a request and our prayer team will pray with you.
       </p>
-    </section>
 
-    <section class="card" aria-labelledby="prayer-next">
-      <h2 id="prayer-next" style="margin-top: 0;">What happens next?</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        Prayer requests are reviewed by church leadership or designated volunteers. If you request follow-up, we will reach out when possible.
-      </p>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        Privacy note: please keep details appropriate for a shared prayer team.
+      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
+        {hasPrayerForm ? (
+          <Button href={prayerFormUrl} external variant="secondary">Submit prayer request</Button>
+        ) : (
+          <Button href={`mailto:${site.contact.email}?subject=Prayer%20Request`} variant="secondary">
+            Email a prayer request
+          </Button>
+        )}
+        <Button href="/connect/contact" variant="ghost">Contact</Button>
+      </div>
+
+      <p class="small muted" style="margin-top: var(--space-4);">
+        Please avoid including sensitive information.
       </p>
     </section>
   </div>

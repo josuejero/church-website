@@ -4,21 +4,75 @@ import Hero from "../../components/ui/Hero.astro";
 import Search from "astro-pagefind/components/Search";
 ---
 
-<BaseLayout title="Search" description="Search pages, resources, and bulletins.">
+<BaseLayout
+  title="Search"
+  description="Search pages, resources, and bulletins."
+  noIndex={true}
+>
   <div class="stack">
     <Hero title="Search" subtitle="Search resources, bulletins, and site pages." />
 
     <section aria-label="Site search" class="card" style="padding: var(--space-4);">
-      <Search
-        id="site-search"
-        className="pagefind-ui"
-        uiOptions={{
-          showImages: false,
-          showSubResults: true,
-          // Optional: display a hint under the search box
-          placeholder: "Search the site…",
-        }}
-      />
+      <label id="site-search-label" for="site-search-input" style="font-weight: 700;">
+        Search the site
+      </label>
+
+      <div style="margin-top: var(--space-2);">
+        {/* astro-pagefind expects an id so it can mount Pagefind UI into this element */}
+        <Search
+          id="site-search"
+          className="pagefind-ui"
+          uiOptions={{
+            showImages: false,
+            showSubResults: true,
+            excerptLength: 20,
+            resetStyles: false,
+            placeholder: "Search the site…",
+          }}
+        />
+      </div>
+
+      <script is:inline>
+        {String.raw`(() => {
+          const ROOT_ID = "site-search";
+          const LABEL_ID = "site-search-label";
+          const INPUT_ID = "site-search-input";
+
+          const root = document.getElementById(ROOT_ID);
+          if (!root) return;
+
+          const ensureLabel = () => {
+            const input = root.querySelector("input.pagefind-ui__search-input");
+            if (!input) return false;
+
+            // Tie visible <label> to the generated input
+            input.id = INPUT_ID;
+            input.setAttribute("aria-labelledby", LABEL_ID);
+
+            // Also give it a direct accessible name (so it's never title-only)
+            input.setAttribute("aria-label", "Search the site");
+
+            // Title can exist, but we remove it to avoid "title-only" naming paths
+            input.removeAttribute("title");
+
+            return true;
+          };
+
+          // Try immediately
+          if (ensureLabel()) return;
+
+          // Keep watching until Pagefind mounts (no tiny timeout)
+          const obs = new MutationObserver(() => {
+            if (ensureLabel()) obs.disconnect();
+          });
+
+          obs.observe(root, { childList: true, subtree: true });
+
+          // Safety valve: stop watching after 60s (prevents runaway observers)
+          setTimeout(() => obs.disconnect(), 60_000);
+        })();`}
+      </script>
+
 
       <details class="small muted" style="margin: var(--space-3) 0 0;">
         <summary>How search works</summary>

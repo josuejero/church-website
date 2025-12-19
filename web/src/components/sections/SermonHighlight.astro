@@ -1,0 +1,66 @@
+---
+import Button from "../ui/Button.astro";
+import YouTubeEmbed from "../media/YouTubeEmbed.astro";
+import videos from "../../data/videos.json";
+import { site } from "../../data/site";
+
+type Video = {
+  title: string;
+  date: string;
+  youtubeId?: string;
+  summary?: string;
+};
+
+type Props = {
+  title?: string;
+};
+
+const { title = "Latest Sermon" } = Astro.props;
+
+const list = (videos as Video[]).slice().sort((a, b) => {
+  return new Date(b.date).valueOf() - new Date(a.date).valueOf();
+});
+
+const latest = list[0];
+const hasEmbed = latest && latest.youtubeId && latest.youtubeId !== "TBD";
+
+const fmt = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
+const meta = latest?.date ? fmt.format(new Date(latest.date)) : undefined;
+const youtubeHref = site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD"
+  ? site.portals.youtubeChannelUrl
+  : "/media/videos/";
+---
+
+<section class="stack">
+  <h2 style="margin: 0;">{title}</h2>
+
+  {!latest ? (
+    <p class="muted" style="margin: 0;">No videos are listed yet.</p>
+  ) : (
+    <div class="card">
+      <div class="stack" style="gap: var(--space-3);">
+        <div>
+          <p class="muted" style="margin: 0; font-size: 0.95rem;">{meta}</p>
+          <h3 style="margin: 0.25rem 0 0;">{latest.title}</h3>
+          {latest.summary && <p class="muted" style="margin: 0.5rem 0 0;">{latest.summary}</p>}
+        </div>
+
+        {hasEmbed ? (
+          <YouTubeEmbed
+            title={latest.title}
+            embedUrl={`https://www.youtube.com/embed/${latest.youtubeId}`}
+          />
+        ) : (
+          <p class="small muted" style="margin: 0;">
+            Add a real <code>youtubeId</code> in <code>src/data/videos.json</code> to show an embedded video here.
+          </p>
+        )}
+
+        <div style="display:flex; gap: var(--space-3); flex-wrap: wrap;">
+          <Button href="/media/videos/" variant="secondary">More videos</Button>
+          <Button href={youtubeHref} external>Open YouTube</Button>
+        </div>
+      </div>
+    </div>
+  )}
+</section>

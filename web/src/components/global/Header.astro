@@ -1,0 +1,332 @@
+---
+import Button from "../ui/Button.astro";
+import { site } from "../../data/site";
+
+const pathname = Astro.url?.pathname ?? "/";
+
+function isActive(href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(href + "/");
+}
+
+function linkAttrs(item: { href: string; external?: boolean }) {
+  return item.external ? { target: "_blank", rel: "noopener noreferrer" } : {};
+}
+
+const watchLive = site.quickActions.find((i) => i.label === "Watch Live") ?? site.quickActions[0];
+const give = site.quickActions.find((i) => i.label === "Give") ?? site.quickActions[1];
+const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label && i.label !== give?.label);
+---
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/" aria-label={site.name}>
+      <span class="brand__title">{site.shortName}</span>
+    </a>
+
+    <nav class="nav nav--desktop" aria-label="Primary navigation">
+      {site.nav.map((item) => (
+        <a
+          href={item.href}
+          aria-current={isActive(item.href) ? "page" : undefined}
+          {...linkAttrs(item)}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="right">
+      <div class="cta cta--desktop" aria-label="Primary actions">
+        {watchLive && (
+          <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
+            {watchLive.label}
+          </Button>
+        )}
+        {give && (
+          <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
+            {give.label}
+          </Button>
+        )}
+      </div>
+
+      <div class="cta cta--mobile" aria-label="Primary actions">
+        {watchLive && (
+          <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
+            {watchLive.label}
+          </Button>
+        )}
+        {give && (
+          <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
+            {give.label}
+          </Button>
+        )}
+      </div>
+
+      <details class="menu" aria-label="Mobile menu">
+        <summary class="menu__summary" aria-label="Open menu">
+          <span class="menu__icon" aria-hidden="true">☰</span>
+          <span class="menu__label">Menu</span>
+        </summary>
+
+        <div class="menu__panel">
+          <nav class="menu__section" aria-label="Primary navigation">
+            {site.nav.map((item) => (
+              <a
+                class="menu__link"
+                href={item.href}
+                aria-current={isActive(item.href) ? "page" : undefined}
+                {...linkAttrs(item)}
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+
+          <div class="menu__divider" role="separator" aria-hidden="true"></div>
+
+          <div class="menu__section" aria-label="Quick actions">
+            <div class="menu__actions">
+              {watchLive && (
+                <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
+                  {watchLive.label}
+                </Button>
+              )}
+              {give && (
+                <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
+                  {give.label}
+                </Button>
+              )}
+            </div>
+
+            {otherQuick.length > 0 && (
+              <div class="menu__quicklinks" aria-label="More quick links">
+                {otherQuick.map((item) => (
+                  <a class="menu__sublink" href={item.href} {...linkAttrs(item)}>
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Close the mobile menu when a link is clicked.
+  document.addEventListener("click", (e) => {
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+
+    const link = target.closest("a");
+    const details = target.closest("details.menu");
+    if (link && details) details.removeAttribute("open");
+  });
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--color-white);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .inner {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: var(--space-3) var(--container-pad);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .brand {
+    text-decoration: none;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: max-content;
+  }
+
+  .brand__title {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-size: var(--font-size-2);
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .nav a {
+    text-decoration: none;
+    color: inherit;
+    font-weight: 700;
+    opacity: 0.9;
+    padding: 0.55rem 0.7rem;
+    border-radius: 999px;
+  }
+
+  .nav a:hover {
+    background: var(--color-gray-50);
+    opacity: 1;
+  }
+
+  .nav a[aria-current="page"] {
+    background: var(--color-gray-100);
+    opacity: 1;
+  }
+
+  .cta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    justify-content: flex-end;
+    min-width: max-content;
+  }
+
+  .right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    min-width: max-content;
+  }
+
+  .cta--mobile {
+    display: none;
+  }
+
+  /* Mobile menu */
+  .menu {
+    display: none;
+    position: relative;
+  }
+
+  .menu__summary {
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+    padding: 0.55rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: var(--color-white);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 700;
+  }
+
+  .menu__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .menu[open] .menu__summary {
+    background: var(--color-gray-50);
+  }
+
+  .menu__panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.6rem);
+    width: min(92vw, 22rem);
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-3);
+    box-shadow: var(--shadow-2);
+    padding: var(--space-3);
+    z-index: 60;
+  }
+
+  .menu__section {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .menu__link {
+    text-decoration: none;
+    color: inherit;
+    font-weight: 700;
+    padding: 0.6rem 0.7rem;
+    border-radius: var(--radius-2);
+  }
+
+  .menu__link:hover {
+    background: var(--color-gray-50);
+  }
+
+  .menu__link[aria-current="page"] {
+    background: var(--color-gray-100);
+  }
+
+  .menu__divider {
+    height: 1px;
+    background: var(--color-border);
+    margin: var(--space-3) 0;
+  }
+
+  .menu__actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  .menu__quicklinks {
+    margin-top: var(--space-3);
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .menu__sublink {
+    text-decoration: none;
+    color: inherit;
+    opacity: 0.9;
+    padding: 0.4rem 0.2rem;
+    font-weight: 700;
+  }
+
+  .menu__sublink:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+
+  @media (max-width: 860px) {
+    .nav--desktop,
+    .cta--desktop {
+      display: none;
+    }
+
+    .cta--mobile {
+      display: flex;
+    }
+
+    .inner {
+      grid-template-columns: auto 1fr auto;
+    }
+
+    .menu {
+      display: block;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .menu__label {
+      display: none;
+    }
+
+    .menu__summary {
+      padding: 0.55rem 0.6rem;
+    }
+  }
+</style>

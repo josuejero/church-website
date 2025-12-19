@@ -1,54 +1,73 @@
 ---
 import "../styles/global.css";
-import Footer from "../components/Footer.astro";
-import Header from "../components/Header.astro";
+import "../styles/a11y.css";
+
+import Header from "../components/global/Header.astro";
+import Footer from "../components/global/Footer.astro";
 import { site } from "../data/site";
 
-const { title, description } = Astro.props;
+export type Props = {
+  title?: string;
+  description?: string;
+  noIndex?: boolean;
+  ogImagePath?: string; // e.g. "/og/default.png"
+  ogType?: "website" | "article";
+};
 
-const pageTitle = title ? `${title} | ${site.shortName}` : site.name;
-const metaDescription = description ?? site.description;
+const {
+  title,
+  description,
+  noIndex = false,
+  ogImagePath = "/og/default.png",
+  ogType = "website",
+} = Astro.props;
 
-// Phase 6: analytics is optional and should only run in production.
-// PUBLIC_ vars are safe to expose client-side.
-const analyticsToken = import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN;
-const enableAnalytics = import.meta.env.PROD && Boolean(analyticsToken);
+const pageTitle = title ? `${title} · ${site.shortName}` : site.name;
+const pageDescription = description ?? site.description;
+
+const baseUrl = Astro.site ?? new URL(Astro.url.origin);
+const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
+const ogImageUrl = new URL(ogImagePath, baseUrl).href;
+const locale = site.locale ?? "en-US";
+const ogLocale = locale.replace("-", "_");
 ---
 
 <!doctype html>
-<html lang={site.locale}>
+<html lang={locale.split("-")[0]}>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="description" content={metaDescription} />
-    <meta name="generator" content={Astro.generator} />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
 
-    {/* Allow pages to inject extra <head> tags when needed */}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <link rel="canonical" href={canonicalUrl} />
+    <meta name="robots" content={noIndex ? "noindex,follow" : "index,follow"} />
+
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
     <slot name="head" />
-
-    {enableAnalytics && (
-      <script
-        is:inline
-        defer
-        src="https://static.cloudflareinsights.com/beacon.min.js"
-        data-cf-beacon={JSON.stringify({ token: analyticsToken })}
-      ></script>
-    )}
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Skip to content</a>
-
-    <div data-pagefind-ignore>
-      <Header />
-    </div>
-
-    <main id="main-content" class="container" data-pagefind-body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header />
+    <main id="main">
       <slot />
     </main>
-
-    <div data-pagefind-ignore>
-      <Footer />
-    </div>
+    <Footer />
   </body>
 </html>

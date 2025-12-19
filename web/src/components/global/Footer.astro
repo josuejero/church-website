@@ -1,0 +1,157 @@
+---
+import { site } from "../../data/site";
+
+const year = new Date().getFullYear();
+const phoneHref = `tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`;
+const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAddress.trim().length);
+const hasFacebook = Boolean(site.portals.facebookUrl && site.portals.facebookUrl !== "TBD");
+const hasYouTube = Boolean(site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD");
+---
+
+<footer class="site-footer">
+  <div class="inner">
+    <div class="left">
+      <strong>{site.name}</strong>
+
+      <div class="muted">
+        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">
+          {site.contact.address}
+        </a>
+      </div>
+
+      {hasMailing ? (
+        <div class="muted small">
+          Mail: {site.contact.mailingAddress}
+        </div>
+      ) : null}
+
+      <div class="muted">
+        <a href={phoneHref}>{site.contact.phone}</a>
+        <span aria-hidden="true"> · </span>
+        <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+      </div>
+
+      <div class="muted small">© {year}</div>
+    </div>
+
+    <nav class="right" aria-label="Footer links">
+      <div class="col">
+        <div class="col-title">Service times</div>
+        <div class="col-body muted small">
+          {site.schedule.map((s) => (
+            <div class="line">
+              <span class="day">{s.day}</span>
+              <span aria-hidden="true"> · </span>
+              <span class="time">{s.time}</span>
+              <span aria-hidden="true"> — </span>
+              <span class="label">{s.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="col-title">Watch &amp; Give</div>
+        <div class="col-body links">
+          <a href="/media/live">Watch Live</a>
+          <a href="/give">Give</a>
+          <a href="/media/videos">Videos</a>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="col-title">Connect</div>
+        <div class="col-body links">
+          <a href="/connect/contact">Contact</a>
+          <a href="/connect/plan-a-visit">Plan a Visit</a>
+          <a href="/connect/prayer">Prayer</a>
+          {hasYouTube ? (
+            <a href={site.portals.youtubeChannelUrl} target="_blank" rel="noopener noreferrer">YouTube</a>
+          ) : null}
+          {hasFacebook ? (
+            <a href={site.portals.facebookUrl} target="_blank" rel="noopener noreferrer">Facebook</a>
+          ) : null}
+          <a href="/privacy">Privacy</a>
+        </div>
+      </div>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--color-border);
+    background: var(--color-white);
+  }
+
+  .inner {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: var(--space-6) var(--container-pad);
+    display: flex;
+    gap: var(--space-6);
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .muted {
+    color: var(--color-text-muted);
+    margin-top: var(--space-2);
+  }
+
+  .small {
+    font-size: 0.95rem;
+  }
+
+  .left a {
+    color: inherit;
+  }
+
+  .right {
+    display: flex;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .col {
+    min-width: 190px;
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .col-title {
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  .col-body {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .line .day,
+  .line .time,
+  .line .label {
+    white-space: nowrap;
+  }
+
+  .links a {
+    text-decoration: none;
+    color: inherit;
+    opacity: 0.9;
+    font-weight: 600;
+  }
+
+  .links a:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+
+  @media (max-width: 520px) {
+    .col {
+      min-width: 100%;
+    }
+  }
+</style>

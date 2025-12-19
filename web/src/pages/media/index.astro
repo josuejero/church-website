@@ -1,44 +1,29 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Card from "../../components/ui/Card.astro";
-import CardGrid from "../../components/ui/CardGrid.astro";
-import Button from "../../components/ui/Button.astro";
+import Grid from "../../components/ui/CardGrid.astro";
 import { site } from "../../data/site";
 ---
 
-<BaseLayout title="Media" description="Watch live and browse recent videos from Springfield Hispanic SDA Church.">
+<BaseLayout title="Media" description={`Watch live and browse recent videos from ${site.name}.`}>
   <div class="stack">
     <h1 style="margin: 0;">Media</h1>
-    <p class="muted" style="margin: 0;">Watch live services and browse recent videos.</p>
 
-    <section class="card" aria-labelledby="media-actions">
-      <h2 id="media-actions" style="margin-top: 0;">Quick links</h2>
-      <div style="display: flex; flex-wrap: wrap; gap: var(--space-3);">
-        <Button href="/media/live" variant="secondary">Watch Live</Button>
-        <Button href="/media/videos" variant="secondary">Videos</Button>
-        <Button href={site.portals.youtubeChannelUrl} external variant="ghost">YouTube channel</Button>
-      </div>
-    </section>
+    <section aria-label="Quick links" class="stack">
+      <h2 style="margin: 0;">Quick links</h2>
 
-    <section aria-labelledby="media-sections">
-      <h2 id="media-sections" style="margin: 0;">Explore</h2>
-      <CardGrid columnsMin={240}>
+      <Grid columnsMin={240}>
         <Card
           title="Watch Live"
-          description="Join our live stream during services."
+          description="Join our live stream when available."
           href="/media/live"
         />
         <Card
-          title="Recent Videos"
-          description="Sermons, music, and special programs."
+          title="Videos"
+          description="Browse recent sermons and messages."
           href="/media/videos"
         />
-        <Card
-          title="YouTube"
-          description="Browse the full channel and playlists."
-          href={site.portals.youtubeChannelUrl}
-        />
-      </CardGrid>
+      </Grid>
     </section>
   </div>
 </BaseLayout>

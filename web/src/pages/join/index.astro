@@ -1,8 +1,32 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import PlaceholderPage from "../../components/PlaceholderPage.astro";
+import CardGrid from "../../components/sections/CardGrid.astro";
+import { site } from "../../data/site";
 ---
 
-<BaseLayout title="Join">
-  <PlaceholderPage title="Join" />
+<BaseLayout title="Join" description={`Plan your first visit, learn what to expect, and get connected at ${site.name}.`}>
+  <div class="stack">
+    <h1 style="margin: 0;">Join</h1>
+
+    <CardGrid
+      title="Start here"
+      cards={[
+        {
+          title: "Plan a Visit",
+          description: "Service times, directions, and what to expect.",
+          href: "/connect/plan-a-visit"
+        },
+        {
+          title: "Worship With Us",
+          description: "Learn what our weekly services are like.",
+          href: "/connect/worship-with-us"
+        },
+        {
+          title: "Contact",
+          description: "Phone, email, and how to reach us.",
+          href: "/connect/contact"
+        }
+      ]}
+    />
+  </div>
 </BaseLayout>

@@ -1,33 +1,35 @@
 church:
-  public_name: "Springfield Hispanic SDA Church"
+  public_name: "First Springfield Seventh-day Adventist Church"
   address:
-    street: "124 Putnam Cir"
+    street: "1118 Sumner Ave"
     city: "Springfield"
     state: "MA"
-    zip: "01104"
-  phone: "(413) 788-9130"
+    zip: "01118-2154"
+  phone: "(413) 782-6260"
+  email_public: "firstspringfieldsda@gmail.com"
   languages:
-    primary: "Spanish"
+    primary: "English"
 
 schedule:
   sabbath_school:
     day: "Saturday"
-    time: "9:30 AM"
+    time: "10:00 AM"
   worship_service:
     day: "Saturday"
-    time: "11:00 AM"
+    time: "11:15 AM"
   prayer_meeting:
     day: "Wednesday"
-    time: "7:30 PM"
+    time: "7:00 PM"
 
 portals:
   giving_url: "https://adventistgiving.org/"
-  youtube_channel_url: "https://www.youtube.com/@A7DON"
-  facebook_url: "https://www.facebook.com/SpringfieldIASD/"
+  youtube_channel_url: "https://www.youtube.com/@1stspringfieldsdama74"
+  facebook_url: "TBD"
   prayer_form_url: "TBD"
   contact_form_url: "TBD"
   volunteer_form_url: "TBD"
+  official_site_url: "https://firstspringfieldma.adventistchurch.org/"
 
 copy:
-  homepage_tagline: "TBD"
-  welcome_message: "TBD"
+  homepage_tagline: "A Christian community in Springfield, MA"
+  welcome_message: "We would love to have you join our church family."

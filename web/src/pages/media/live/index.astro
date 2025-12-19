@@ -1,37 +1,41 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
+import YouTubeEmbed from "../../../components/ui/YouTubeEmbed.astro";
 import Button from "../../../components/ui/Button.astro";
-import YouTubeEmbed from "../../../components/media/YouTubeEmbed.astro";
 import { site } from "../../../data/site";
 
 const hasEmbed = site.portals.youtubeLiveEmbedUrl && site.portals.youtubeLiveEmbedUrl !== "TBD";
+const hasYouTube = site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD";
 ---
 
-<BaseLayout title="Watch Live" description="Watch Springfield Hispanic SDA Church live.">
+<BaseLayout title="Watch Live" description={`Watch ${site.shortName} live.`}>
   <div class="stack">
     <h1 style="margin: 0;">Watch Live</h1>
-    <p class="muted" style="margin: 0;">
-      If a live stream is available, you can watch it here. You can always open the YouTube channel as a fallback.
-    </p>
 
-    <section class="card" aria-labelledby="live-player">
-      <h2 id="live-player" style="margin-top: 0;">Live player</h2>
-
-      {hasEmbed ? (
-        <YouTubeEmbed title="Springfield Hispanic SDA Church Live" embedUrl={site.portals.youtubeLiveEmbedUrl} />
-      ) : (
-        <p class="muted" style="margin: 0;">
-          Live embed is not configured yet. Set <code>youtubeLiveEmbedUrl</code> in <code>site-links.json</code>.
+    {hasEmbed ? (
+      <YouTubeEmbed
+        title={`${site.shortName} Live`}
+        embedUrl={site.portals.youtubeLiveEmbedUrl}
+      />
+    ) : (
+      <section class="card">
+        <h2 style="margin-top: 0;">Live stream coming soon</h2>
+        <p class="muted">
+          Set <code>portals.youtubeLiveEmbedUrl</code> in <code>src/data/site.ts</code>.
         </p>
-      )}
+      </section>
+    )}
 
-      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
-        <Button href={site.portals.youtubeChannelUrl} external variant="secondary">Open YouTube channel</Button>
+    {hasYouTube ? (
+      <div>
+        <Button href={site.portals.youtubeChannelUrl} external variant="secondary">
+          Open YouTube channel
+        </Button>
       </div>
-
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        Tip: if the embedded player doesn’t load on a specific device/network, use the channel button above.
+    ) : (
+      <p class="small muted">
+        Add <code>portals.youtubeChannelUrl</code> in <code>src/data/site.ts</code>.
       </p>
-    </section>
+    )}
   </div>
 </BaseLayout>

@@ -1,0 +1,12 @@
+{
+  "recurse": true,
+  "cleanUrls": true,
+  "checkFragments": true,
+  "timeout": 30000,
+  "concurrency": 50,
+  "skip": [
+    "^mailto:",
+    "^tel:",
+    "^https?://"
+  ]
+}

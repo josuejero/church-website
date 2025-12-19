@@ -1,15 +1,19 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Button from "../../../components/ui/Button.astro";
+import Schedule from "../../../components/ui/Schedule.astro";
 import { site } from "../../../data/site";
 
 const phoneHref = `tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`;
 const hasContactForm = site.portals.contactFormUrl && site.portals.contactFormUrl !== "TBD";
+const hasFacebook = site.portals.facebookUrl && site.portals.facebookUrl !== "TBD";
+const hasYouTube = site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD";
+const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAddress.trim().length);
 ---
 
 <BaseLayout
   title="Contact"
-  description="Contact Springfield Hispanic SDA Church: address, phone, and ways to reach us."
+  description={`Contact ${site.name}: address, service times, phone, and email.`}
 >
   <div class="stack">
     <h1 style="margin: 0;">Contact</h1>
@@ -19,13 +23,20 @@ const hasContactForm = site.portals.contactFormUrl && site.portals.contactFormUr
       <p class="muted" style="margin: var(--space-2) 0 0;">
         <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">{site.contact.address}</a>
       </p>
-      <p class="small muted" style="margin: var(--space-2) 0 0;">
-        Mail: {site.contact.mailingAddress}
-      </p>
-      <div style="margin-top: var(--space-4);">
+
+      {hasMailing ? (
+        <p class="small muted" style="margin: var(--space-2) 0 0;">
+          Mail: {site.contact.mailingAddress}
+        </p>
+      ) : null}
+
+      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
         <Button href={site.contact.mapsUrl} external variant="secondary">Open in Maps</Button>
+        <Button href="/connect/plan-a-visit" variant="ghost">Plan a Visit</Button>
       </div>
     </section>
+
+    <Schedule title="Service Times" items={site.schedule} />
 
     <section class="card" aria-labelledby="contact-phone">
       <h2 id="contact-phone" style="margin-top: 0;">Phone</h2>
@@ -42,9 +53,24 @@ const hasContactForm = site.portals.contactFormUrl && site.portals.contactFormUr
       <p class="muted" style="margin: var(--space-2) 0 0;">
         <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
       </p>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        If the email above is not the preferred public contact, replace it in <code>src/data/site.ts</code>.
+    </section>
+
+    <section class="card" aria-labelledby="contact-watch-give">
+      <h2 id="contact-watch-give" style="margin-top: 0;">Watch &amp; Give</h2>
+      <p class="muted" style="margin: var(--space-2) 0 0;">
+        Watch live (when available) or give online.
       </p>
+
+      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
+        <Button href="/media/live" variant="secondary">Watch Live</Button>
+        <Button href="/give" variant="ghost">Give</Button>
+        {hasYouTube ? (
+          <Button href={site.portals.youtubeChannelUrl} external variant="ghost">YouTube</Button>
+        ) : null}
+        {hasFacebook ? (
+          <Button href={site.portals.facebookUrl} external variant="ghost">Facebook</Button>
+        ) : null}
+      </div>
     </section>
 
     <section class="card" aria-labelledby="contact-form">

@@ -80,22 +80,43 @@ web/
   .vscode/
     extensions.json
     launch.json
+  public/
+    bulletins/
+      2025-12-13.pdf
+      2025-12-20.pdf
+    _headers
+    .assetsignore
   src/
     components/
       content/
         ContentCard.astro
+      global/
+        Footer.astro
+        Header.astro
+      media/
+        YouTubeEmbed.astro
+      sections/
+        CardGrid.astro
+        EventList.astro
+        Hero.astro
+        SermonHighlight.astro
       ui/
         Banner.astro
         Button.astro
+        ButtonLink.astro
         Card.astro
         CardGrid.astro
         Hero.astro
         Schedule.astro
+        YouTubeEmbed.astro
       Footer.astro
       Header.astro
       PlaceholderPage.astro
       Welcome.astro
     content/
+      bulletins/
+        2025-12-13.md
+        2025-12-20.md
       events/
         sabbath-service.md
       ministries/
@@ -108,10 +129,13 @@ web/
     data/
       site-links.json
       site.ts
+      videos.json
       week-schedule.json
     layouts/
       BaseLayout.astro
       Layout.astro
+    lib/
+      links.ts
     pages/
       connect/
         about/
@@ -121,6 +145,8 @@ web/
         plan-a-visit/
           index.astro
         prayer/
+          index.astro
+        team/
           index.astro
         worship-with-us/
           index.astro
@@ -141,6 +167,8 @@ web/
       ministries/
         [id].astro
         index.astro
+      privacy/
+        index.astro
       resources/
         bulletins/
           index.astro
@@ -148,755 +176,1246 @@ web/
           index.astro
         [...id].astro
         index.astro
+      search/
+        index.astro
       serve/
         index.astro
       404.astro
       index.astro
+      robots.txt.ts
     styles/
+      a11y.css
       global.css
       tokens.css
     content.config.ts
   test-results/
-    tests-e2e-content-collections-Resources-hub-loads/
+    tests-e2e-phase-7-a11y-a11y-axe---search-/
       error-context.md
     .last-run.json
   tests/
     e2e/
       content-collections.spec.ts
+      phase-5-media-portals.spec.ts
+      phase-6-search-and-analytics.spec.ts
+      phase-7-a11y.spec.ts
+      phase-7-seo.spec.ts
+      phase-7-sitefiles.spec.ts
   .env.example
   .gitignore
   astro.config.mjs
+  lighthouserc.cjs
+  linkinator.config.json
   package.json
   playwright.config.ts
   README.md
   tsconfig.json
+  wrangler.jsonc
 .editorconfig
 .gitignore
 .nvmrc
 .repomixignore
+package.json
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
 
-<file path="web/src/components/content/ContentCard.astro">
+<file path="web/public/_headers">
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+</file>
+
+<file path="web/public/.assetsignore">
+_worker.js
+_routes.json
+</file>
+
+<file path="web/src/components/global/Footer.astro">
 ---
-export interface Props {
-  href: string;
-  title: string;
-  summary: string;
-  meta?: string;
-  tags?: string[];
-}
+import { site } from "../../data/site";
 
-const { href, title, summary, meta, tags } = Astro.props;
-const safeTags = tags ?? [];
+const year = new Date().getFullYear();
+const phoneHref = `tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`;
+const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAddress.trim().length);
+const hasFacebook = Boolean(site.portals.facebookUrl && site.portals.facebookUrl !== "TBD");
+const hasYouTube = Boolean(site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD");
 ---
 
-<article class="card">
-  {meta && <p class="muted" style="margin: 0; font-size: 0.95rem;">{meta}</p>}
-  <h3 style="margin: 0.25rem 0;">
-    <a href={href} class="link">{title}</a>
-  </h3>
-  <p class="muted" style="margin: 0.25rem 0 0;">{summary}</p>
+<footer class="site-footer">
+  <div class="inner">
+    <div class="left">
+      <strong>{site.name}</strong>
 
-  {safeTags.length > 0 && (
-    <ul class="tags" aria-label="Tags">
-      {safeTags.map((t) => (
-        <li class="tag">{t}</li>
-      ))}
-    </ul>
-  )}
-</article>
+      <div class="muted">
+        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">
+          {site.contact.address}
+        </a>
+      </div>
+
+      {hasMailing ? (
+        <div class="muted small">
+          Mail: {site.contact.mailingAddress}
+        </div>
+      ) : null}
+
+      <div class="muted">
+        <a href={phoneHref}>{site.contact.phone}</a>
+        <span aria-hidden="true"> · </span>
+        <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+      </div>
+
+      <div class="muted small">© {year}</div>
+    </div>
+
+    <nav class="right" aria-label="Footer links">
+      <div class="col">
+        <div class="col-title">Service times</div>
+        <div class="col-body muted small">
+          {site.schedule.map((s) => (
+            <div class="line">
+              <span class="day">{s.day}</span>
+              <span aria-hidden="true"> · </span>
+              <span class="time">{s.time}</span>
+              <span aria-hidden="true"> — </span>
+              <span class="label">{s.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="col-title">Watch &amp; Give</div>
+        <div class="col-body links">
+          <a href="/media/live">Watch Live</a>
+          <a href="/give">Give</a>
+          <a href="/media/videos">Videos</a>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="col-title">Connect</div>
+        <div class="col-body links">
+          <a href="/connect/contact">Contact</a>
+          <a href="/connect/plan-a-visit">Plan a Visit</a>
+          <a href="/connect/prayer">Prayer</a>
+          {hasYouTube ? (
+            <a href={site.portals.youtubeChannelUrl} target="_blank" rel="noopener noreferrer">YouTube</a>
+          ) : null}
+          {hasFacebook ? (
+            <a href={site.portals.facebookUrl} target="_blank" rel="noopener noreferrer">Facebook</a>
+          ) : null}
+          <a href="/privacy">Privacy</a>
+        </div>
+      </div>
+    </nav>
+  </div>
+</footer>
 
 <style>
-  .tags {
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0;
-    margin: 0.75rem 0 0;
+  .site-footer {
+    border-top: 1px solid var(--color-border);
+    background: var(--color-white);
   }
-  .tag {
-    font-size: 0.85rem;
-    padding: 0.2rem 0.55rem;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: color-mix(in oklab, var(--surface) 90%, white 10%);
+
+  .inner {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: var(--space-6) var(--container-pad);
+    display: flex;
+    gap: var(--space-6);
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .muted {
+    color: var(--color-text-muted);
+    margin-top: var(--space-2);
+  }
+
+  .small {
+    font-size: 0.95rem;
+  }
+
+  .left a {
+    color: inherit;
+  }
+
+  .right {
+    display: flex;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .col {
+    min-width: 190px;
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .col-title {
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  .col-body {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .line .day,
+  .line .time,
+  .line .label {
+    white-space: nowrap;
+  }
+
+  .links a {
+    text-decoration: none;
+    color: inherit;
+    opacity: 0.9;
+    font-weight: 600;
+  }
+
+  .links a:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+
+  @media (max-width: 520px) {
+    .col {
+      min-width: 100%;
+    }
   }
 </style>
 </file>
 
-<file path="web/src/content/events/sabbath-service.md">
+<file path="web/src/components/global/Header.astro">
 ---
-title: "Sabbath Worship Service"
-summary: "Join us each Sabbath for worship, prayer, and a message. Visitors are always welcome."
-start: "2026-01-10T11:00:00-05:00"
-end: "2026-01-10T12:30:00-05:00"
-locationName: "Springfield Hispanic SDA Church"
-address: "124 Putnam Cir, Springfield, MA 01104"
-tags: ["worship", "sabbath"]
----
+import Button from "../ui/Button.astro";
+import { site } from "../../data/site";
 
-## What to expect
+const pathname = Astro.url?.pathname ?? "/";
 
-- A warm welcome
-- Congregational singing
-- Scripture and message
-
-## Who can come?
-
-Everyone. Come as you are.
-</file>
-
-<file path="web/src/content/ministries/children.md">
----
-title: "Children’s Ministry"
-summary: "Bible stories, songs, and activities designed for kids to grow in faith and community."
-leaderName: "Ministry Leader"
-contactEmail: "info@example.org"
-meetingTime: "Sabbaths during the service"
-ctaLabel: "Contact us"
-ctaHref: "/connect/contact/"
-tags: ["kids", "families"]
----
-
-## Overview
-
-We support families by providing age-appropriate activities and a safe environment.
-
-## How to get involved
-
-Talk to the greeter team or use the contact form.
-</file>
-
-<file path="web/src/content/resources/2025/12/16/welcome-packet.md">
----
-title: "Welcome Packet"
-summary: "A quick overview of our church, what we believe, and how to get connected."
-published: "2025-12-16"
-category: "New Here"
-attachmentUrl: "/resources/forms/" # replace with a real PDF path if/when you add one
----
-
-## Inside
-
-- Service times
-- What to expect
-- Ways to connect
-</file>
-
-<file path="web/src/data/site-links.json">
-{
-  "givingUrl": "https://adventistgiving.org/",
-  "youtubeChannelUrl": "https://www.youtube.com/@A7DON",
-  "facebookUrl": "https://www.facebook.com/SpringfieldIASD/",
-  "prayerFormUrl": "TBD",
-  "contactFormUrl": "TBD",
-  "volunteerFormUrl": "TBD",
-  "oldWebsiteUrl": "http://www.iglesiaadventistaspringfield.20m.com"
-}
-</file>
-
-<file path="web/src/data/week-schedule.json">
-[
-  { "label": "Sabbath School", "day": "Saturday", "time": "9:30 AM" },
-  { "label": "Worship Service", "day": "Saturday", "time": "11:00 AM" },
-  { "label": "Prayer Meeting", "day": "Wednesday", "time": "7:30 PM" }
-]
-</file>
-
-<file path="web/src/pages/connect/about/index.astro">
----
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import Button from "../../../components/ui/Button.astro";
-import { site } from "../../../data/site";
----
-
-<BaseLayout
-  title="About"
-  description="About Springfield Hispanic Seventh-day Adventist Church in Springfield, Massachusetts."
->
-  <div class="stack">
-    <h1 style="margin: 0;">About</h1>
-    <p class="muted" style="margin: 0;">
-      We are a local congregation of the Seventh-day Adventist Church in Springfield, Massachusetts.
-    </p>
-
-    <section class="card" aria-labelledby="about-mission">
-      <h2 id="about-mission" style="margin-top: 0;">Our mission</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        To know Jesus, grow in faith through Scripture, and serve our community with compassion.
-      </p>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        This page should stay short and welcoming. Longer history and leadership bios can be added in later phases.
-      </p>
-    </section>
-
-    <section class="card" aria-labelledby="about-quick-facts">
-      <h2 id="about-quick-facts" style="margin-top: 0;">Quick facts</h2>
-      <ul style="margin: var(--space-3) 0 0; padding-left: 1.1rem;">
-        <li><strong>Pastor:</strong> {site.leadership.pastorName}</li>
-        <li><strong>Language:</strong> Spanish (visitors welcome)</li>
-        <li><strong>Address:</strong> <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">{site.contact.address}</a></li>
-        <li><strong>Mail:</strong> {site.contact.mailingAddress}</li>
-        <li><strong>Phone:</strong> <a href={`tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`}>{site.contact.phone}</a></li>
-      </ul>
-    </section>
-
-    <section class="card" aria-labelledby="about-beliefs">
-      <h2 id="about-beliefs" style="margin-top: 0;">What we believe</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        Seventh-day Adventists are Christians who value the Bible, worship on Saturday (the Sabbath), and seek to live faithfully and serve others.
-      </p>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        If you’re exploring faith or returning to church after a long time, you are welcome. You do not need to have everything figured out to visit.
-      </p>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        Want to learn more? Visit the official denomination site.
-      </p>
-      <div style="margin-top: var(--space-3);">
-        <Button href="https://www.adventist.org/" external variant="secondary">Learn more</Button>
-      </div>
-    </section>
-
-    <section class="card" aria-labelledby="about-contact">
-      <h2 id="about-contact" style="margin-top: 0;">Get in touch</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        Questions before you visit? We’d love to help.
-      </p>
-      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
-        <Button href="/connect/plan-a-visit" variant="secondary">Plan a visit</Button>
-        <Button href="/connect/contact" variant="ghost">Contact</Button>
-      </div>
-    </section>
-  </div>
-</BaseLayout>
-</file>
-
-<file path="web/src/pages/connect/worship-with-us/index.astro">
----
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import Schedule from "../../../components/ui/Schedule.astro";
-import Button from "../../../components/ui/Button.astro";
-import { site } from "../../../data/site";
----
-
-<BaseLayout
-  title="Worship With Us"
-  description="Learn what Sabbath School, Worship Service, and Prayer Meeting are like at Springfield Hispanic SDA Church."
->
-  <div class="stack">
-    <h1 style="margin: 0;">Worship With Us</h1>
-    <p class="muted" style="margin: 0;">
-      We gather each week to study the Bible, worship God, and support one another.
-    </p>
-
-    <Schedule title="Service times" items={site.schedule} />
-
-    <section class="card" aria-labelledby="sabbath-school">
-      <h2 id="sabbath-school" style="margin-top: 0;">Sabbath School</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        A Bible study time with discussion and learning. This is a great place to meet people and ask questions.
-      </p>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        If you’re new to church or new to the Bible, you are still welcome - you can listen, learn, and participate as much as you want.
-      </p>
-    </section>
-
-    <section class="card" aria-labelledby="worship-service">
-      <h2 id="worship-service" style="margin-top: 0;">Worship Service</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        Worship typically includes singing, prayer, Scripture reading, and a message. Visitors are always welcome.
-      </p>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        If you arrive a few minutes early, it’s usually easier to find a seat and get oriented.
-      </p>
-    </section>
-
-    <section class="card" aria-labelledby="prayer-meeting">
-      <h2 id="prayer-meeting" style="margin-top: 0;">Prayer Meeting</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        Midweek prayer and Bible study (see the schedule above for the regular time).
-      </p>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        Prayer Meeting is a quieter gathering focused on encouragement, community support, and prayer.
-      </p>
-    </section>
-
-    <section class="card" aria-labelledby="next-steps">
-      <h2 id="next-steps" style="margin-top: 0;">Next steps</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        If you’d like someone to reach out, or you have questions before visiting, contact us anytime.
-      </p>
-      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
-        <Button href="/connect/plan-a-visit" variant="secondary">Plan a visit</Button>
-        <Button href="/connect/contact" variant="ghost">Contact</Button>
-      </div>
-    </section>
-  </div>
-</BaseLayout>
-</file>
-
-<file path="web/src/pages/events/[id].astro">
----
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Hero from '../../components/ui/Hero.astro';
-import { getCollection, render } from 'astro:content';
-
-export async function getStaticPaths() {
-  const events = await getCollection('events', ({ data }) => {
-    return import.meta.env.PROD ? data.draft !== true : true;
-  });
-
-  return events.map((event) => ({
-    params: { id: event.id },
-    props: { event },
-  }));
+function isActive(href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(href + "/");
 }
 
-const { event } = Astro.props;
-const { Content } = await render(event);
+function linkAttrs(item: { href: string; external?: boolean }) {
+  return item.external ? { target: "_blank", rel: "noopener noreferrer" } : {};
+}
 
-const fmtDate = new Intl.DateTimeFormat('en-US', {
-  dateStyle: 'full',
-  timeStyle: 'short',
-  timeZone: 'America/New_York',
-});
-
-const when = event.data.end
-  ? `${fmtDate.format(event.data.start)} – ${fmtDate.format(event.data.end)}`
-  : fmtDate.format(event.data.start);
+const watchLive = site.quickActions.find((i) => i.label === "Watch Live") ?? site.quickActions[0];
+const give = site.quickActions.find((i) => i.label === "Give") ?? site.quickActions[1];
+const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label && i.label !== give?.label);
 ---
 
-<BaseLayout title={event.data.title} description={event.data.summary}>
-  <Hero title={event.data.title} subtitle={event.data.summary} />
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/" aria-label={site.name}>
+      <span class="brand__title">{site.shortName}</span>
+    </a>
 
-  <section class="container stack">
-    <div class="card stack" style="gap: 0.5rem;">
-      <p class="muted" style="margin: 0;"><strong>When:</strong> {when}</p>
-      {event.data.locationName && (
-        <p class="muted" style="margin: 0;"><strong>Where:</strong> {event.data.locationName}</p>
-      )}
-      {event.data.address && (
-        <p class="muted" style="margin: 0;"><strong>Address:</strong> {event.data.address}</p>
-      )}
-      {event.data.registrationUrl && (
-        <p style="margin: 0;">
-          <a class="link" href={event.data.registrationUrl} rel="noopener noreferrer">Register / Learn more</a>
-        </p>
-      )}
+    <nav class="nav nav--desktop" aria-label="Primary navigation">
+      {site.nav.map((item) => (
+        <a
+          href={item.href}
+          aria-current={isActive(item.href) ? "page" : undefined}
+          {...linkAttrs(item)}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="right">
+      <div class="cta cta--desktop" aria-label="Primary actions">
+        {watchLive && (
+          <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
+            {watchLive.label}
+          </Button>
+        )}
+        {give && (
+          <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
+            {give.label}
+          </Button>
+        )}
+      </div>
+
+      <div class="cta cta--mobile" aria-label="Primary actions">
+        {watchLive && (
+          <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
+            {watchLive.label}
+          </Button>
+        )}
+        {give && (
+          <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
+            {give.label}
+          </Button>
+        )}
+      </div>
+
+      <details class="menu" aria-label="Mobile menu">
+        <summary class="menu__summary" aria-label="Open menu">
+          <span class="menu__icon" aria-hidden="true">☰</span>
+          <span class="menu__label">Menu</span>
+        </summary>
+
+        <div class="menu__panel">
+          <nav class="menu__section" aria-label="Primary navigation">
+            {site.nav.map((item) => (
+              <a
+                class="menu__link"
+                href={item.href}
+                aria-current={isActive(item.href) ? "page" : undefined}
+                {...linkAttrs(item)}
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+
+          <div class="menu__divider" role="separator" aria-hidden="true"></div>
+
+          <div class="menu__section" aria-label="Quick actions">
+            <div class="menu__actions">
+              {watchLive && (
+                <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
+                  {watchLive.label}
+                </Button>
+              )}
+              {give && (
+                <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
+                  {give.label}
+                </Button>
+              )}
+            </div>
+
+            {otherQuick.length > 0 && (
+              <div class="menu__quicklinks" aria-label="More quick links">
+                {otherQuick.map((item) => (
+                  <a class="menu__sublink" href={item.href} {...linkAttrs(item)}>
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </details>
     </div>
+  </div>
+</header>
 
-    <article class="card stack">
-      <Content />
-    </article>
+<script>
+  // Close the mobile menu when a link is clicked.
+  document.addEventListener("click", (e) => {
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
 
-    <p><a class="link" href="/events/">← Back to Events</a></p>
-  </section>
-</BaseLayout>
+    const link = target.closest("a");
+    const details = target.closest("details.menu");
+    if (link && details) details.removeAttribute("open");
+  });
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--color-white);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .inner {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: var(--space-3) var(--container-pad);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .brand {
+    text-decoration: none;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: max-content;
+  }
+
+  .brand__title {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-size: var(--font-size-2);
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .nav a {
+    text-decoration: none;
+    color: inherit;
+    font-weight: 700;
+    opacity: 0.9;
+    padding: 0.55rem 0.7rem;
+    border-radius: 999px;
+  }
+
+  .nav a:hover {
+    background: var(--color-gray-50);
+    opacity: 1;
+  }
+
+  .nav a[aria-current="page"] {
+    background: var(--color-gray-100);
+    opacity: 1;
+  }
+
+  .cta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    justify-content: flex-end;
+    min-width: max-content;
+  }
+
+  .right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    min-width: max-content;
+  }
+
+  .cta--mobile {
+    display: none;
+  }
+
+  /* Mobile menu */
+  .menu {
+    display: none;
+    position: relative;
+  }
+
+  .menu__summary {
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+    padding: 0.55rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: var(--color-white);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 700;
+  }
+
+  .menu__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .menu[open] .menu__summary {
+    background: var(--color-gray-50);
+  }
+
+  .menu__panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.6rem);
+    width: min(92vw, 22rem);
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-3);
+    box-shadow: var(--shadow-2);
+    padding: var(--space-3);
+    z-index: 60;
+  }
+
+  .menu__section {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .menu__link {
+    text-decoration: none;
+    color: inherit;
+    font-weight: 700;
+    padding: 0.6rem 0.7rem;
+    border-radius: var(--radius-2);
+  }
+
+  .menu__link:hover {
+    background: var(--color-gray-50);
+  }
+
+  .menu__link[aria-current="page"] {
+    background: var(--color-gray-100);
+  }
+
+  .menu__divider {
+    height: 1px;
+    background: var(--color-border);
+    margin: var(--space-3) 0;
+  }
+
+  .menu__actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  .menu__quicklinks {
+    margin-top: var(--space-3);
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .menu__sublink {
+    text-decoration: none;
+    color: inherit;
+    opacity: 0.9;
+    padding: 0.4rem 0.2rem;
+    font-weight: 700;
+  }
+
+  .menu__sublink:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+
+  @media (max-width: 860px) {
+    .nav--desktop,
+    .cta--desktop {
+      display: none;
+    }
+
+    .cta--mobile {
+      display: flex;
+    }
+
+    .inner {
+      grid-template-columns: auto 1fr auto;
+    }
+
+    .menu {
+      display: block;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .menu__label {
+      display: none;
+    }
+
+    .menu__summary {
+      padding: 0.55rem 0.6rem;
+    }
+  }
+</style>
 </file>
 
-<file path="web/src/pages/events/index.astro">
+<file path="web/src/components/sections/CardGrid.astro">
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Hero from '../../components/ui/Hero.astro';
-import ContentCard from '../../components/content/ContentCard.astro';
-import { getCollection } from 'astro:content';
+import Card from "../ui/Card.astro";
+import Grid from "../ui/CardGrid.astro";
 
-const events = await getCollection('events', ({ data }) => {
-  return import.meta.env.PROD ? data.draft !== true : true;
-});
+type CardItem = {
+  title: string;
+  description?: string;
+  href?: string;
+};
+
+type Props = {
+  title?: string;
+  subtitle?: string;
+  cards: CardItem[];
+  columns?: number;
+  columnsMin?: number;
+};
+
+const { title, subtitle, cards, columns, columnsMin = 240 } = Astro.props;
+---
+
+<section class="stack">
+  {(title || subtitle) && (
+    <header class="stack" style="gap: var(--space-2);">
+      {title && <h2 style="margin: 0;">{title}</h2>}
+      {subtitle && <p class="muted" style="margin: 0;">{subtitle}</p>}
+    </header>
+  )}
+
+  <Grid columns={columns} columnsMin={columnsMin}>
+    {cards.map((c) => (
+      <Card title={c.title} description={c.description} href={c.href} />
+    ))}
+  </Grid>
+</section>
+</file>
+
+<file path="web/src/components/sections/EventList.astro">
+---
+import ContentCard from "../content/ContentCard.astro";
+import { getCollection } from "astro:content";
+
+type Props = {
+  title?: string;
+  limit?: number;
+  showViewAll?: boolean;
+};
+
+const { title = "Upcoming Events", limit = 3, showViewAll = true } = Astro.props;
+
+const events = await getCollection("events", ({ data }) =>
+  import.meta.env.PROD ? data.draft !== true : true
+);
 
 const now = new Date();
 const upcoming = events
   .filter((e) => e.data.start >= now)
-  .sort((a, b) => a.data.start.valueOf() - b.data.start.valueOf());
+  .sort((a, b) => a.data.start.valueOf() - b.data.start.valueOf())
+  .slice(0, limit);
 
-const past = events
-  .filter((e) => e.data.start < now)
-  .sort((a, b) => b.data.start.valueOf() - a.data.start.valueOf())
-  .slice(0, 12);
-
-const fmt = new Intl.DateTimeFormat('en-US', {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-  timeZone: 'America/New_York',
-});
+const fmt = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
 ---
 
-<BaseLayout title="Events" description="What’s happening at church.">
-  <Hero
-    title="Events"
-    subtitle="See what’s coming up and what we’ve recently hosted."
-  />
-
-  <section class="container stack">
-    <h2>Upcoming</h2>
-
-    {upcoming.length === 0 ? (
-      <p class="muted">No upcoming events are published yet.</p>
-    ) : (
-      <div class="grid--cards">
-        {upcoming.map((e) => (
-          <ContentCard
-            href={`/events/${e.id}/`}
-            title={e.data.title}
-            summary={e.data.summary}
-            meta={fmt.format(e.data.start)}
-            tags={e.data.tags}
-          />
-        ))}
-      </div>
+<section class="stack">
+  <div style="display:flex; align-items:baseline; justify-content:space-between; gap: var(--space-4);">
+    <h2 style="margin: 0;">{title}</h2>
+    {showViewAll && (
+      <a class="muted" href="/events/" style="text-decoration: none; font-weight: 700;">
+        View all
+      </a>
     )}
+  </div>
 
-    <h2 style="margin-top: 2.5rem;">Recent</h2>
-    {past.length === 0 ? (
-      <p class="muted">No past events are published yet.</p>
-    ) : (
-      <div class="grid--cards">
-        {past.map((e) => (
-          <ContentCard
-            href={`/events/${e.id}/`}
-            title={e.data.title}
-            summary={e.data.summary}
-            meta={fmt.format(e.data.start)}
-            tags={e.data.tags}
-          />
-        ))}
-      </div>
-    )}
-  </section>
-</BaseLayout>
-</file>
-
-<file path="web/src/pages/ministries/[id].astro">
----
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Hero from '../../components/ui/Hero.astro';
-import ButtonLink from '../../components/ui/ButtonLink.astro';
-import { getCollection, render } from 'astro:content';
-
-export async function getStaticPaths() {
-  const ministries = await getCollection('ministries', ({ data }) => {
-    return import.meta.env.PROD ? data.draft !== true : true;
-  });
-
-  return ministries.map((ministry) => ({
-    params: { id: ministry.id },
-    props: { ministry },
-  }));
-}
-
-const { ministry } = Astro.props;
-const { Content } = await render(ministry);
-
-const ctaLabel = ministry.data.ctaLabel ?? 'Get in touch';
-const ctaHref = ministry.data.ctaHref ?? '/connect/contact/';
----
-
-<BaseLayout title={ministry.data.title} description={ministry.data.summary}>
-  <Hero title={ministry.data.title} subtitle={ministry.data.summary} />
-
-  <section class="container stack">
-    <div class="card stack" style="gap: 0.5rem;">
-      {ministry.data.leaderName && (
-        <p class="muted" style="margin: 0;"><strong>Leader:</strong> {ministry.data.leaderName}</p>
-      )}
-      {ministry.data.meetingTime && (
-        <p class="muted" style="margin: 0;"><strong>Meets:</strong> {ministry.data.meetingTime}</p>
-      )}
-      {ministry.data.contactEmail && (
-        <p class="muted" style="margin: 0;"><strong>Email:</strong> {ministry.data.contactEmail}</p>
-      )}
-      {ministry.data.contactPhone && (
-        <p class="muted" style="margin: 0;"><strong>Phone:</strong> {ministry.data.contactPhone}</p>
-      )}
-
-      <div style="margin-top: 0.5rem;">
-        <ButtonLink href={ctaHref}>{ctaLabel}</ButtonLink>
-      </div>
+  {upcoming.length === 0 ? (
+    <p class="muted" style="margin: 0;">No upcoming events are published yet.</p>
+  ) : (
+    <div class="grid grid--cards">
+      {upcoming.map((e) => (
+        <ContentCard
+          href={`/events/${e.id}/`}
+          title={e.data.title}
+          summary={e.data.summary}
+          meta={fmt.format(e.data.start)}
+          tags={e.data.tags}
+        />
+      ))}
     </div>
-
-    <article class="card stack">
-      <Content />
-    </article>
-
-    <p><a class="link" href="/ministries/">← Back to Ministries</a></p>
-  </section>
-</BaseLayout>
+  )}
+</section>
 </file>
 
-<file path="web/src/pages/resources/[...id].astro">
+<file path="web/src/components/sections/Hero.astro">
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Hero from '../../components/ui/Hero.astro';
-import { getCollection, render } from 'astro:content';
+import HeroUI from "../ui/Hero.astro";
 
-export async function getStaticPaths() {
-  const resources = await getCollection('resources', ({ data }) => {
-    return import.meta.env.PROD ? data.draft !== true : true;
-  });
-
-  return resources.map((resource) => ({
-    params: { id: resource.id },
-    props: { resource },
-  }));
-}
-
-const { resource } = Astro.props;
-const { Content } = await render(resource);
-
-const fmt = new Intl.DateTimeFormat('en-US', {
-  dateStyle: 'full',
-  timeZone: 'America/New_York',
-});
----
-
-<BaseLayout title={resource.data.title} description={resource.data.summary}>
-  <Hero title={resource.data.title} subtitle={resource.data.summary} />
-
-  <section class="container stack">
-    <div class="card stack" style="gap: 0.5rem;">
-      <p class="muted" style="margin: 0;"><strong>Published:</strong> {fmt.format(resource.data.published)}</p>
-      {resource.data.category && (
-        <p class="muted" style="margin: 0;"><strong>Category:</strong> {resource.data.category}</p>
-      )}
-
-      {resource.data.attachmentUrl && (
-        <p style="margin: 0;">
-          <a class="link" href={resource.data.attachmentUrl}>Download / Open attachment</a>
-        </p>
-      )}
-
-      {resource.data.externalUrl && (
-        <p style="margin: 0;">
-          <a class="link" href={resource.data.externalUrl} rel="noopener noreferrer">Open external link</a>
-        </p>
-      )}
-    </div>
-
-    <article class="card stack">
-      <Content />
-    </article>
-
-    <p><a class="link" href="/resources/">← Back to Resources</a></p>
-  </section>
-</BaseLayout>
-</file>
-
-<file path="web/src/content.config.ts">
-import { glob } from 'astro/loaders';
-import { z } from 'astro/zod';
-import { defineCollection } from 'astro:content';
-
-const shared = {
-  title: z.string(),
-  summary: z.string(),
-  heroImage: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  draft: z.boolean().optional(),
+export type Props = {
+  title: string;
+  subtitle?: string;
+  primaryCtaLabel?: string;
+  primaryCtaHref?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
 };
 
-const events = defineCollection({
-  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/events' }),
-  schema: z.object({
-    ...shared,
-    start: z.coerce.date(),
-    end: z.coerce.date().optional(),
-    allDay: z.boolean().optional(),
-    locationName: z.string().optional(),
-    address: z.string().optional(),
-    registrationUrl: z.string().url().optional(),
-  }),
-});
+const props = Astro.props as Props;
+---
 
-const ministries = defineCollection({
-  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/ministries' }),
-  schema: z.object({
-    ...shared,
-    leaderName: z.string().optional(),
-    contactEmail: z.string().email().optional(),
-    contactPhone: z.string().optional(),
-    meetingTime: z.string().optional(),
-    ctaLabel: z.string().optional(),
-    ctaHref: z.string().optional(),
-  }),
-});
-
-const resources = defineCollection({
-  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/resources' }),
-  schema: z.object({
-    ...shared,
-    published: z.coerce.date(),
-    category: z.string().optional(),
-    externalUrl: z.string().url().optional(),
-    attachmentUrl: z.string().optional(),
-  }),
-});
-
-export const collections = { events, ministries, resources };
+<HeroUI {...props} />
 </file>
 
-<file path="web/test-results/tests-e2e-content-collections-Resources-hub-loads/error-context.md">
+<file path="web/src/components/sections/SermonHighlight.astro">
+---
+import Button from "../ui/Button.astro";
+import YouTubeEmbed from "../media/YouTubeEmbed.astro";
+import videos from "../../data/videos.json";
+import { site } from "../../data/site";
+
+type Video = {
+  title: string;
+  date: string;
+  youtubeId?: string;
+  summary?: string;
+};
+
+type Props = {
+  title?: string;
+};
+
+const { title = "Latest Sermon" } = Astro.props;
+
+const list = (videos as Video[]).slice().sort((a, b) => {
+  return new Date(b.date).valueOf() - new Date(a.date).valueOf();
+});
+
+const latest = list[0];
+const hasEmbed = latest && latest.youtubeId && latest.youtubeId !== "TBD";
+
+const fmt = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
+const meta = latest?.date ? fmt.format(new Date(latest.date)) : undefined;
+const youtubeHref = site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD"
+  ? site.portals.youtubeChannelUrl
+  : "/media/videos/";
+---
+
+<section class="stack">
+  <h2 style="margin: 0;">{title}</h2>
+
+  {!latest ? (
+    <p class="muted" style="margin: 0;">No videos are listed yet.</p>
+  ) : (
+    <div class="card">
+      <div class="stack" style="gap: var(--space-3);">
+        <div>
+          <p class="muted" style="margin: 0; font-size: 0.95rem;">{meta}</p>
+          <h3 style="margin: 0.25rem 0 0;">{latest.title}</h3>
+          {latest.summary && <p class="muted" style="margin: 0.5rem 0 0;">{latest.summary}</p>}
+        </div>
+
+        {hasEmbed ? (
+          <YouTubeEmbed
+            title={latest.title}
+            embedUrl={`https://www.youtube.com/embed/${latest.youtubeId}`}
+          />
+        ) : (
+          <p class="small muted" style="margin: 0;">
+            Add a real <code>youtubeId</code> in <code>src/data/videos.json</code> to show an embedded video here.
+          </p>
+        )}
+
+        <div style="display:flex; gap: var(--space-3); flex-wrap: wrap;">
+          <Button href="/media/videos/" variant="secondary">More videos</Button>
+          <Button href={youtubeHref} external>Open YouTube</Button>
+        </div>
+      </div>
+    </div>
+  )}
+</section>
+</file>
+
+<file path="web/src/components/ui/YouTubeEmbed.astro">
+---
+import YouTubeEmbedMedia from "../media/YouTubeEmbed.astro";
+
+export type Props = {
+  title: string;
+  /** Full YouTube embed URL, e.g. https://www.youtube.com/embed/VIDEO_ID */
+  embedUrl: string;
+};
+
+const props = Astro.props as Props;
+---
+
+<YouTubeEmbedMedia {...props} />
+</file>
+
+<file path="web/src/lib/links.ts">
+export function mailto(email: string, subject?: string) {
+  const e = (email ?? "").trim();
+  if (!e) return "";
+  const params = subject ? `?subject=${encodeURIComponent(subject)}` : "";
+  return `mailto:${e}${params}`;
+}
+</file>
+
+<file path="web/src/pages/connect/team/index.astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { site } from "../../../data/site";
+import { mailto } from "../../../lib/links";
+export const prerender = false;
+
+function displayOrTBD(value?: string) {
+  return value && value !== "TBD" ? value : "TBD";
+}
+---
+
+<BaseLayout title="Our Team" description={`Meet the leadership and ministry contacts at ${site.name}.`}>
+  <div class="stack">
+    <h1 style="margin: 0;">Our Team</h1>
+
+    <section class="card">
+      <h2 style="margin-top: 0;">Leadership</h2>
+      <p class="muted">
+        For most questions, starting with the Pastor or Head Elder is a great first step.
+      </p>
+
+      <div class="table">
+        <div class="row head">
+          <div>Role</div>
+          <div>Name</div>
+          <div>Contact</div>
+        </div>
+
+        {(site.leadershipTeam ?? []).map((m) => (
+          <div class="row">
+            <div>{m.role}</div>
+            <div>{displayOrTBD(m.name)}</div>
+            <div>
+              {m.email && m.email !== "TBD" ? (
+                <a href={mailto(m.email!, `${m.role} - ${site.shortName}`)}>{m.email}</a>
+              ) : (
+                <span class="muted">TBD</span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p class="small muted" style="margin-top: var(--space-4);">
+        If a role shows “TBD”, update it in <code>src/data/site.ts</code>.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2 style="margin-top: 0;">Ministry Leads</h2>
+      <p class="muted">
+        Reach out to the ministry lead closest to your question, or use the general email if you’re not sure.
+      </p>
+
+      <div class="table">
+        <div class="row head">
+          <div>Ministry</div>
+          <div>Name</div>
+          <div>Contact</div>
+        </div>
+
+        {(site.ministryLeads ?? []).map((m) => (
+          <div class="row">
+            <div>{m.role}</div>
+            <div>{displayOrTBD(m.name)}</div>
+            <div>
+              {m.email && m.email !== "TBD" ? (
+                <a href={mailto(m.email!, `${m.role} - ${site.shortName}`)}>{m.email}</a>
+              ) : (
+                <span class="muted">TBD</span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin-top: 0;">Who to contact for what</h2>
+      <p class="muted">
+        Not sure who to reach? Start with one of these.
+      </p>
+
+      <div class="table">
+        <div class="row head">
+          <div>Topic</div>
+          <div>Contact</div>
+          <div>How</div>
+        </div>
+
+        {(site.contactTopics ?? []).map((t) => (
+          <div class="row">
+            <div>{t.topic}</div>
+            <div>{t.contactRole}</div>
+            <div>
+              {t.href ? (
+                <a
+                  href={t.href}
+                  target={t.external ? "_blank" : undefined}
+                  rel={t.external ? "noopener noreferrer" : undefined}
+                >
+                  {t.hrefLabel ?? "Open"}
+                </a>
+              ) : t.email ? (
+                <a href={mailto(t.email, `${t.topic} - ${site.shortName}`)}>{t.email}</a>
+              ) : (
+                <span class="muted">TBD</span>
+              )}
+              {t.note ? (
+                <div class="small muted" style="margin-top: var(--space-2);">
+                  {t.note}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .table {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    overflow: hidden;
+    margin-top: var(--space-4);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-white);
+  }
+
+  .row.head {
+    border-top: none;
+    background: var(--color-bg);
+    font-weight: 800;
+  }
+
+  .muted {
+    color: var(--color-text-muted);
+  }
+
+  .small {
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 720px) {
+    .row {
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+    }
+  }
+</style>
+</file>
+
+<file path="web/src/pages/robots.txt.ts">
+import type { APIRoute } from "astro";
+
+// Force this endpoint to be emitted as a static file in dist/robots.txt
+export const prerender = true;
+
+export const GET: APIRoute = ({ site: astroSite, url }) => {
+  // Prefer Astro config `site` when present, otherwise use the request origin
+  // (important for local LHCI ports like http://localhost:51310)
+  const origin = (astroSite?.toString() ?? url.origin).replace(/\/$/, "");
+
+  const sitemapUrl = new URL("/sitemap-index.xml", origin).toString();
+
+  const body = [
+    "User-agent: *",
+    "Allow: /",
+    "",
+    `Sitemap: ${sitemapUrl}`,
+    "",
+  ].join("\n");
+
+  return new Response(body, {
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "public, max-age=3600",
+    },
+  });
+};
+</file>
+
+<file path="web/src/styles/a11y.css">
+/* Small accessibility helpers layered on top of global.css */
+
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+/* If skip-link isn't already styled in global.css, this ensures it is usable */
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateY(-120%);
+  padding: 0.75rem 1rem;
+  background: Canvas;
+  color: CanvasText;
+  z-index: 9999;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+</file>
+
+<file path="web/test-results/tests-e2e-phase-7-a11y-a11y-axe---search-/error-context.md">
 # Page snapshot
 
 ```yaml
 - generic [active] [ref=e1]:
   - link "Skip to content" [ref=e2] [cursor=pointer]:
-    - /url: "#main-content"
+    - /url: "#main"
   - banner [ref=e3]:
     - generic [ref=e4]:
-      - generic [ref=e5]:
-        - link "Springfield Hispanic SDA" [ref=e6] [cursor=pointer]:
+      - link "First Springfield Seventh-day Adventist Church" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]: First Springfield SDA
+      - navigation "Primary navigation" [ref=e7]:
+        - link "Home" [ref=e8] [cursor=pointer]:
           - /url: /
-        - generic [ref=e7]: Site under construction (MVP)
-      - generic "Header navigation" [ref=e8]:
-        - navigation "Primary navigation" [ref=e9]:
-          - link "Home" [ref=e10] [cursor=pointer]:
-            - /url: /
-          - link "Connect" [ref=e11] [cursor=pointer]:
-            - /url: /connect
-          - link "Join" [ref=e12] [cursor=pointer]:
-            - /url: /join
-          - link "Ministries" [ref=e13] [cursor=pointer]:
-            - /url: /ministries
-          - link "Resources" [ref=e14] [cursor=pointer]:
-            - /url: /resources
-          - link "Serve" [ref=e15] [cursor=pointer]:
-            - /url: /serve
-          - link "Media" [ref=e16] [cursor=pointer]:
-            - /url: /media
-        - navigation "Quick actions" [ref=e17]:
-          - link "Watch Live" [ref=e18] [cursor=pointer]:
-            - /url: /media/live
-          - link "Give" [ref=e19] [cursor=pointer]:
-            - /url: /give
-          - link "Prayer" [ref=e20] [cursor=pointer]:
-            - /url: /connect/prayer
-          - link "Bulletins" [ref=e21] [cursor=pointer]:
-            - /url: /resources/bulletins
-          - link "Forms" [ref=e22] [cursor=pointer]:
-            - /url: /resources/forms
-  - main [ref=e23]:
-    - generic [ref=e24]:
-      - generic [ref=e27]:
-        - heading "Resources" [level=1] [ref=e28]
-        - paragraph [ref=e29]: Downloads, forms, and helpful info.
-      - generic [ref=e30]:
-        - generic [ref=e31]:
-          - article [ref=e32]:
-            - heading "Bulletins" [level=3] [ref=e33]:
-              - link "Bulletins" [ref=e34] [cursor=pointer]:
-                - /url: /resources/bulletins/
-            - paragraph [ref=e35]: Weekly PDFs and archives.
-          - article [ref=e36]:
-            - heading "Forms" [level=3] [ref=e37]:
-              - link "Forms" [ref=e38] [cursor=pointer]:
-                - /url: /resources/forms/
-            - paragraph [ref=e39]: Requests, sign-ups, and contact info.
-        - heading "Latest resources" [level=2] [ref=e40]
-        - article [ref=e42]:
-          - paragraph [ref=e43]: Dec 15, 2025
-          - heading "Welcome Packet" [level=3] [ref=e44]:
-            - link "Welcome Packet" [ref=e45] [cursor=pointer]:
-              - /url: /resources/2025/12/16/welcome-packet/
-          - paragraph [ref=e46]: A quick overview of our church, what we believe, and how to get connected.
-  - contentinfo [ref=e47]:
-    - generic [ref=e48]:
-      - generic [ref=e49]:
+        - link "About Us" [ref=e9] [cursor=pointer]:
+          - /url: /connect/about
+        - link "Our Team" [ref=e10] [cursor=pointer]:
+          - /url: /connect/team
+        - link "Ministries" [ref=e11] [cursor=pointer]:
+          - /url: /ministries
+        - link "Calendar" [ref=e12] [cursor=pointer]:
+          - /url: /events
+        - link "Contact" [ref=e13] [cursor=pointer]:
+          - /url: /connect/contact
+      - generic "Primary actions" [ref=e15]:
+        - link "Watch Live" [ref=e16] [cursor=pointer]:
+          - /url: /media/live
+        - link "Give" [ref=e17] [cursor=pointer]:
+          - /url: /give
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e22]:
+        - heading "Search" [level=1] [ref=e23]
+        - paragraph [ref=e24]: Search resources, bulletins, and site pages.
+      - region "Site search" [ref=e25]:
+        - text: Search the site
+        - search "Search this site" [ref=e29]:
+          - textbox "Search" [ref=e30]
+          - button "Clear"
+        - group [ref=e31]:
+          - generic "How search works" [ref=e32]
+  - contentinfo [ref=e33]:
+    - generic [ref=e34]:
+      - generic [ref=e35]:
+        - strong [ref=e36]: First Springfield Seventh-day Adventist Church
+        - link "34 Sumner Ave, Springfield, MA 01108" [ref=e38] [cursor=pointer]:
+          - /url: https://www.google.com/maps/dir/?api=1&destination=34%20Sumner%20Ave%2C%20Springfield%2C%20MA%2001108
+        - generic [ref=e39]:
+          - link "TBD" [ref=e40] [cursor=pointer]:
+            - /url: "tel:"
+          - text: ·
+          - link "firstspringfieldsda@gmail.com" [ref=e41] [cursor=pointer]:
+            - /url: mailto:firstspringfieldsda@gmail.com
+        - generic [ref=e42]: © 2025
+      - navigation "Footer links" [ref=e43]:
+        - generic [ref=e44]:
+          - generic [ref=e45]: Service times
+          - generic [ref=e46]:
+            - generic [ref=e47]: Saturday · 10:00 AM — Sabbath School
+            - generic [ref=e48]: Saturday · 11:15 AM — Worship Service
+            - generic [ref=e49]: Wednesday · 7:00 PM — Prayer Meeting
         - generic [ref=e50]:
-          - generic [ref=e51]: Springfield Hispanic SDA Church
-          - paragraph [ref=e52]:
-            - link "124 Putnam Cir, Springfield, MA 01104" [ref=e53] [cursor=pointer]:
-              - /url: https://www.google.com/maps?q=124+Putnam+Cir,+Springfield,+MA+01104
-        - generic [ref=e54]:
-          - generic [ref=e55]: Contact
-          - list [ref=e56]:
-            - listitem [ref=e57]:
-              - link "(413) 788-9130" [ref=e58] [cursor=pointer]:
-                - /url: tel:4137889130
-            - listitem [ref=e59]:
-              - link "info@example.com" [ref=e60] [cursor=pointer]:
-                - /url: mailto:info@example.com
-            - listitem [ref=e61]:
-              - link "Contact page" [ref=e62] [cursor=pointer]:
-                - /url: /connect/contact
-        - generic [ref=e63]:
-          - generic [ref=e64]: Service times
-          - list [ref=e65]:
-            - listitem [ref=e66]:
-              - strong [ref=e67]: "Sabbath School:"
-              - text: Saturday - 9:30 AM
-            - listitem [ref=e68]:
-              - strong [ref=e69]: "Worship Service:"
-              - text: Saturday - 11:00 AM
-            - listitem [ref=e70]:
-              - strong [ref=e71]: "Prayer Meeting:"
-              - text: Wednesday - 7:30 PM
-        - generic [ref=e72]:
-          - generic [ref=e73]: Links
-          - generic "Footer links" [ref=e74]:
-            - link "Give" [ref=e75] [cursor=pointer]:
-              - /url: /give
-            - link "Watch Live" [ref=e76] [cursor=pointer]:
+          - generic [ref=e51]: Watch & Give
+          - generic [ref=e52]:
+            - link "Watch Live" [ref=e53] [cursor=pointer]:
               - /url: /media/live
-            - link "Bulletins" [ref=e77] [cursor=pointer]:
-              - /url: /resources/bulletins
-            - link "Forms" [ref=e78] [cursor=pointer]:
-              - /url: /resources/forms
-          - generic "Social links" [ref=e79]:
-            - link "YouTube" [ref=e80] [cursor=pointer]:
-              - /url: https://www.youtube.com/@A7DON
-            - link "Facebook" [ref=e81] [cursor=pointer]:
-              - /url: https://www.facebook.com/SpringfieldIASD/
-      - generic [ref=e82]: © 2025 Springfield Hispanic SDA Church
+            - link "Give" [ref=e54] [cursor=pointer]:
+              - /url: /give
+            - link "Videos" [ref=e55] [cursor=pointer]:
+              - /url: /media/videos
+        - generic [ref=e56]:
+          - generic [ref=e57]: Connect
+          - generic [ref=e58]:
+            - link "Contact" [ref=e59] [cursor=pointer]:
+              - /url: /connect/contact
+            - link "Plan a Visit" [ref=e60] [cursor=pointer]:
+              - /url: /connect/plan-a-visit
+            - link "Prayer" [ref=e61] [cursor=pointer]:
+              - /url: /connect/prayer
+            - link "YouTube" [ref=e62] [cursor=pointer]:
+              - /url: https://www.youtube.com/@1stspringfieldsdama74
+            - link "Privacy" [ref=e63] [cursor=pointer]:
+              - /url: /privacy
 ```
 </file>
 
-<file path="web/test-results/.last-run.json">
+<file path="web/tests/e2e/phase-7-a11y.spec.ts">
+import AxeBuilder from "@axe-core/playwright";
+import { expect, test } from "@playwright/test";
+
+const PAGES = [
+  "/",
+  "/connect/plan-a-visit/",
+  "/connect/team/",
+  "/events/",
+  "/resources/",
+  "/media/",
+  "/search/",
+];
+
+for (const path of PAGES) {
+  test(`a11y (axe) - ${path}`, async ({ page }) => {
+    await page.goto(path);
+
+    // Pagefind mounts client-side; ensure the input exists and has a real label hookup.
+    if (path === "/search/") {
+      await page.locator("#site-search input.pagefind-ui__search-input").waitFor();
+
+      await page.waitForFunction(() => {
+        const input = document.querySelector(
+          "#site-search input.pagefind-ui__search-input"
+        ) as HTMLInputElement | null;
+
+        const label = document.getElementById("site-search-label") as HTMLLabelElement | null;
+
+        if (!input || !label) return false;
+
+        // Labeled if label->for matches input id OR aria-labelledby points at the label.
+        const byFor = label.htmlFor === input.id && !!input.id;
+        const byAria = input.getAttribute("aria-labelledby") === "site-search-label";
+        const byAriaLabel = (input.getAttribute("aria-label") ?? "").length > 0;
+
+        return byFor || byAria || byAriaLabel;
+      });
+    }
+
+    const results = await new AxeBuilder({ page }).analyze();
+
+    // Keep the gate focused on high-impact issues.
+    const highImpact = results.violations.filter((v) =>
+      ["serious", "critical"].includes(v.impact ?? "")
+    );
+
+    expect(highImpact).toEqual([]);
+  });
+}
+</file>
+
+<file path="web/tests/e2e/phase-7-seo.spec.ts">
+import { expect, test } from "@playwright/test";
+
+const PAGES: Array<{ path: string; robots: string }> = [
+  { path: "/", robots: "index,follow" },
+  { path: "/connect/plan-a-visit/", robots: "index,follow" },
+  { path: "/connect/team/", robots: "index,follow" },
+  { path: "/events/", robots: "index,follow" },
+  { path: "/resources/", robots: "index,follow" },
+  { path: "/media/", robots: "index,follow" },
+  { path: "/search/", robots: "noindex,follow" }
+];
+
+for (const { path, robots } of PAGES) {
+  test(`seo meta - ${path}`, async ({ page }) => {
+    await page.goto(path);
+
+    await expect(page).toHaveTitle(/.+/);
+
+    await expect(page.locator('meta[name="description"]'))
+      .toHaveAttribute("content", /.+/);
+
+    const canonical = page.locator('link[rel="canonical"]');
+    const canonicalHref = await canonical.getAttribute("href");
+    expect(canonicalHref).toBeTruthy();
+    expect(canonicalHref!).toContain(path);
+
+    await expect(page.locator('meta[property="og:title"]'))
+      .toHaveAttribute("content", /.+/);
+
+    await expect(page.locator('meta[name="robots"]'))
+      .toHaveAttribute("content", robots);
+  });
+}
+</file>
+
+<file path="web/tests/e2e/phase-7-sitefiles.spec.ts">
+import { expect, test } from "@playwright/test";
+
+test("robots.txt exists and references sitemap", async ({ page }) => {
+  await page.goto("/robots.txt");
+  const body = await page.textContent("body");
+  expect(body).toContain("User-agent:");
+  expect(body).toContain("Sitemap:");
+});
+
+test("sitemap index exists", async ({ page }) => {
+  await page.goto("/sitemap-index.xml");
+  const body = await page.textContent("body");
+  expect(body).toContain("<sitemapindex");
+});
+</file>
+
+<file path="web/lighthouserc.cjs">
+module.exports = {
+  ci: {
+    collect: {
+      staticDistDir: "./dist",
+      numberOfRuns: 3
+    },
+    assert: {
+      assertions: {
+        "categories:performance": ["error", { "minScore": 0.9 }],
+        "categories:accessibility": ["error", { "minScore": 0.95 }],
+        "categories:seo": ["error", { "minScore": 0.95 }],
+        "categories:best-practices": ["error", { "minScore": 0.95 }]
+      }
+    },
+    upload: {
+      target: "filesystem",
+      outputDir: "./.lighthouseci"
+    }
+  }
+};
+</file>
+
+<file path="web/linkinator.config.json">
 {
-  "status": "failed",
-  "failedTests": [
-    "feeda6bc5c247e9ff489-66e18ae294bc7fe16e07"
+  "recurse": true,
+  "cleanUrls": true,
+  "checkFragments": true,
+  "timeout": 30000,
+  "concurrency": 50,
+  "skip": [
+    "^mailto:",
+    "^tel:",
+    "^https?://"
   ]
 }
 </file>
 
-<file path="web/tests/e2e/content-collections.spec.ts">
-import { expect, test } from '@playwright/test';
-
-test('Events hub loads', async ({ page }) => {
-  await page.goto('/events/');
-  await expect(page.getByRole('heading', { name: 'Events' })).toBeVisible();
-});
-
-test('Ministries hub loads', async ({ page }) => {
-  await page.goto('/ministries/');
-  await expect(page.getByRole('heading', { name: 'Ministries' })).toBeVisible();
-});
-
-test('Resources hub loads', async ({ page }) => {
-  await page.goto('/resources/');
-  await expect(page.getByRole('heading', { name: 'Resources' })).toBeVisible();
-});
+<file path="web/wrangler.jsonc">
+{
+	"main": "dist/_worker.js/index.js",
+	"name": "web",
+  "compatibility_date": "2025-12-19",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": "./dist"
+	},
+	"observability": {
+    "enabled": true
+  }
+}
 </file>
 
-<file path="web/playwright.config.ts">
-import { defineConfig } from '@playwright/test';
-
-export default defineConfig({
-  use: {
-    baseURL: 'http://localhost:4321',
-  },
-  webServer: {
-    command: 'npm run dev -- --host 127.0.0.1 --port 4321',
-    url: 'http://127.0.0.1:4321',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
-});
+<file path="package.json">
+{
+  "dependencies": {
+    "@astrojs/sitemap": "3.6.0"
+  }
+}
 </file>
 
 <file path=".github/ISSUE_TEMPLATE/content-update.md">
@@ -1568,38 +2087,40 @@ This folder contains the documents that unblock Phase 1.
 
 <file path="docs/phase-0/source-of-truth.yml">
 church:
-  public_name: "Springfield Hispanic SDA Church"
+  public_name: "First Springfield Seventh-day Adventist Church"
   address:
-    street: "124 Putnam Cir"
+    street: "1118 Sumner Ave"
     city: "Springfield"
     state: "MA"
-    zip: "01104"
-  phone: "(413) 788-9130"
+    zip: "01118-2154"
+  phone: "(413) 782-6260"
+  email_public: "firstspringfieldsda@gmail.com"
   languages:
-    primary: "Spanish"
+    primary: "English"
 
 schedule:
   sabbath_school:
     day: "Saturday"
-    time: "9:30 AM"
+    time: "10:00 AM"
   worship_service:
     day: "Saturday"
-    time: "11:00 AM"
+    time: "11:15 AM"
   prayer_meeting:
     day: "Wednesday"
-    time: "7:30 PM"
+    time: "7:00 PM"
 
 portals:
   giving_url: "https://adventistgiving.org/"
-  youtube_channel_url: "https://www.youtube.com/@A7DON"
-  facebook_url: "https://www.facebook.com/SpringfieldIASD/"
+  youtube_channel_url: "https://www.youtube.com/@1stspringfieldsdama74"
+  facebook_url: "TBD"
   prayer_form_url: "TBD"
   contact_form_url: "TBD"
   volunteer_form_url: "TBD"
+  official_site_url: "https://firstspringfieldma.adventistchurch.org/"
 
 copy:
-  homepage_tagline: "TBD"
-  welcome_message: "TBD"
+  homepage_tagline: "A Christian community in Springfield, MA"
+  welcome_message: "We would love to have you join our church family."
 </file>
 
 <file path="docs/phase-0/working-agreement.md">
@@ -1632,9 +2153,8 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
   push:
-    branches: [main]
+    branches: ["main", "master"]
 
 jobs:
   web:
@@ -1642,6 +2162,10 @@ jobs:
     defaults:
       run:
         working-directory: web
+
+    env:
+      # Ensures canonical URLs + sitemap/robots generation are deterministic in CI
+      PUBLIC_SITE_URL: http://127.0.0.1:4321
 
     steps:
       - name: Checkout
@@ -1654,14 +2178,40 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
 
-      - name: Install
+      - name: Install dependencies
         run: npm ci
+
+      - name: Typecheck
+        run: npm run check
 
       - name: Build
         run: npm run build
 
-      - name: Type check
-        run: npm run check
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: E2E tests
+        run: npm run test:e2e:ci
+
+      - name: Internal link check
+        run: npm run test:links:ci
+
+      - name: Lighthouse CI
+        run: npm run lighthouse:ci
+
+      - name: Upload Lighthouse artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouseci
+          path: web/.lighthouseci
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: web/playwright-report
 </file>
 
 <file path="web/.vscode/extensions.json">
@@ -1683,6 +2233,105 @@ jobs:
     }
   ]
 }
+</file>
+
+<file path="web/src/components/content/ContentCard.astro">
+---
+export interface Props {
+  href: string;
+  title: string;
+  summary: string;
+  meta?: string;
+  tags?: string[];
+}
+
+const { href, title, summary, meta, tags } = Astro.props;
+const safeTags = tags ?? [];
+---
+
+<article class="card">
+  {meta && <p class="muted" style="margin: 0; font-size: 0.95rem;">{meta}</p>}
+  <h3 style="margin: 0.25rem 0;">
+    <a href={href} class="link">{title}</a>
+  </h3>
+  <p class="muted" style="margin: 0.25rem 0 0;">{summary}</p>
+
+  {safeTags.length > 0 && (
+    <ul class="tags" aria-label="Tags">
+      {safeTags.map((t) => (
+        <li class="tag">{t}</li>
+      ))}
+    </ul>
+  )}
+</article>
+
+<style>
+  .tags {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0;
+    margin: 0.75rem 0 0;
+  }
+  .tag {
+    font-size: 0.85rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--surface) 90%, white 10%);
+  }
+</style>
+</file>
+
+<file path="web/src/components/media/YouTubeEmbed.astro">
+---
+type Props = {
+  title: string;
+  /** Full YouTube embed URL, e.g. https://www.youtube.com/embed/VIDEO_ID */
+  embedUrl: string;
+};
+
+const { title, embedUrl } = Astro.props;
+---
+
+<div class="yt" aria-label={title}>
+  <iframe
+    class="yt__frame"
+    src={embedUrl}
+    title={title}
+    loading="lazy"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    referrerpolicy="strict-origin-when-cross-origin"
+    allowfullscreen
+  ></iframe>
+</div>
+
+<style>
+  .yt {
+    position: relative;
+    width: 100%;
+    border-radius: var(--radius-3);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    background: var(--color-gray-50);
+  }
+
+  /* 16:9 */
+  .yt::before {
+    content: "";
+    display: block;
+    padding-top: 56.25%;
+  }
+
+  .yt__frame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+</style>
 </file>
 
 <file path="web/src/components/ui/Banner.astro">
@@ -1820,6 +2469,25 @@ const className = `btn btn--${variant} btn--${size}`;
 </style>
 </file>
 
+<file path="web/src/components/ui/ButtonLink.astro">
+---
+import Button from "./Button.astro";
+
+type Props = {
+  href: string;
+  external?: boolean;
+  variant?: "primary" | "secondary";
+  size?: "sm" | "md" | "lg";
+};
+
+const { href, external, variant = "primary", size = "md" } = Astro.props;
+---
+
+<Button href={href} external={external} variant={variant} size={size}>
+  <slot />
+</Button>
+</file>
+
 <file path="web/src/components/ui/Card.astro">
 ---
 type Props = {
@@ -1831,17 +2499,30 @@ type Props = {
 const { title, description, href } = Astro.props;
 ---
 
-<div class="card">
-  <div class="card__title">{title}</div>
-  {description && <p class="card__desc muted">{description}</p>}
-  {href && (
-    <p style="margin: 0;">
-      <a class="card__link" href={href}>Learn more</a>
-    </p>
-  )}
-</div>
+{href ? (
+  <a class="card card--link" href={href} aria-label={title}>
+    <div class="card__title">{title}</div>
+    {description && <p class="card__desc muted">{description}</p>}
+    <div class="card__cta" aria-hidden="true">Learn more</div>
+  </a>
+) : (
+  <div class="card">
+    <div class="card__title">{title}</div>
+    {description && <p class="card__desc muted">{description}</p>}
+  </div>
+)}
 
 <style>
+  .card--link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .card--link:hover {
+    text-decoration: none;
+  }
+
   .card__title {
     font-weight: 800;
     font-size: var(--font-size-2);
@@ -1852,29 +2533,11 @@ const { title, description, href } = Astro.props;
     margin: 0 0 var(--space-3);
   }
 
-  .card__link {
+  .card__cta {
     font-weight: 700;
-    text-decoration: none;
-  }
-
-  .card__link:hover {
     text-decoration: underline;
   }
 </style>
-</file>
-
-<file path="web/src/components/ui/CardGrid.astro">
----
-type Props = {
-  columnsMin?: number;
-};
-
-const { columnsMin = 220 } = Astro.props;
----
-
-<div class="grid" style={`grid-template-columns: repeat(auto-fit, minmax(${columnsMin}px, 1fr));`}>
-  <slot />
-</div>
 </file>
 
 <file path="web/src/components/ui/Hero.astro">
@@ -2227,6 +2890,114 @@ import background from '../assets/background.svg';
 </style>
 </file>
 
+<file path="web/src/content/bulletins/2025-12-13.md">
+---
+title: "Sabbath Bulletin"
+date: "2025-12-13"
+summary: "Archive sample bulletin."
+pdfUrl: "/bulletins/2025-12-13.pdf"
+---
+</file>
+
+<file path="web/src/content/bulletins/2025-12-20.md">
+---
+title: "Sabbath Bulletin"
+date: "2025-12-20"
+summary: "Order of service, announcements, and weekly schedule."
+pdfUrl: "/bulletins/2025-12-20.pdf"
+---
+</file>
+
+<file path="web/src/content/events/sabbath-service.md">
+---
+title: "Sabbath Worship Service"
+summary: "Join us each Sabbath for worship, prayer, and a message. Visitors are always welcome."
+start: "2026-01-10T11:15:00-05:00"
+end: "2026-01-10T12:45:00-05:00"
+locationName: "First Springfield Seventh-day Adventist Church"
+address: "1118 Sumner Ave, Springfield, MA 01118-2154"
+tags: ["worship", "sabbath"]
+---
+
+## What to expect
+
+- A warm welcome
+- Congregational singing
+- Scripture and message
+
+## Who can come?
+
+Everyone. Come as you are.
+</file>
+
+<file path="web/src/content/ministries/children.md">
+---
+title: "Children’s Ministry"
+summary: "Bible stories, songs, and activities designed for kids to grow in faith and community."
+leaderName: "Children’s Ministry Team"
+contactEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "Sabbaths during the service"
+ctaLabel: "Contact us"
+ctaHref: "/connect/contact/"
+tags: ["kids", "families"]
+---
+
+## Overview
+
+We support families by providing age-appropriate activities and a safe environment.
+
+## How to get involved
+
+Talk to the greeter team or use the contact form.
+</file>
+
+<file path="web/src/content/resources/2025/12/16/welcome-packet.md">
+---
+title: "Welcome Packet"
+summary: "A quick overview of our church, what we believe, and how to get connected."
+published: "2025-12-16"
+category: "New Here"
+attachmentUrl: "/resources/forms/" # replace with a real PDF path if/when you add one
+---
+
+## Inside
+
+- Service times
+- What to expect
+- Ways to connect
+</file>
+
+<file path="web/src/data/videos.json">
+[
+  {
+    "title": "Sabbath Worship Service",
+    "date": "2025-12-13",
+    "youtubeId": "TBD",
+    "summary": "Weekly worship service."
+  },
+  {
+    "title": "Bible Study / Message",
+    "date": "2025-12-06",
+    "youtubeId": "TBD",
+    "summary": "Sermon and reflection."
+  },
+  {
+    "title": "Special Program",
+    "date": "2025-11-29",
+    "youtubeId": "TBD",
+    "summary": "Guest speaker or special event."
+  }
+]
+</file>
+
+<file path="web/src/data/week-schedule.json">
+[
+  { "label": "Sabbath School", "day": "Saturday", "time": "10:00 AM" },
+  { "label": "Worship Service", "day": "Saturday", "time": "11:15 AM" },
+  { "label": "Prayer Meeting", "day": "Wednesday", "time": "7:00 PM" }
+]
+</file>
+
 <file path="web/src/layouts/Layout.astro">
 <!doctype html>
 <html lang="en">
@@ -2252,531 +3023,529 @@ import background from '../assets/background.svg';
 </style>
 </file>
 
-<file path="web/src/pages/connect/contact/index.astro">
+<file path="web/src/pages/connect/about/index.astro">
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
-import Button from "../../../components/ui/Button.astro";
 import { site } from "../../../data/site";
-
-const phoneHref = `tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`;
-const hasContactForm = site.portals.contactFormUrl && site.portals.contactFormUrl !== "TBD";
 ---
 
-<BaseLayout
-  title="Contact"
-  description="Contact Springfield Hispanic SDA Church: address, phone, and ways to reach us."
->
+<BaseLayout title="About Us" description={`About ${site.name} in Springfield, Massachusetts.`}>
   <div class="stack">
-    <h1 style="margin: 0;">Contact</h1>
+    <h1 style="margin: 0;">About Us</h1>
 
-    <section class="card" aria-labelledby="contact-address">
-      <h2 id="contact-address" style="margin-top: 0;">Address</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">{site.contact.address}</a>
-      </p>
-      <p class="small muted" style="margin: var(--space-2) 0 0;">
-        Mail: {site.contact.mailingAddress}
-      </p>
-      <div style="margin-top: var(--space-4);">
-        <Button href={site.contact.mapsUrl} external variant="secondary">Open in Maps</Button>
-      </div>
-    </section>
-
-    <section class="card" aria-labelledby="contact-phone">
-      <h2 id="contact-phone" style="margin-top: 0;">Phone</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        <a href={phoneHref}>{site.contact.phone}</a>
-      </p>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        If nobody answers, please leave a message and include a callback number.
+    <section class="card">
+      <h2 style="margin-top: 0;">Who we are</h2>
+      <p class="muted">
+        We are a local congregation of the Seventh-day Adventist Church. Our mission is to share the hope
+        found in Jesus through worship, community, service, and Bible-centered teaching.
       </p>
     </section>
 
-    <section class="card" aria-labelledby="contact-email">
-      <h2 id="contact-email" style="margin-top: 0;">Email</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+    <section class="card">
+      <h2 style="margin-top: 0;">What we believe</h2>
+      <p class="muted">
+        Seventh-day Adventists are Christians who believe in the Bible, the life and teachings of Jesus,
+        and the promise of His return. We also value Sabbath rest, healthy living, and serving others.
       </p>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        If the email above is not the preferred public contact, replace it in <code>src/data/site.ts</code>.
-      </p>
-    </section>
 
-    <section class="card" aria-labelledby="contact-form">
-      <h2 id="contact-form" style="margin-top: 0;">Message us</h2>
-      {hasContactForm ? (
-        <div>
-          <p class="muted" style="margin: var(--space-2) 0 0;">
-            Use our contact form and we’ll follow up as soon as possible.
-          </p>
-          <div style="margin-top: var(--space-4);">
-            <Button href={site.portals.contactFormUrl} external variant="secondary">Open contact form</Button>
-          </div>
-          <p class="small muted" style="margin: var(--space-3) 0 0;">
-            Please avoid including sensitive information.
-          </p>
-        </div>
-      ) : (
-        <div>
-          <p class="muted" style="margin: var(--space-2) 0 0;">
-            A contact form link can be added here once it’s ready. For now, please call or email.
-          </p>
-        </div>
-      )}
+      <p class="muted">
+        Learn more about Adventist beliefs at{" "}
+        <a href="https://www.adventist.org/beliefs/" target="_blank" rel="noopener noreferrer">
+          adventist.org
+        </a>
+        .
+      </p>
     </section>
   </div>
 </BaseLayout>
 </file>
 
-<file path="web/src/pages/connect/plan-a-visit/index.astro">
+<file path="web/src/pages/connect/worship-with-us/index.astro">
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Schedule from "../../../components/ui/Schedule.astro";
-import Button from "../../../components/ui/Button.astro";
 import { site } from "../../../data/site";
 ---
 
 <BaseLayout
-  title="Plan a Visit"
-  description="Service times, directions, parking, and what to expect when visiting Springfield Hispanic SDA Church."
+  title="Worship With Us"
+  description={`Learn what Sabbath School, Worship Service, and midweek Prayer Meeting are like at ${site.name}.`}
 >
   <div class="stack">
-    <h1 style="margin: 0;">Plan a Visit</h1>
-    <p class="muted" style="margin: 0;">
-      We’re glad you’re here. Below are the essentials for your first visit.
-    </p>
+    <h1 style="margin: 0;">Worship With Us</h1>
 
-    <section class="card" aria-labelledby="visit-essentials">
-      <h2 id="visit-essentials" style="margin-top: 0;">Visit essentials</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        <strong>Address:</strong>{" "}
-        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">{site.contact.address}</a>
-      </p>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        <strong>Phone:</strong>{" "}
-        <a href={`tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`}>{site.contact.phone}</a>
-      </p>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        {site.visit.languageNote}
-      </p>
-      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
-        <Button href={site.contact.mapsUrl} external variant="secondary">Open in Maps</Button>
-        <Button href="/connect/contact" variant="ghost">Contact</Button>
-      </div>
-    </section>
+    <Schedule title="Weekly Schedule" items={site.schedule} />
 
-    <section aria-labelledby="visit-times">
-      <h2 id="visit-times" style="margin: 0;">Service times</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        These are our regular weekly meeting times.
-      </p>
-      <div style="margin-top: var(--space-4);">
-        <Schedule title="This week" items={site.schedule} />
-      </div>
-    </section>
-
-    <section class="card" aria-labelledby="what-to-expect">
-      <h2 id="what-to-expect" style="margin-top: 0;">What to expect</h2>
-      <ul style="margin: var(--space-3) 0 0; padding-left: 1.1rem;">
-        <li>Come as you are - you don’t need to dress a certain way.</li>
-        <li>Sabbath School is a time for Bible study and discussion.</li>
-        <li>The Worship Service includes music, prayer, Scripture reading, and a message from Scripture.</li>
-        <li>If you’re visiting for the first time, feel free to introduce yourself to an usher or greeter.</li>
-        <li>If you have kids, ask someone to point you to the appropriate classroom or seating area.</li>
-      </ul>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        {site.visit.accessibilityNote}
+    <section class="card">
+      <h2 style="margin-top: 0;">Sabbath School</h2>
+      <p class="muted">
+        Sabbath School is a Bible study time for all ages, with classes for children and adults.
       </p>
     </section>
 
-    <section class="card" aria-labelledby="directions">
-      <h2 id="directions" style="margin-top: 0;">Directions (quick summary)</h2>
-      <ol style="margin: var(--space-3) 0 0; padding-left: 1.1rem;">
-        {site.visit.directions.map((step) => (
-          <li>{step}</li>
-        ))}
-      </ol>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        {site.visit.parkingNote}
+    <section class="card">
+      <h2 style="margin-top: 0;">Worship Service</h2>
+      <p class="muted">
+        Our worship service includes singing, prayer, Scripture, and a message from the Bible.
       </p>
     </section>
 
-    <section class="card" aria-labelledby="visit-questions">
-      <h2 id="visit-questions" style="margin-top: 0;">Questions before you come?</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        If you’re unsure where to enter, what time to arrive, or you need help with directions, contact us and we’ll do our best to help.
+    <section class="card">
+      <h2 style="margin-top: 0;">Midweek Prayer Meeting</h2>
+      <p class="muted">
+        Join us midweek for prayer, encouragement, and Bible study.
       </p>
-      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
-        <Button href="/connect/contact" variant="secondary">Contact</Button>
-        <Button href="/connect/prayer" variant="ghost">Prayer</Button>
-      </div>
     </section>
   </div>
 </BaseLayout>
 </file>
 
-<file path="web/src/pages/connect/prayer/index.astro">
+<file path="web/src/pages/events/[id].astro">
 ---
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import Button from "../../../components/ui/Button.astro";
-import { site } from "../../../data/site";
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/ui/Hero.astro';
+import { getCollection, render } from 'astro:content';
 
-const hasPrayerForm = site.portals.prayerFormUrl && site.portals.prayerFormUrl !== "TBD";
+export async function getStaticPaths() {
+  const events = await getCollection('events', ({ data }) => {
+    return import.meta.env.PROD ? data.draft !== true : true;
+  });
+
+  return events.map((event) => ({
+    params: { id: event.id },
+    props: { event },
+  }));
+}
+
+const { event } = Astro.props;
+const { Content } = await render(event);
+
+const fmtDate = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'full',
+  timeStyle: 'short',
+  timeZone: 'America/New_York',
+});
+
+const when = event.data.end
+  ? `${fmtDate.format(event.data.start)} – ${fmtDate.format(event.data.end)}`
+  : fmtDate.format(event.data.start);
 ---
 
-<BaseLayout
-  title="Prayer"
-  description="Submit a prayer request to Springfield Hispanic SDA Church."
->
-  <div class="stack">
-    <h1 style="margin: 0;">Prayer</h1>
-    <p class="muted" style="margin: 0;">
-      We would be honored to pray for you. You can submit a request below.
-    </p>
+<BaseLayout title={event.data.title} description={event.data.summary}>
+  <Hero title={event.data.title} subtitle={event.data.summary} />
 
-    <section class="card" aria-labelledby="prayer-submit">
-      <h2 id="prayer-submit" style="margin-top: 0;">Submit a prayer request</h2>
-
-      {hasPrayerForm ? (
-        <div>
-          <p class="muted" style="margin: var(--space-2) 0 0;">
-            Use the prayer request form. If you’d like someone to follow up, include your contact details.
-          </p>
-          <div style="margin-top: var(--space-4);">
-            <Button href={site.portals.prayerFormUrl} external variant="secondary">Open prayer request form</Button>
-          </div>
-        </div>
-      ) : (
-        <div>
-          <p class="muted" style="margin: var(--space-2) 0 0;">
-            A prayer request form link can be added here once it’s ready.
-          </p>
-          <p class="muted" style="margin: var(--space-2) 0 0;">
-            For now, you can call us at {" "}
-            <a href={`tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`}>{site.contact.phone}</a>{" "}
-            or email {" "}
-            <a href={`mailto:${site.contact.email}?subject=Prayer%20request`}>{site.contact.email}</a>.
-          </p>
-        </div>
+  <section class="container stack">
+    <div class="card stack" style="gap: 0.5rem;">
+      <p class="muted" style="margin: 0;"><strong>When:</strong> {when}</p>
+      {event.data.locationName && (
+        <p class="muted" style="margin: 0;"><strong>Where:</strong> {event.data.locationName}</p>
       )}
+      {event.data.address && (
+        <p class="muted" style="margin: 0;"><strong>Address:</strong> {event.data.address}</p>
+      )}
+      {event.data.registrationUrl && (
+        <p style="margin: 0;">
+          <a class="link" href={event.data.registrationUrl} rel="noopener noreferrer">Register / Learn more</a>
+        </p>
+      )}
+    </div>
 
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        If your request is urgent or you need immediate help, please call.
-      </p>
-    </section>
+    <article class="card stack">
+      <Content />
+    </article>
 
-    <section class="card" aria-labelledby="prayer-next">
-      <h2 id="prayer-next" style="margin-top: 0;">What happens next?</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        Prayer requests are reviewed by church leadership or designated volunteers. If you request follow-up, we will reach out when possible.
-      </p>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        Privacy note: please keep details appropriate for a shared prayer team.
-      </p>
-    </section>
-  </div>
+    <p><a class="link" href="/events/">← Back to Events</a></p>
+  </section>
 </BaseLayout>
 </file>
 
-<file path="web/src/pages/connect/index.astro">
+<file path="web/src/pages/events/index.astro">
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import Card from "../../components/ui/Card.astro";
-import CardGrid from "../../components/ui/CardGrid.astro";
-import Button from "../../components/ui/Button.astro";
-import { site } from "../../data/site";
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/ui/Hero.astro';
+import ContentCard from '../../components/content/ContentCard.astro';
+import { getCollection } from 'astro:content';
+
+const events = await getCollection('events', ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+const now = new Date();
+const upcoming = events
+  .filter((e) => e.data.start >= now)
+  .sort((a, b) => a.data.start.valueOf() - b.data.start.valueOf());
+
+const past = events
+  .filter((e) => e.data.start < now)
+  .sort((a, b) => b.data.start.valueOf() - a.data.start.valueOf())
+  .slice(0, 12);
+
+const fmt = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+  timeZone: 'America/New_York',
+});
 ---
 
-<BaseLayout
-  title="Connect"
-  description="Plan a visit, learn about worship, request prayer, and get in touch with Springfield Hispanic SDA Church."
->
-  <div class="stack">
-    <h1 style="margin: 0;">Connect</h1>
-    <p class="muted" style="margin: 0;">
-      New here? Start with Plan a Visit. Need support? Use Prayer or Contact.
-    </p>
+<BaseLayout title="Events" description="What’s happening at church.">
+  <Hero
+    title="Events"
+    subtitle="See what’s coming up and what we’ve recently hosted."
+  />
 
-    <CardGrid columns={3}>
-      <Card
-        title="Plan a Visit"
-        description="Directions, what to expect, and service times."
-        href="/connect/plan-a-visit"
-      />
-      <Card
-        title="Worship With Us"
-        description="What happens at Sabbath School, Worship Service, and Prayer Meeting."
-        href="/connect/worship-with-us"
-      />
-      <Card
-        title="About"
-        description="Learn who we are and what we believe."
-        href="/connect/about"
-      />
-      <Card
-        title="Contact"
-        description="Address, phone, email, and reliable ways to reach us."
-        href="/connect/contact"
-      />
-      <Card
-        title="Prayer"
-        description="Submit a prayer request or ask for follow-up."
-        href="/connect/prayer"
-      />
-      <Card
-        title="Give"
-        description="Support the mission of the church online."
-        href="/give"
-      />
-    </CardGrid>
+  <section class="container stack">
+    <h2>Upcoming</h2>
 
-    <div class="card">
-      <div style="font-weight: 800;">Quick actions</div>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        Watch online, open directions, or reach out right now.
-      </p>
-      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
-        <Button href="/media/live" variant="secondary">Watch live</Button>
-        <Button href={site.contact.mapsUrl} external variant="secondary">Open maps</Button>
-        <Button href="/connect/contact" variant="ghost">Contact</Button>
+    {upcoming.length === 0 ? (
+      <p class="muted">No upcoming events are published yet.</p>
+    ) : (
+      <div class="grid--cards">
+        {upcoming.map((e) => (
+          <ContentCard
+            href={`/events/${e.id}/`}
+            title={e.data.title}
+            summary={e.data.summary}
+            meta={fmt.format(e.data.start)}
+            tags={e.data.tags}
+          />
+        ))}
       </div>
-    </div>
-  </div>
-</BaseLayout>
-</file>
+    )}
 
-<file path="web/src/pages/give/index.astro">
----
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import Button from "../../components/ui/Button.astro";
-import Card from "../../components/ui/Card.astro";
-import CardGrid from "../../components/ui/CardGrid.astro";
-import { site } from "../../data/site";
----
-
-<BaseLayout title="Give" description="Support Springfield Hispanic SDA Church through online giving.">
-  <div class="stack">
-    <h1 style="margin: 0;">Give</h1>
-    <p class="muted" style="margin: 0;">
-      Thank you for supporting the mission of the church. Online giving is handled through our external giving platform.
-    </p>
-
-    <div class="card">
-      <div style="font-weight: 800;">Online giving</div>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        Use the secure giving link below.
-      </p>
-      <div style="margin-top: var(--space-4);">
-        <Button href={site.portals.givingUrl} external variant="secondary">Give online</Button>
+    <h2 style="margin-top: 2.5rem;">Recent</h2>
+    {past.length === 0 ? (
+      <p class="muted">No past events are published yet.</p>
+    ) : (
+      <div class="grid--cards">
+        {past.map((e) => (
+          <ContentCard
+            href={`/events/${e.id}/`}
+            title={e.data.title}
+            summary={e.data.summary}
+            meta={fmt.format(e.data.start)}
+            tags={e.data.tags}
+          />
+        ))}
       </div>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        If you prefer, you can also give in person during services.
-      </p>
-    </div>
-
-    <section aria-labelledby="give-more">
-      <h2 id="give-more" style="margin: 0;">More ways to help</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        Beyond financial giving, you can also serve through volunteering and community support.
-      </p>
-      <CardGrid columns={3}>
-        <Card title="Volunteer" description="Interested in serving? Use our volunteer form." href="/resources/forms" />
-        <Card title="Prayer" description="Need support or follow-up? Submit a prayer request." href="/connect/prayer" />
-        <Card title="Contact" description="Questions about giving? Reach out to the church." href="/connect/contact" />
-      </CardGrid>
-    </section>
-  </div>
+    )}
+  </section>
 </BaseLayout>
 </file>
 
 <file path="web/src/pages/join/index.astro">
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import PlaceholderPage from "../../components/PlaceholderPage.astro";
+import CardGrid from "../../components/sections/CardGrid.astro";
+import { site } from "../../data/site";
 ---
 
-<BaseLayout title="Join">
-  <PlaceholderPage title="Join" />
-</BaseLayout>
-</file>
-
-<file path="web/src/pages/media/live/index.astro">
----
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import Button from "../../../components/ui/Button.astro";
-import { site } from "../../../data/site";
----
-
-<BaseLayout title="Watch Live">
+<BaseLayout title="Join" description={`Plan your first visit, learn what to expect, and get connected at ${site.name}.`}>
   <div class="stack">
-    <h1 style="margin: 0;">Watch Live</h1>
-    <p class="muted" style="margin: 0;">
-      Live video will be embedded here in Phase 5. For now, use the channel link.
-    </p>
-    <div>
-      <Button href={site.portals.youtubeChannelUrl} external variant="secondary">Open YouTube channel</Button>
-    </div>
+    <h1 style="margin: 0;">Join</h1>
+
+    <CardGrid
+      title="Start here"
+      cards={[
+        {
+          title: "Plan a Visit",
+          description: "Service times, directions, and what to expect.",
+          href: "/connect/plan-a-visit"
+        },
+        {
+          title: "Worship With Us",
+          description: "Learn what our weekly services are like.",
+          href: "/connect/worship-with-us"
+        },
+        {
+          title: "Contact",
+          description: "Phone, email, and how to reach us.",
+          href: "/connect/contact"
+        }
+      ]}
+    />
   </div>
 </BaseLayout>
 </file>
 
-<file path="web/src/pages/media/videos/index.astro">
----
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import Button from "../../../components/ui/Button.astro";
-import { site } from "../../../data/site";
----
-
-<BaseLayout title="Videos">
-  <div class="stack">
-    <h1 style="margin: 0;">Videos</h1>
-    <p class="muted" style="margin: 0;">
-      Recent videos and playlists will appear here in Phase 5.
-    </p>
-    <div>
-      <Button href={site.portals.youtubeChannelUrl} external variant="secondary">Browse on YouTube</Button>
-    </div>
-  </div>
-</BaseLayout>
-</file>
-
-<file path="web/src/pages/media/index.astro">
+<file path="web/src/pages/ministries/[id].astro">
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import PlaceholderPage from "../../components/PlaceholderPage.astro";
+import { getCollection, getEntry } from "astro:content";
+
+export async function getStaticPaths() {
+  const ministries = await getCollection("ministries", ({ data }) =>
+    import.meta.env.PROD ? data.draft !== true : true
+  );
+  return ministries.map((m) => ({ params: { id: m.id } }));
+}
+
+const { id } = Astro.params;
+
+const ministry = await getEntry("ministries", id!);
+if (!ministry) throw new Error(`Ministry not found: ${id}`);
+
+const data: any = (ministry as any).data ?? {};
+
+let Content: any = null;
+// Only Markdown/MDX entries have entry.render()
+if (typeof (ministry as any).render === "function") {
+  const rendered = await (ministry as any).render();
+  Content = rendered?.Content ?? null;
+}
+
+const title =
+  data.title ??
+  (typeof id === "string"
+    ? id.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    : "Ministry");
+
+const description =
+  data.description ?? data.summary ?? `Learn more about ${title}.`;
 ---
 
-<BaseLayout title="Media">
-  <PlaceholderPage title="Media" />
-</BaseLayout>
-</file>
+<BaseLayout title={title} description={description}>
+  <div class="stack">
+    <h1 style="margin: 0;">{title}</h1>
 
-<file path="web/src/pages/ministries/index.astro">
----
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Hero from '../../components/ui/Hero.astro';
-import ContentCard from '../../components/content/ContentCard.astro';
-import { getCollection } from 'astro:content';
-
-const ministries = await getCollection('ministries', ({ data }) => {
-  return import.meta.env.PROD ? data.draft !== true : true;
-});
-
-const sorted = ministries.sort((a, b) => a.data.title.localeCompare(b.data.title));
----
-
-<BaseLayout title="Ministries" description="Ways to serve and grow together.">
-  <Hero title="Ministries" subtitle="Find a place to belong and serve." />
-
-  <section class="container stack">
-    {sorted.length === 0 ? (
-      <p class="muted">No ministries are published yet.</p>
+    {Content ? (
+      <Content />
     ) : (
-      <div class="grid--cards">
-        {sorted.map((m) => (
-          <ContentCard
-            href={`/ministries/${m.id}/`}
-            title={m.data.title}
-            summary={m.data.summary}
-            tags={m.data.tags}
-          />
-        ))}
-      </div>
+      <section class="card">
+        <p class="muted" style="margin: 0;">{description}</p>
+      </section>
     )}
-  </section>
+  </div>
 </BaseLayout>
 </file>
 
-<file path="web/src/pages/resources/bulletins/index.astro">
+<file path="web/src/pages/privacy/index.astro">
 ---
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import PlaceholderPage from "../../../components/PlaceholderPage.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Hero from "../../components/ui/Hero.astro";
+
+const analyticsEnabled = import.meta.env.PROD && Boolean(import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN);
 ---
 
-<BaseLayout title="Bulletins">
-  <PlaceholderPage
-    title="Bulletins"
-    message="The current bulletin and an archive will be published here in Phase 5."
-  />
+<BaseLayout title="Privacy" description="Privacy and data use">
+  <div class="stack">
+    <Hero title="Privacy" subtitle="How this website handles data." />
+
+    <section class="card" style="padding: var(--space-4);">
+      <h2 style="margin-top: 0;">Analytics</h2>
+      {analyticsEnabled ? (
+        <>
+          <p class="muted">
+            This site uses Cloudflare Web Analytics to understand overall traffic (for example: page views and referrers).
+            We use this information to improve content and navigation.
+          </p>
+          <ul class="muted" style="margin-top: var(--space-2);">
+            <li>We measure aggregated traffic, not individual user behavior.</li>
+            <li>We do not sell personal information.</li>
+            <li>We do not use this analytics setup for ad targeting.</li>
+          </ul>
+        </>
+      ) : (
+        <p class="muted">
+          This site currently has analytics disabled. If enabled in the future, this page will be updated.
+        </p>
+      )}
+
+      <h2>Search</h2>
+      <p class="muted">
+        Search is powered by a static index and runs in your browser. Search queries are not sent to a server.
+      </p>
+
+      <h2>External links</h2>
+      <p class="muted">
+        Some buttons and links may send you to external platforms (for example: online giving, YouTube, or forms).
+        Those services have their own privacy policies.
+      </p>
+
+      <h2>Contact</h2>
+      <p class="muted" style="margin-bottom: 0;">
+        If you have privacy questions, please contact the church.
+      </p>
+    </section>
+  </div>
 </BaseLayout>
 </file>
 
-<file path="web/src/pages/resources/forms/index.astro">
----
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import PlaceholderPage from "../../../components/PlaceholderPage.astro";
----
-
-<BaseLayout title="Forms">
-  <PlaceholderPage
-    title="Forms"
-    message="We are organizing our official forms. This page will list signups and requests soon."
-  />
-</BaseLayout>
-</file>
-
-<file path="web/src/pages/resources/index.astro">
+<file path="web/src/pages/resources/[...id].astro">
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Hero from '../../components/ui/Hero.astro';
-import ContentCard from '../../components/content/ContentCard.astro';
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 
-const resources = await getCollection('resources', ({ data }) => {
-  return import.meta.env.PROD ? data.draft !== true : true;
+export async function getStaticPaths() {
+  const resources = await getCollection('resources', ({ data }) => {
+    return import.meta.env.PROD ? data.draft !== true : true;
+  });
+
+  return resources.map((resource) => ({
+    params: { id: resource.id },
+    props: { resource },
+  }));
+}
+
+const { resource } = Astro.props;
+const { Content } = await render(resource);
+
+const fmt = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'full',
+  timeZone: 'America/New_York',
 });
-
-const latest = resources
-  .sort((a, b) => b.data.published.valueOf() - a.data.published.valueOf())
-  .slice(0, 15);
-
-const fmt = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'America/New_York' });
 ---
 
-<BaseLayout title="Resources" description="Helpful links, forms, bulletins, and downloads.">
-  <Hero title="Resources" subtitle="Downloads, forms, and helpful info." />
+<BaseLayout title={resource.data.title} description={resource.data.summary}>
+  <Hero title={resource.data.title} subtitle={resource.data.summary} />
 
   <section class="container stack">
-    <div class="grid--cards">
-      <article class="card">
-        <h3 style="margin: 0.25rem 0;"><a class="link" href="/resources/bulletins/">Bulletins</a></h3>
-        <p class="muted" style="margin: 0;">Weekly PDFs and archives.</p>
-      </article>
-      <article class="card">
-        <h3 style="margin: 0.25rem 0;"><a class="link" href="/resources/forms/">Forms</a></h3>
-        <p class="muted" style="margin: 0;">Requests, sign-ups, and contact info.</p>
-      </article>
+    <div class="card stack" style="gap: 0.5rem;">
+      <p class="muted" style="margin: 0;"><strong>Published:</strong> {fmt.format(resource.data.published)}</p>
+      {resource.data.category && (
+        <p class="muted" style="margin: 0;"><strong>Category:</strong> {resource.data.category}</p>
+      )}
+
+      {resource.data.attachmentUrl && (
+        <p style="margin: 0;">
+          <a class="link" href={resource.data.attachmentUrl}>Download / Open attachment</a>
+        </p>
+      )}
+
+      {resource.data.externalUrl && (
+        <p style="margin: 0;">
+          <a class="link" href={resource.data.externalUrl} rel="noopener noreferrer">Open external link</a>
+        </p>
+      )}
     </div>
 
-    <h2 style="margin-top: 2.5rem;">Latest resources</h2>
+    <article class="card stack">
+      <Content />
+    </article>
 
-    {latest.length === 0 ? (
-      <p class="muted">No resources are published yet.</p>
-    ) : (
-      <div class="grid--cards">
-        {latest.map((r) => (
-          <ContentCard
-            href={`/resources/${r.id}/`}
-            title={r.data.title}
-            summary={r.data.summary}
-            meta={fmt.format(r.data.published)}
-            tags={r.data.tags}
-          />
-        ))}
-      </div>
-    )}
+    <p><a class="link" href="/resources/">← Back to Resources</a></p>
   </section>
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/search/index.astro">
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Hero from "../../components/ui/Hero.astro";
+import Search from "astro-pagefind/components/Search";
+---
+
+<BaseLayout
+  title="Search"
+  description="Search pages, resources, and bulletins."
+  noIndex={true}
+>
+  <div class="stack">
+    <Hero title="Search" subtitle="Search resources, bulletins, and site pages." />
+
+    <section aria-label="Site search" class="card" style="padding: var(--space-4);">
+      <label id="site-search-label" for="site-search-input" style="font-weight: 700;">
+        Search the site
+      </label>
+
+      <div style="margin-top: var(--space-2);">
+        {/* astro-pagefind expects an id so it can mount Pagefind UI into this element */}
+        <Search
+          id="site-search"
+          className="pagefind-ui"
+          uiOptions={{
+            showImages: false,
+            showSubResults: true,
+            excerptLength: 20,
+            resetStyles: false,
+            placeholder: "Search the site…",
+          }}
+        />
+      </div>
+
+      <script is:inline>
+        {String.raw`(() => {
+          const ROOT_ID = "site-search";
+          const LABEL_ID = "site-search-label";
+          const INPUT_ID = "site-search-input";
+
+          const root = document.getElementById(ROOT_ID);
+          if (!root) return;
+
+          const ensureLabel = () => {
+            const input = root.querySelector("input.pagefind-ui__search-input");
+            if (!input) return;
+
+            // Ensure visible <label> is programmatically tied to the input
+            if (input.id !== INPUT_ID) input.id = INPUT_ID;
+            input.setAttribute("aria-labelledby", LABEL_ID);
+
+            // Optional extra name (doesn't hurt if a label exists)
+            input.setAttribute("aria-label", "Search the site");
+
+            // Don't rely on title as the label
+            input.removeAttribute("title");
+          };
+
+          ensureLabel();
+
+          // Pagefind can update/re-render; keep the fix applied briefly after mount
+          const obs = new MutationObserver(() => ensureLabel());
+          obs.observe(root, {
+            subtree: true,
+            childList: true,
+            attributes: true,
+            attributeFilter: ["id", "title", "aria-label", "aria-labelledby"],
+          });
+
+          setTimeout(() => obs.disconnect(), 3000);
+        })();`}
+      </script>
+
+      <details class="small muted" style="margin: var(--space-3) 0 0;">
+        <summary>How search works</summary>
+        <p style="margin: var(--space-2) 0 0;">
+          Search runs in your browser using a static index generated at build time.
+          Your search terms are not sent to the site server.
+        </p>
+      </details>
+    </section>
+  </div>
 </BaseLayout>
 </file>
 
 <file path="web/src/pages/serve/index.astro">
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import PlaceholderPage from "../../components/PlaceholderPage.astro";
+import CardGrid from "../../components/sections/CardGrid.astro";
+import { site } from "../../data/site";
 ---
 
-<BaseLayout title="Serve">
-  <PlaceholderPage title="Serve" />
+<BaseLayout title="Serve" description={`Find a place to belong, serve, and grow with ${site.name}.`}>
+  <div class="stack">
+    <h1 style="margin: 0;">Serve</h1>
+
+    <CardGrid
+      title="Get involved"
+      cards={[
+        {
+          title: "Volunteer",
+          description: "Find a place to serve based on your interests.",
+          href: "/resources/forms"
+        },
+        {
+          title: "Prayer",
+          description: "Join our prayer ministry or submit a request.",
+          href: "/connect/prayer"
+        },
+        {
+          title: "Contact",
+          description: "Reach out and we’ll help you get connected.",
+          href: "/connect/contact"
+        }
+      ]}
+    />
+  </div>
 </BaseLayout>
 </file>
 
@@ -2853,9 +3622,96 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 }
 </file>
 
-<file path="web/.env.example">
-# Future use (Phase 5+)
-# PUBLIC_SITE_URL=https://example.com
+<file path="web/test-results/.last-run.json">
+{
+  "status": "failed",
+  "failedTests": [
+    "c15da2e22129826af786-b59385015df36dbb670a"
+  ]
+}
+</file>
+
+<file path="web/tests/e2e/content-collections.spec.ts">
+import { expect, test } from '@playwright/test';
+
+test('Events hub loads', async ({ page }) => {
+  await page.goto('/events/');
+  await expect(page.getByRole('heading', { name: 'Events' })).toBeVisible();
+});
+
+test('Ministries hub loads', async ({ page }) => {
+  await page.goto('/ministries/');
+  await expect(page.getByRole('heading', { name: 'Ministries' })).toBeVisible();
+});
+
+test('Resources hub loads', async ({ page }) => {
+  await page.goto('/resources/');
+  await expect(page.getByRole('heading', { name: 'Resources', exact: true })).toBeVisible();
+});
+</file>
+
+<file path="web/tests/e2e/phase-5-media-portals.spec.ts">
+import { expect, test } from "@playwright/test";
+
+test("Media hub loads", async ({ page }) => {
+  await page.goto("/media/");
+  await expect(page.getByRole("heading", { name: "Media", exact: true })).toBeVisible();
+
+  const quickLinks = page.getByRole("region", { name: "Quick links" });
+  await expect(quickLinks.getByRole("link", { name: "Watch Live", exact: true })).toBeVisible();
+  await expect(quickLinks.getByRole("link", { name: "Videos", exact: true })).toBeVisible();
+});
+
+test("Live page loads", async ({ page }) => {
+  await page.goto("/media/live/");
+  await expect(page.getByRole("heading", { name: "Watch Live", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open YouTube channel", exact: true })).toBeVisible();
+});
+
+test("Videos page loads", async ({ page }) => {
+  await page.goto("/media/videos/");
+  await expect(page.getByRole("heading", { name: "Videos", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Browse on YouTube", exact: true })).toBeVisible();
+});
+
+test("Bulletins page loads", async ({ page }) => {
+  await page.goto("/resources/bulletins/");
+  await expect(page.getByRole("heading", { name: "Bulletins", exact: true })).toBeVisible();
+});
+
+test("Forms directory loads", async ({ page }) => {
+  await page.goto("/resources/forms/");
+  await expect(page.getByRole("heading", { name: "Forms", exact: true })).toBeVisible();
+});
+</file>
+
+<file path="web/tests/e2e/phase-6-search-and-analytics.spec.ts">
+import { expect, test } from "playwright/test";
+
+test("Search page loads", async ({ page }) => {
+  await page.goto("/search/");
+  await expect(page.getByRole("heading", { name: "Search", exact: true })).toBeVisible();
+
+  // Astro Pagefind <Search id="site-search" ... /> should render an input inside this container.
+  const input = page.locator("#site-search input");
+  await expect(input).toBeVisible({ timeout: 10_000 });
+});
+
+test("Search returns results for a common term", async ({ page }) => {
+  // This test is intentionally loose to reduce flakiness.
+  // It just verifies that results can render.
+  await page.goto("/search/");
+
+  const input = page.locator("#site-search input");
+  await expect(input).toBeVisible({ timeout: 10_000 });
+
+  await input.fill("resources");
+
+  // Pagefind UI renders results asynchronously.
+  // Wait for at least one result link to appear inside the Pagefind root.
+  const firstResultLink = page.locator("#site-search a[href]").first();
+  await expect(firstResultLink).toBeVisible({ timeout: 10_000 });
+});
 </file>
 
 <file path="web/.gitignore">
@@ -2883,39 +3739,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
-</file>
-
-<file path="web/astro.config.mjs">
-// @ts-check
-import { defineConfig } from 'astro/config';
-
-// https://astro.build/config
-export default defineConfig({});
-</file>
-
-<file path="web/package.json">
-{
-  "name": "web",
-  "type": "module",
-  "version": "0.0.1",
-  "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro",
-    "check": "astro check",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
-  },
-  "dependencies": {
-    "@astrojs/check": "0.9.6",
-    "astro": "^5.16.6",
-    "typescript": "5.9.3"
-  },
-  "devDependencies": {
-    "@playwright/test": "1.57.0"
-  }
-}
 </file>
 
 <file path="web/README.md">
@@ -2967,17 +3790,6 @@ All commands are run from the root of the project, from a terminal:
 Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
 </file>
 
-<file path="web/tsconfig.json">
-{
-  "extends": "astro/tsconfigs/strict",
-  "compilerOptions": {
-    "resolveJsonModule": true
-  },
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"]
-}
-</file>
-
 <file path=".editorconfig">
 root = true
 
@@ -3010,64 +3822,37 @@ web/.astro/
 <file path=".repomixignore">
 *.d.ts
 *.svg
+web/.lighthouseci
+web/.wrangler
 </file>
 
-<file path="web/src/components/Footer.astro">
+<file path="web/src/components/ui/CardGrid.astro">
 ---
-import { site } from "../data/site";
+type Props = {
+  /** Fixed number of columns (e.g. 3). */
+  columns?: number;
+  /** Responsive min column width in px (auto-fit). */
+  columnsMin?: number;
+};
 
-const year = new Date().getFullYear();
+const { columns, columnsMin = 240 } = Astro.props;
+
+const template =
+  typeof columns === "number"
+    ? `repeat(${columns}, minmax(0, 1fr))`
+    : `repeat(auto-fit, minmax(${columnsMin}px, 1fr))`;
 ---
 
-<footer class="footer">
-  <div class="container footer__inner">
-    <div class="footer__cols">
-      <div>
-        <div class="footer__title">{site.name}</div>
-        <p class="muted" style="margin: 0;">
-          <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">
-            {site.contact.address}
-          </a>
-        </p>
-      </div>
+<div class="grid" style={`grid-template-columns: ${template};`}>
+  <slot />
+</div>
 
-      <div>
-        <div class="footer__title">Contact</div>
-        <ul class="footer__list">
-          <li><a href={`tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`}>{site.contact.phone}</a></li>
-          <li><a href={`mailto:${site.contact.email}`}>{site.contact.email}</a></li>
-          <li><a href="/connect/contact">Contact page</a></li>
-        </ul>
-      </div>
-
-      <div>
-        <div class="footer__title">Service times</div>
-        <ul class="footer__list">
-          {site.schedule.map((item) => (
-            <li><strong>{item.label}:</strong> {item.day} - {item.time}</li>
-          ))}
-        </ul>
-      </div>
-
-      <div>
-        <div class="footer__title">Links</div>
-        <div class="nav" aria-label="Footer links">
-          <a href="/give">Give</a>
-          <a href="/media/live">Watch Live</a>
-          <a href="/resources/bulletins">Bulletins</a>
-          <a href="/resources/forms">Forms</a>
-        </div>
-        <div class="nav" aria-label="Social links" style="margin-top: var(--space-2);">
-          {site.social.map((item) => (
-            <a href={item.href} target="_blank" rel="noopener noreferrer">{item.label}</a>
-          ))}
-        </div>
-      </div>
-    </div>
-
-    <div class="small muted">© {year} {site.name}</div>
-  </div>
-</footer>
+<style>
+  .grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+</style>
 </file>
 
 <file path="web/src/components/Header.astro">
@@ -3175,223 +3960,572 @@ function linkAttrs(item: { href: string; external?: boolean }) {
 </script>
 </file>
 
-<file path="web/src/data/site.ts">
-import links from "./site-links.json";
-import weekSchedule from "./week-schedule.json";
-
-export type NavItem = {
-  label: string;
-  href: string;
-  external?: boolean;
-};
-
-export type ScheduleItem = {
-  label: string;
-  day: string;
-  time: string;
-};
-
-export type PortalLinks = {
-  givingUrl: string;
-  youtubeChannelUrl: string;
-  facebookUrl: string;
-  prayerFormUrl: string;
-  contactFormUrl: string;
-  volunteerFormUrl: string;
-  oldWebsiteUrl?: string;
-};
-
-export const site = {
-  name: "Springfield Hispanic SDA Church",
-  shortName: "Springfield Hispanic SDA",
-  locale: "en-US",
-  timeZone: "America/New_York",
-
-  contact: {
-    address: "124 Putnam Cir, Springfield, MA 01104",
-    mailingAddress: "PO Box 80598, Springfield, MA 01138-0598",
-    mapsUrl: "https://www.google.com/maps?q=124+Putnam+Cir,+Springfield,+MA+01104",
-    phone: "(413) 788-9130",
-    email: "info@example.com" // Replace once verified
-  },
-
-  leadership: {
-    pastorName: "Pastor Manuel Medina" // Replace if/when updated
-  },
-
-  visit: {
-    languageNote: "Services are primarily in Spanish. Everyone is welcome.",
-    parkingNote: "Parking is typically available near the church. If you need help when you arrive, call ahead.",
-    accessibilityNote:
-      "If you need accessibility accommodations, please contact the church so we can help you plan your visit.",
-    directions: [
-      "From I-95 North, take I-91 North.",
-      "Take I-291 East (Exit 8).",
-      "Proceed through the light and follow St. James Ave.",
-      "Turn right onto Carew Street.",
-      "Go 4 blocks to Putnam Circle and turn left to the church."
-    ]
-  },
-
-  schedule: weekSchedule satisfies ScheduleItem[],
-  portals: links satisfies PortalLinks,
-
-  nav: [
-    { label: "Home", href: "/" },
-    { label: "Connect", href: "/connect" },
-    { label: "Join", href: "/join" },
-    { label: "Ministries", href: "/ministries" },
-    { label: "Resources", href: "/resources" },
-    { label: "Serve", href: "/serve" },
-    { label: "Media", href: "/media" }
-  ] satisfies NavItem[],
-
-  quickActions: [
-    { label: "Watch Live", href: "/media/live" },
-    { label: "Give", href: "/give" },
-    { label: "Prayer", href: "/connect/prayer" },
-    { label: "Bulletins", href: "/resources/bulletins" },
-    { label: "Forms", href: "/resources/forms" }
-  ] satisfies NavItem[],
-
-  social: [
-    { label: "YouTube", href: "https://www.youtube.com/@A7DON", external: true },
-    { label: "Facebook", href: "https://www.facebook.com/SpringfieldIASD/", external: true }
-  ] satisfies NavItem[]
-};
+<file path="web/src/data/site-links.json">
+{
+  "givingUrl": "https://adventistgiving.org/",
+  "youtubeChannelUrl": "https://www.youtube.com/@1stspringfieldsdama74",
+  "youtubeLiveEmbedUrl": "https://www.youtube.com/embed/live_stream?channel=UCkmryvqlHb3JIwVLc07FZwA",
+  "facebookUrl": "TBD",
+  "prayerFormUrl": "TBD",
+  "contactFormUrl": "TBD",
+  "volunteerFormUrl": "TBD",
+  "oldWebsiteUrl": "https://firstspringfieldma.adventistchurch.org/"
+}
 </file>
 
-<file path="web/src/layouts/BaseLayout.astro">
+<file path="web/src/pages/connect/contact/index.astro">
 ---
-import "../styles/global.css";
-import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
-import { site } from "../data/site";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Button from "../../../components/ui/Button.astro";
+import Schedule from "../../../components/ui/Schedule.astro";
+import { site } from "../../../data/site";
 
-type Props = {
-  title: string;
-  description?: string;
-};
-
-const { title, description } = Astro.props;
-
-const pageTitle = title === site.name || title === "Home" ? site.name : `${title} | ${site.shortName}`;
----
-
-<!doctype html>
-<html lang={site.locale}>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{pageTitle}</title>
-    {description && <meta name="description" content={description} />}
-  </head>
-  <body>
-    <a class="skip-link" href="#main-content">Skip to content</a>
-    <Header />
-    <main id="main-content" class="main">
-      <div class="container">
-        <slot />
-      </div>
-    </main>
-    <Footer />
-  </body>
-</html>
-</file>
-
-<file path="web/src/pages/index.astro">
----
-import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/ui/Hero.astro";
-import Schedule from "../components/ui/Schedule.astro";
-import Card from "../components/ui/Card.astro";
-import CardGrid from "../components/ui/CardGrid.astro";
-import Banner from "../components/ui/Banner.astro";
-import Button from "../components/ui/Button.astro";
-import { site } from "../data/site";
+const phoneHref = `tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`;
+const hasContactForm = site.portals.contactFormUrl && site.portals.contactFormUrl !== "TBD";
+const hasFacebook = site.portals.facebookUrl && site.portals.facebookUrl !== "TBD";
+const hasYouTube = site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD";
+const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAddress.trim().length);
 ---
 
 <BaseLayout
-  title={site.name}
-  description="Service times, directions, and resources for Springfield Hispanic Seventh-day Adventist Church in Springfield, Massachusetts."
+  title="Contact"
+  description={`Contact ${site.name}: address, service times, phone, and email.`}
 >
   <div class="stack">
-    <Banner
-      message="New here? Plan your first visit - we’d love to meet you."
-      ctaLabel="Plan a visit"
-      ctaHref="/connect/plan-a-visit"
-    />
+    <h1 style="margin: 0;">Contact</h1>
 
-    <Hero
-      title="Welcome"
-      subtitle={`${site.shortName} is a local Seventh-day Adventist church in Springfield, MA. ${site.visit.languageNote}`}
-      primaryCtaLabel="Plan a visit"
-      primaryCtaHref="/connect/plan-a-visit"
-      secondaryCtaLabel="Watch live"
-      secondaryCtaHref="/media/live"
-    />
-
-    <section aria-labelledby="service-times">
-      <h2 id="service-times" style="margin: 0;">Service times</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        Join us in person or online. Times below are the regular weekly schedule.
-      </p>
-      <div style="margin-top: var(--space-4);">
-        <Schedule title="This week" items={site.schedule} />
-      </div>
-    </section>
-
-    <section aria-labelledby="start-here">
-      <h2 id="start-here" style="margin: 0;">Start here</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        If you’re visiting for the first time, these are the fastest ways to get the basics.
-      </p>
-      <CardGrid columns={3}>
-        <Card
-          title="Plan a Visit"
-          description="Directions, what to expect, and service times."
-          href="/connect/plan-a-visit"
-        />
-        <Card
-          title="Worship With Us"
-          description="Learn what Sabbath School and Worship Service are like."
-          href="/connect/worship-with-us"
-        />
-        <Card
-          title="About"
-          description="Who we are, what we believe, and how to connect."
-          href="/connect/about"
-        />
-        <Card
-          title="Contact"
-          description="Address, phone, email, and reliable ways to reach us."
-          href="/connect/contact"
-        />
-        <Card
-          title="Prayer"
-          description="Submit a prayer request or ask for follow-up."
-          href="/connect/prayer"
-        />
-        <Card
-          title="Give"
-          description="Support the mission of the church online."
-          href="/give"
-        />
-      </CardGrid>
-    </section>
-
-    <section aria-labelledby="find-us" class="card">
-      <h2 id="find-us" style="margin-top: 0;">Find us</h2>
+    <section class="card" aria-labelledby="contact-address">
+      <h2 id="contact-address" style="margin-top: 0;">Address</h2>
       <p class="muted" style="margin: var(--space-2) 0 0;">
         <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">{site.contact.address}</a>
       </p>
-      <p class="small muted" style="margin: var(--space-2) 0 0;">
-        {site.visit.parkingNote}
-      </p>
+
+      {hasMailing ? (
+        <p class="small muted" style="margin: var(--space-2) 0 0;">
+          Mail: {site.contact.mailingAddress}
+        </p>
+      ) : null}
+
       <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
         <Button href={site.contact.mapsUrl} external variant="secondary">Open in Maps</Button>
+        <Button href="/connect/plan-a-visit" variant="ghost">Plan a Visit</Button>
+      </div>
+    </section>
+
+    <Schedule title="Service Times" items={site.schedule} />
+
+    <section class="card" aria-labelledby="contact-phone">
+      <h2 id="contact-phone" style="margin-top: 0;">Phone</h2>
+      <p class="muted" style="margin: var(--space-2) 0 0;">
+        <a href={phoneHref}>{site.contact.phone}</a>
+      </p>
+      <p class="small muted" style="margin: var(--space-3) 0 0;">
+        If nobody answers, please leave a message and include a callback number.
+      </p>
+    </section>
+
+    <section class="card" aria-labelledby="contact-email">
+      <h2 id="contact-email" style="margin-top: 0;">Email</h2>
+      <p class="muted" style="margin: var(--space-2) 0 0;">
+        <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+      </p>
+    </section>
+
+    <section class="card" aria-labelledby="contact-watch-give">
+      <h2 id="contact-watch-give" style="margin-top: 0;">Watch &amp; Give</h2>
+      <p class="muted" style="margin: var(--space-2) 0 0;">
+        Watch live (when available) or give online.
+      </p>
+
+      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
+        <Button href="/media/live" variant="secondary">Watch Live</Button>
+        <Button href="/give" variant="ghost">Give</Button>
+        {hasYouTube ? (
+          <Button href={site.portals.youtubeChannelUrl} external variant="ghost">YouTube</Button>
+        ) : null}
+        {hasFacebook ? (
+          <Button href={site.portals.facebookUrl} external variant="ghost">Facebook</Button>
+        ) : null}
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="contact-form">
+      <h2 id="contact-form" style="margin-top: 0;">Message us</h2>
+      {hasContactForm ? (
+        <div>
+          <p class="muted" style="margin: var(--space-2) 0 0;">
+            Use our contact form and we’ll follow up as soon as possible.
+          </p>
+          <div style="margin-top: var(--space-4);">
+            <Button href={site.portals.contactFormUrl} external variant="secondary">Open contact form</Button>
+          </div>
+          <p class="small muted" style="margin: var(--space-3) 0 0;">
+            Please avoid including sensitive information.
+          </p>
+        </div>
+      ) : (
+        <div>
+          <p class="muted" style="margin: var(--space-2) 0 0;">
+            A contact form link can be added here once it’s ready. For now, please call or email.
+          </p>
+        </div>
+      )}
+    </section>
+  </div>
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/connect/plan-a-visit/index.astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Schedule from "../../../components/ui/Schedule.astro";
+import { site } from "../../../data/site";
+---
+
+<BaseLayout
+  title="Plan a Visit"
+  description={`Service times, directions, parking, and what to expect when visiting ${site.name}.`}
+>
+  <div class="stack">
+    <h1 style="margin: 0;">Plan a Visit</h1>
+
+    <Schedule title="Service Times" items={site.schedule} />
+
+    <section class="card">
+      <h2 style="margin-top: 0;">Directions</h2>
+      <p class="muted">
+        Address:{" "}
+        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">
+          {site.contact.address}
+        </a>
+      </p>
+
+      <ul class="muted">
+        {site.visit.directions.map((d) => (
+          <li>{d}</li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2 style="margin-top: 0;">What to expect</h2>
+      <p class="muted">{site.visit.languageNote}</p>
+      <p class="muted">{site.visit.parkingNote}</p>
+      <p class="muted">{site.visit.accessibilityNote}</p>
+    </section>
+  </div>
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/connect/prayer/index.astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Button from "../../../components/ui/Button.astro";
+import { site } from "../../../data/site";
+
+const prayerFormUrl = site.portals?.prayerFormUrl;
+const hasPrayerForm = Boolean(prayerFormUrl && prayerFormUrl !== "TBD");
+---
+
+<BaseLayout title="Prayer" description={`Submit a prayer request to ${site.name}.`}>
+  <div class="stack">
+    <h1 style="margin: 0;">Prayer</h1>
+
+    <section class="card">
+      <h2 style="margin-top: 0;">How can we pray for you?</h2>
+      <p class="muted">
+        We believe prayer matters. Share a request and our prayer team will pray with you.
+      </p>
+
+      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
+        {hasPrayerForm ? (
+          <Button href={prayerFormUrl} external variant="secondary">Submit prayer request</Button>
+        ) : (
+          <Button href={`mailto:${site.contact.email}?subject=Prayer%20Request`} variant="secondary">
+            Email a prayer request
+          </Button>
+        )}
         <Button href="/connect/contact" variant="ghost">Contact</Button>
       </div>
+
+      <p class="small muted" style="margin-top: var(--space-4);">
+        Please avoid including sensitive information.
+      </p>
+    </section>
+  </div>
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/connect/index.astro">
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import CardGrid from "../../components/sections/CardGrid.astro";
+import { site } from "../../data/site";
+---
+
+<BaseLayout
+  title="Connect"
+  description={`Plan a visit, learn about worship, request prayer, and get in touch with ${site.name}.`}
+>
+  <div class="stack">
+    <h1 style="margin: 0;">Connect</h1>
+
+    <CardGrid
+      title="Ways to connect"
+      cards={[
+        {
+          title: "Plan a Visit",
+          description: "Service times, directions, and what to expect.",
+          href: "/connect/plan-a-visit"
+        },
+        {
+          title: "Worship With Us",
+          description: "Learn about Sabbath School and worship service.",
+          href: "/connect/worship-with-us"
+        },
+        {
+          title: "Prayer",
+          description: "Share a prayer request with our prayer team.",
+          href: "/connect/prayer"
+        },
+        {
+          title: "Contact",
+          description: "Phone, email, and how to reach us.",
+          href: "/connect/contact"
+        }
+      ]}
+    />
+  </div>
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/give/index.astro">
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Button from "../../components/ui/Button.astro";
+import { site } from "../../data/site";
+---
+
+<BaseLayout title="Give" description={`Support ${site.name} through online giving.`}>
+  <div class="stack">
+    <h1 style="margin: 0;">Give</h1>
+
+    <section class="card">
+      <h2 style="margin-top: 0;">Thank you for your generosity</h2>
+      <p class="muted">
+        Your giving supports ministry, outreach, and the mission of our church.
+      </p>
+
+      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
+        <Button href={site.portals.givingUrl} external variant="secondary">Give Online</Button>
+        <Button href="/connect/contact" variant="ghost">Questions?</Button>
+      </div>
+
+      <p class="small muted" style="margin-top: var(--space-4);">
+        If you prefer to give in person, you can also give during worship service.
+      </p>
+    </section>
+  </div>
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/media/live/index.astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import YouTubeEmbed from "../../../components/ui/YouTubeEmbed.astro";
+import Button from "../../../components/ui/Button.astro";
+import { site } from "../../../data/site";
+
+const hasEmbed = site.portals.youtubeLiveEmbedUrl && site.portals.youtubeLiveEmbedUrl !== "TBD";
+const hasYouTube = site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD";
+---
+
+<BaseLayout title="Watch Live" description={`Watch ${site.shortName} live.`}>
+  <div class="stack">
+    <h1 style="margin: 0;">Watch Live</h1>
+
+    {hasEmbed ? (
+      <YouTubeEmbed
+        title={`${site.shortName} Live`}
+        embedUrl={site.portals.youtubeLiveEmbedUrl}
+      />
+    ) : (
+      <section class="card">
+        <h2 style="margin-top: 0;">Live stream coming soon</h2>
+        <p class="muted">
+          Set <code>portals.youtubeLiveEmbedUrl</code> in <code>src/data/site.ts</code>.
+        </p>
+      </section>
+    )}
+
+    {hasYouTube ? (
+      <div>
+        <Button href={site.portals.youtubeChannelUrl} external variant="secondary">
+          Open YouTube channel
+        </Button>
+      </div>
+    ) : (
+      <p class="small muted">
+        Add <code>portals.youtubeChannelUrl</code> in <code>src/data/site.ts</code>.
+      </p>
+    )}
+  </div>
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/media/videos/index.astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Button from "../../../components/ui/Button.astro";
+import { site } from "../../../data/site";
+
+const hasYouTube = site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD";
+---
+
+<BaseLayout title="Videos" description={`Recent videos from ${site.name}.`}>
+  <div class="stack">
+    <h1 style="margin: 0;">Videos</h1>
+
+    <section class="card">
+      <h2 style="margin-top: 0;">Watch on YouTube</h2>
+      <p class="muted">
+        Browse recent messages and live streams on our YouTube channel.
+      </p>
+
+      {hasYouTube ? (
+        <div style="margin-top: var(--space-4);">
+          <Button href={site.portals.youtubeChannelUrl} external variant="secondary">
+            Browse on YouTube
+          </Button>
+        </div>
+      ) : (
+        <p class="small muted" style="margin-top: var(--space-4);">
+          Add the YouTube channel link in <code>src/data/site.ts</code>.
+        </p>
+      )}
+    </section>
+  </div>
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/media/index.astro">
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Card from "../../components/ui/Card.astro";
+import Grid from "../../components/ui/CardGrid.astro";
+import { site } from "../../data/site";
+---
+
+<BaseLayout title="Media" description={`Watch live and browse recent videos from ${site.name}.`}>
+  <div class="stack">
+    <h1 style="margin: 0;">Media</h1>
+
+    <section aria-label="Quick links" class="stack">
+      <h2 style="margin: 0;">Quick links</h2>
+
+      <Grid columnsMin={240}>
+        <Card
+          title="Watch Live"
+          description="Join our live stream when available."
+          href="/media/live"
+        />
+        <Card
+          title="Videos"
+          description="Browse recent sermons and messages."
+          href="/media/videos"
+        />
+      </Grid>
+    </section>
+  </div>
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/ministries/index.astro">
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/ui/Hero.astro';
+import ContentCard from '../../components/content/ContentCard.astro';
+import { getCollection } from 'astro:content';
+
+const ministries = await getCollection('ministries', ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+const sorted = ministries.sort((a, b) => a.data.title.localeCompare(b.data.title));
+---
+
+<BaseLayout title="Ministries" description="Ways to serve and grow together.">
+  <Hero title="Ministries" subtitle="Find a place to belong and serve." />
+
+  <section class="container stack">
+    {sorted.length === 0 ? (
+      <p class="muted">No ministries are published yet.</p>
+    ) : (
+      <div class="grid--cards">
+        {sorted.map((m) => (
+          <ContentCard
+            href={`/ministries/${m.id}/`}
+            title={m.data.title}
+            summary={m.data.summary}
+            tags={m.data.tags}
+          />
+        ))}
+      </div>
+    )}
+  </section>
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/resources/bulletins/index.astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Button from "../../../components/ui/Button.astro";
+import Card from "../../../components/ui/Card.astro";
+import CardGrid from "../../../components/ui/CardGrid.astro";
+import { site } from "../../../data/site";
+import { getCollection } from "astro:content";
+
+const bulletins = await getCollection("bulletins", ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+const sorted = bulletins.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const current = sorted[0];
+const archive = sorted.slice(1);
+
+const fmt = new Intl.DateTimeFormat("en-US", { dateStyle: "full", timeZone: site.timeZone });
+---
+
+<BaseLayout title="Bulletins" description="Weekly bulletins and archives.">
+  <div class="stack">
+    <h1 style="margin: 0;">Bulletins</h1>
+    <p class="muted" style="margin: 0;">Weekly PDFs and an archive.</p>
+
+    {sorted.length === 0 ? (
+      <section class="card">
+        <p class="muted" style="margin: 0;">No bulletins have been posted yet.</p>
+      </section>
+    ) : (
+      <>
+        <section class="card" aria-labelledby="bulletins-current">
+          <h2 id="bulletins-current" style="margin-top: 0;">Current bulletin</h2>
+          <p class="muted" style="margin: var(--space-2) 0 0;">
+            {current.data.title} • {fmt.format(current.data.date)}
+          </p>
+          {current.data.summary && (
+            <p class="muted" style="margin: var(--space-2) 0 0;">{current.data.summary}</p>
+          )}
+
+          <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
+            <Button href={current.data.pdfUrl} variant="secondary">Open PDF</Button>
+          </div>
+        </section>
+
+        <section aria-labelledby="bulletins-archive">
+          <h2 id="bulletins-archive" style="margin: 0;">Archive</h2>
+
+          {archive.length === 0 ? (
+            <p class="muted" style="margin: var(--space-2) 0 0;">No archived bulletins yet.</p>
+          ) : (
+            <CardGrid columnsMin={260}>
+              {archive.map((b) => (
+                <Card
+                  title={b.data.title}
+                  description={fmt.format(b.data.date)}
+                  href={b.data.pdfUrl}
+                />
+              ))}
+            </CardGrid>
+          )}
+        </section>
+      </>
+    )}
+
+    <p class="small muted" style="margin: 0;">
+      For church members: if you need a bulletin from a past week that isn’t listed, please contact the church.
+    </p>
+  </div>
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/resources/forms/index.astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Button from "../../../components/ui/Button.astro";
+import CardGrid from "../../../components/ui/CardGrid.astro";
+import Card from "../../../components/ui/Card.astro";
+import { site } from "../../../data/site";
+
+const phoneHref = `tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`;
+
+const hasPrayerForm = site.portals.prayerFormUrl && site.portals.prayerFormUrl !== "TBD";
+const hasContactForm = site.portals.contactFormUrl && site.portals.contactFormUrl !== "TBD";
+const hasVolunteerForm = site.portals.volunteerFormUrl && site.portals.volunteerFormUrl !== "TBD";
+---
+
+<BaseLayout title="Forms" description="Official request and signup forms.">
+  <div class="stack">
+    <h1 style="margin: 0;">Forms</h1>
+    <p class="muted" style="margin: 0;">
+      Official request and signup forms. If a form is not available, you can always contact the church.
+    </p>
+
+    <section class="card" aria-labelledby="forms-help">
+      <h2 id="forms-help" style="margin-top: 0;">Need help right now?</h2>
+      <p class="muted" style="margin: var(--space-2) 0 0;">
+        Call us at <a href={phoneHref}>{site.contact.phone}</a> or visit the <a href="/connect/contact">Contact</a> page.
+      </p>
+    </section>
+
+    <section aria-labelledby="forms-list">
+      <h2 id="forms-list" style="margin: 0;">Available forms</h2>
+
+      <CardGrid columnsMin={260}>
+        {hasPrayerForm && (
+          <Card
+            title="Prayer request"
+            description="Share a prayer request. Optionally ask for follow-up."
+            href={site.portals.prayerFormUrl}
+          />
+        )}
+
+        {hasContactForm && (
+          <Card
+            title="Contact / Questions"
+            description="Send a message to the church."
+            href={site.portals.contactFormUrl}
+          />
+        )}
+
+        {hasVolunteerForm && (
+          <Card
+            title="Volunteer interest"
+            description="Let us know how you’d like to serve."
+            href={site.portals.volunteerFormUrl}
+          />
+        )}
+
+        {(!hasPrayerForm || !hasContactForm || !hasVolunteerForm) && (
+          <Card
+            title="Other requests"
+            description="If you don’t see a form you need, contact us and we’ll help."
+            href="/connect/contact"
+          />
+        )}
+      </CardGrid>
+
+      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
+        {hasPrayerForm && (
+          <Button href={site.portals.prayerFormUrl} external variant="secondary">Open prayer form</Button>
+        )}
+        {hasVolunteerForm && (
+          <Button href={site.portals.volunteerFormUrl} external variant="secondary">Open volunteer form</Button>
+        )}
+      </div>
+
+      <p class="small muted" style="margin: var(--space-4) 0 0;">
+        Privacy note: only share information you’re comfortable sharing with a church prayer/team inbox.
+      </p>
     </section>
   </div>
 </BaseLayout>
@@ -3621,6 +4755,672 @@ summary:focus-visible {
     padding: var(--space-6) 0;
   }
 }
+</file>
+
+<file path="web/src/content.config.ts">
+import { glob } from "astro/loaders";
+import { z } from "astro/zod";
+import { defineCollection } from "astro:content";
+
+const shared = z.object({
+  title: z.string(),
+  summary: z.string(),
+  tags: z.array(z.string()).optional(),
+  draft: z.boolean().optional(),
+  heroImage: z.string().optional(),
+});
+
+const events = defineCollection({
+  loader: glob({ pattern: "**/[^_]*.md", base: "./src/content/events" }),
+  schema: shared.extend({
+    start: z.coerce.date(),
+    end: z.coerce.date().optional(),
+    locationName: z.string().optional(),
+    address: z.string().optional(),
+    registrationUrl: z.string().optional(), // allow relative or absolute
+  }),
+});
+
+const ministries = defineCollection({
+  loader: glob({ pattern: "**/[^_]*.md", base: "./src/content/ministries" }),
+  schema: shared.extend({
+    leaderName: z.string().optional(),
+    meetingTime: z.string().optional(),
+    contactEmail: z.string().optional(),
+    contactPhone: z.string().optional(),
+    ctaLabel: z.string().optional(),
+    ctaHref: z.string().optional(),
+  }),
+});
+
+const resources = defineCollection({
+  loader: glob({ pattern: "**/[^_]*.md", base: "./src/content/resources" }),
+  schema: shared.extend({
+    published: z.coerce.date(),
+    category: z.string().optional(),
+    attachmentUrl: z.string().optional(), // allow relative or absolute
+    externalUrl: z.string().optional(),
+  }),
+});
+
+const bulletins = defineCollection({
+  loader: glob({ pattern: "**/[^_]*.md", base: "./src/content/bulletins" }),
+  schema: z.object({
+    title: z.string(),
+    summary: z.string().optional(),
+    date: z.coerce.date(),
+    pdfUrl: z.string(), // your content uses /bulletins/... :contentReference[oaicite:4]{index=4}
+    draft: z.boolean().optional(),
+  }),
+});
+
+export const collections = { events, ministries, resources, bulletins };
+</file>
+
+<file path="web/.env.example">
+# Future use (Phase 5+)
+# PUBLIC_SITE_URL=https://example.com
+PUBLIC_CF_ANALYTICS_TOKEN=
+</file>
+
+<file path="web/astro.config.mjs">
+import cloudflare from "@astrojs/cloudflare";
+import mdx from "@astrojs/mdx";
+import sitemap from "@astrojs/sitemap";
+import compress from "astro-compress";
+import icon from "astro-icon";
+import pagefind from "astro-pagefind";
+import { defineConfig } from "astro/config";
+
+const site = process.env.PUBLIC_SITE_URL;
+
+export default defineConfig({
+  // Used for canonical URLs + sitemap/robots generation.
+  // In Cloudflare Pages: set PUBLIC_SITE_URL to your production domain (e.g. https://example.org)
+  site: site ?? "http://localhost:4321",
+  trailingSlash: "always",
+
+  integrations: [
+    mdx(),
+    icon(),
+    compress(),
+    pagefind(),
+    sitemap({
+      // Internal site search is not a page you want indexed.
+      filter: (page) => !page.endsWith("/search/"),
+    }),
+  ],
+
+  output: "static",
+  adapter: cloudflare(),
+  vite: {
+    ssr: {
+      noExternal: ["@fontsource-variable/inter"],
+    },
+  },
+});
+</file>
+
+<file path="web/playwright.config.ts">
+import { defineConfig } from '@playwright/test';
+
+const HOST = '127.0.0.1';
+const PORT = 4321;
+const BASE_URL = `http://${HOST}:${PORT}/`;
+
+export default defineConfig({
+  webServer: {
+    // Cloudflare adapter doesn't support `astro preview`; run the built worker via Wrangler instead.
+    command: `npm run build && npx wrangler dev --local --port ${PORT}`,
+    url: BASE_URL,
+    timeout: 120 * 1000,
+    reuseExistingServer: !process.env.CI,
+  },
+  use: {
+    baseURL: BASE_URL,
+  },
+});
+</file>
+
+<file path="web/tsconfig.json">
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "resolveJsonModule": true
+  },
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"]
+}
+</file>
+
+<file path="web/src/components/Footer.astro">
+---
+import { site } from "../data/site";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <div class="footer__cols">
+      <div>
+        <div class="footer__title">{site.name}</div>
+        <p class="muted" style="margin: 0;">
+          <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">
+            {site.contact.address}
+          </a>
+        </p>
+      </div>
+
+      <div>
+        <div class="footer__title">Contact</div>
+        <ul class="footer__list">
+          <li><a href={`tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`}>{site.contact.phone}</a></li>
+          <li><a href={`mailto:${site.contact.email}`}>{site.contact.email}</a></li>
+          <li><a href="/connect/contact">Contact page</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer__title">Service times</div>
+        <ul class="footer__list">
+          {site.schedule.map((item) => (
+            <li><strong>{item.label}:</strong> {item.day} - {item.time}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer__title">Links</div>
+        <div class="nav" aria-label="Footer links">
+          <a href="/give">Give</a>
+          <a href="/media/live">Watch Live</a>
+          <a href="/resources/bulletins">Bulletins</a>
+          <a href="/resources/forms">Forms</a>
+          <a href="/search">Search</a>
+          <a href="/privacy">Privacy</a>
+        </div>
+        <div class="nav" aria-label="Social links" style="margin-top: var(--space-2);">
+          {site.social.map((item) => (
+            <a href={item.href} target="_blank" rel="noopener noreferrer">{item.label}</a>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="small muted">© {year} {site.name}</div>
+  </div>
+</footer>
+</file>
+
+<file path="web/src/layouts/BaseLayout.astro">
+---
+import "../styles/global.css";
+import "../styles/a11y.css";
+
+import Header from "../components/global/Header.astro";
+import Footer from "../components/global/Footer.astro";
+import { site } from "../data/site";
+
+export type Props = {
+  title?: string;
+  description?: string;
+  noIndex?: boolean;
+  ogImagePath?: string; // e.g. "/og/default.png"
+  ogType?: "website" | "article";
+};
+
+const {
+  title,
+  description,
+  noIndex = false,
+  ogImagePath = "/og/default.png",
+  ogType = "website",
+} = Astro.props;
+
+const pageTitle = title ? `${title} · ${site.shortName}` : site.name;
+const pageDescription = description ?? site.description;
+
+const baseUrl = Astro.site ?? new URL(Astro.url.origin);
+const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
+const ogImageUrl = new URL(ogImagePath, baseUrl).href;
+const locale = site.locale ?? "en-US";
+const ogLocale = locale.replace("-", "_");
+---
+
+<!doctype html>
+<html lang={locale.split("-")[0]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <link rel="canonical" href={canonicalUrl} />
+    <meta name="robots" content={noIndex ? "noindex,follow" : "index,follow"} />
+
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
+</file>
+
+<file path="web/src/pages/resources/index.astro">
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/ui/Hero.astro';
+import ContentCard from '../../components/content/ContentCard.astro';
+import { getCollection } from 'astro:content';
+
+const resources = await getCollection('resources', ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+const latest = resources
+  .sort((a, b) => b.data.published.valueOf() - a.data.published.valueOf())
+  .slice(0, 15);
+
+const fmt = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'America/New_York' });
+---
+
+<BaseLayout title="Resources" description="Helpful links, forms, bulletins, and downloads.">
+  <Hero title="Resources" subtitle="Downloads, forms, and helpful info." />
+
+  <section class="container stack">
+    <div class="grid--cards">
+      <article class="card">
+        <h3 style="margin: 0.25rem 0;">
+          <a class="link" href="/search/">Search</a>
+        </h3>
+        <p class="muted" style="margin: 0;">Find resources, bulletins, and more.</p>
+      </article>
+      <article class="card">
+        <h3 style="margin: 0.25rem 0;"><a class="link" href="/resources/bulletins/">Bulletins</a></h3>
+        <p class="muted" style="margin: 0;">Weekly PDFs and archives.</p>
+      </article>
+      <article class="card">
+        <h3 style="margin: 0.25rem 0;"><a class="link" href="/resources/forms/">Forms</a></h3>
+        <p class="muted" style="margin: 0;">Requests, sign-ups, and contact info.</p>
+      </article>
+    </div>
+
+    <h2 style="margin-top: 2.5rem;">Latest resources</h2>
+
+    {latest.length === 0 ? (
+      <p class="muted">No resources are published yet.</p>
+    ) : (
+      <div class="grid--cards">
+        {latest.map((r) => (
+          <ContentCard
+            href={`/resources/${r.id}/`}
+            title={r.data.title}
+            summary={r.data.summary}
+            meta={fmt.format(r.data.published)}
+            tags={r.data.tags}
+          />
+        ))}
+      </div>
+    )}
+  </section>
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/index.astro">
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import CardGrid from "../components/sections/CardGrid.astro";
+import EventList from "../components/sections/EventList.astro";
+import SermonHighlight from "../components/sections/SermonHighlight.astro";
+import { site } from "../data/site";
+---
+
+<BaseLayout title={site.name} description={site.description}>
+  <Hero
+    title="Welcome"
+    subtitle="We are a Seventh-day Adventist church family in Springfield, MA."
+    primaryCtaLabel="Plan a Visit"
+    primaryCtaHref="/connect/plan-a-visit"
+    secondaryCtaLabel="Watch Live"
+    secondaryCtaHref="/media/live"
+  />
+
+  <CardGrid
+    title="Get Connected"
+    cards={[
+      {
+        title: "About Us",
+        description: "Learn our mission and what we believe.",
+        href: "/connect/about"
+      },
+      {
+        title: "Service Times",
+        description: "See when we meet each week.",
+        href: "/connect/worship-with-us"
+      },
+      {
+        title: "Prayer",
+        description: "Share a prayer request with our prayer team.",
+        href: "/connect/prayer"
+      }
+    ]}
+  />
+
+  <EventList title="Upcoming Events" />
+
+  <SermonHighlight title="Latest Sermon" />
+</BaseLayout>
+</file>
+
+<file path="web/package.json">
+{
+  "name": "web",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test:e2e": "npm run build && playwright test",
+    "test:e2e:ci": "playwright test",
+    "test:links": "npm run build && linkinator ./dist --config ./linkinator.config.json",
+    "test:links:ci": "linkinator ./dist --config ./linkinator.config.json",
+    "lighthouse": "npm run build && lhci autorun --config=./lighthouserc.cjs",
+    "lighthouse:ci": "lhci autorun --config=./lighthouserc.cjs",
+    "qa": "npm run check && npm run test:e2e && npm run test:links && npm run lighthouse",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@astrojs/check": "0.9.6",
+    "@astrojs/cloudflare": "12.6.12",
+    "@astrojs/mdx": "^4.3.1",
+    "@astrojs/rss": "^4.0.12",
+    "@astrojs/sitemap": "^3.5.1",
+    "@astrojs/svelte": "^7.0.2",
+    "@fontsource-variable/inter": "^5.2.5",
+    "astro": "^5.4.2",
+    "astro-compress": "^2.3.3",
+    "astro-icon": "^1.1.5",
+    "astro-pagefind": "^1.7.0",
+    "gray-matter": "^4.0.3",
+    "sharp": "^0.34.2",
+    "svelte": "^5.25.3",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.51.1",
+    "@types/node": "^22.13.9",
+    "linkinator": "^7.5.0",
+    "prettier": "^3.5.3",
+    "prettier-plugin-astro": "^0.14.1",
+    "prettier-plugin-svelte": "^3.3.3",
+    "typescript": "5.9.3"
+  }
+}
+</file>
+
+<file path="web/src/data/site.ts">
+export type NavItem = {
+  label: string;
+  href: string;
+  external?: boolean;
+};
+
+export type ScheduleItem = {
+  label: string;
+  day: string;
+  time: string;
+};
+
+export type PortalLinks = {
+  givingUrl: string;
+  youtubeChannelUrl: string;
+  youtubeLiveEmbedUrl: string;
+  facebookUrl: string;
+  prayerFormUrl: string;
+  contactFormUrl: string;
+  volunteerFormUrl: string;
+  oldWebsiteUrl: string;
+};
+
+export type TeamMember = {
+  role: string;
+  name: string;
+  email?: string;
+};
+
+export type ContactTopic = {
+  topic: string;
+  contactRole: string;
+  email?: string;
+  href?: string;
+  hrefLabel?: string;
+  external?: boolean;
+  note?: string;
+};
+
+// Official public contact details (NAD directory / eAdventist).
+// If the church requests different public-facing details, update them here.
+const PUBLIC_EMAIL = "firstspringfieldsda@gmail.com";
+const PASTOR_NAME = "Pastor Abankwah Amoakohene";
+
+const TIME_ZONE = "America/New_York";
+
+const ADDRESS_LINE = "34 Sumner Ave, Springfield, MA 01108";
+const MAPS_URL =
+  "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(ADDRESS_LINE);
+
+const VISIT_NOTES = {
+  directions: [
+    "From I-91: take Exit 6 toward Springfield, then follow signs toward Sumner Ave.",
+    "From I-90: take Exit 5, follow signs toward Springfield and take Exit 5, then follow local signs to Sumner Ave."
+  ],
+  languageNote:
+    "Services are primarily in English. If you need Spanish support, please contact us and we will help.",
+  parkingNote:
+    "Street parking is available near the church. Please arrive a few minutes early to find a spot.",
+  accessibilityNote:
+    "If you need accessibility accommodations, please contact us ahead of time so we can assist."
+};
+
+// Single source of truth for public links + service times
+const portals: PortalLinks = {
+  // If you have a church-specific AdventistGiving link, replace this.
+  givingUrl: "https://adventistgiving.org/",
+  youtubeChannelUrl: "https://www.youtube.com/@1stspringfieldsdama74",
+  // YouTube live embed: replace with a playlist/embed if the church prefers.
+  youtubeLiveEmbedUrl:
+    "https://www.youtube.com/embed/live_stream?channel=UCkmryvqlHb3JIwVLc07FZwA",
+  // Add the official Facebook page when confirmed.
+  facebookUrl: "TBD",
+  // Optional forms (set to real URLs when ready)
+  prayerFormUrl: "TBD",
+  contactFormUrl: "TBD",
+  volunteerFormUrl: "TBD",
+  // Official AdventistChurchConnect site (currently under construction)
+  oldWebsiteUrl: "https://firstspringfieldma.adventistchurch.org/"
+};
+
+const weekSchedule: ScheduleItem[] = [
+  { label: "Sabbath School", day: "Saturday", time: "10:00 AM" },
+  { label: "Worship Service", day: "Saturday", time: "11:15 AM" },
+  { label: "Prayer Meeting", day: "Wednesday", time: "7:00 PM" }
+];
+
+const leadershipTeam: TeamMember[] = [
+  { role: "Pastor", name: PASTOR_NAME, email: PUBLIC_EMAIL },
+  { role: "Head Elder", name: "Church Office", email: PUBLIC_EMAIL },
+  { role: "Head Deacon", name: "Church Office", email: PUBLIC_EMAIL },
+  { role: "Church Clerk", name: "Church Office", email: PUBLIC_EMAIL },
+  { role: "Treasurer", name: "Church Office", email: PUBLIC_EMAIL }
+];
+
+const ministryLeads: TeamMember[] = [
+  { role: "Children’s Ministry", name: "Children’s Ministry Team", email: PUBLIC_EMAIL },
+  { role: "Youth Ministry", name: "Youth Ministry Team", email: PUBLIC_EMAIL },
+  { role: "Women’s Ministry", name: "Women’s Ministry Team", email: PUBLIC_EMAIL },
+  { role: "Men’s Ministry", name: "Men’s Ministry Team", email: PUBLIC_EMAIL },
+  { role: "Communications / Media", name: "Media Team", email: PUBLIC_EMAIL }
+];
+
+const hasVolunteerForm = portals.volunteerFormUrl && portals.volunteerFormUrl !== "TBD";
+const hasPrayerForm = portals.prayerFormUrl && portals.prayerFormUrl !== "TBD";
+
+const contactTopics: ContactTopic[] = [
+  {
+    topic: "First-time visit questions",
+    contactRole: "Greeter / Hospitality",
+    email: PUBLIC_EMAIL,
+    note: "Happy to answer questions about parking, what to expect, and children’s programs."
+  },
+  {
+    topic: "Bible study",
+    contactRole: "Pastor",
+    email: PUBLIC_EMAIL,
+    note: "We can connect you with a study group or set up a visit."
+  },
+  {
+    topic: "Prayer request",
+    contactRole: "Prayer Team",
+    email: PUBLIC_EMAIL,
+    href: hasPrayerForm ? portals.prayerFormUrl : "/connect/contact",
+    hrefLabel: hasPrayerForm ? "Open prayer form" : "Contact us",
+    external: hasPrayerForm ? true : false
+  },
+  {
+    topic: "Need help choosing a ministry",
+    contactRole: "Pastor",
+    email: PUBLIC_EMAIL,
+    note: "If you are unsure who to contact, start here."
+  },
+  {
+    topic: "Volunteering",
+    contactRole: "Ministry Leads",
+    email: PUBLIC_EMAIL,
+    href: hasVolunteerForm ? portals.volunteerFormUrl : "/connect/contact",
+    hrefLabel: hasVolunteerForm ? "Open volunteer form" : "Contact us",
+    external: hasVolunteerForm ? true : false
+  },
+  {
+    topic: "Giving questions",
+    contactRole: "Treasurer",
+    email: PUBLIC_EMAIL,
+    href: "/give",
+    hrefLabel: "Go to giving page"
+  }
+];
+
+// Visitor-facing nav (matches real routes and keeps the header feeling “finished”)
+const nav: NavItem[] = [
+  { label: "Home", href: "/" },
+  { label: "About Us", href: "/connect/about" },
+  { label: "Our Team", href: "/connect/team" },
+  { label: "Ministries", href: "/ministries" },
+  { label: "Calendar", href: "/events" },
+  { label: "Contact", href: "/connect/contact" }
+];
+
+// “Always available” actions (show as buttons in the header)
+const quickActions: NavItem[] = [
+  { label: "Watch Live", href: "/media/live" },
+  { label: "Give", href: "/give" },
+  { label: "Prayer Request", href: "/connect/prayer" },
+  { label: "Bulletins", href: "/resources/bulletins" },
+  { label: "Volunteer", href: "/connect/volunteer" }
+];
+
+// Social links used in the legacy footer component
+const social: NavItem[] = [];
+if (portals.youtubeChannelUrl && portals.youtubeChannelUrl !== "TBD") {
+  social.push({ label: "YouTube", href: portals.youtubeChannelUrl, external: true });
+}
+if (portals.facebookUrl && portals.facebookUrl !== "TBD") {
+  social.push({ label: "Facebook", href: portals.facebookUrl, external: true });
+}
+
+export const site = {
+  name: "First Springfield Seventh-day Adventist Church",
+  shortName: "First Springfield SDA",
+  locale: "en-US",
+  timeZone: TIME_ZONE,
+  description:
+    "A Seventh-day Adventist church community in Springfield, MA. Join us for worship, Bible study, and service.",
+  address: {
+    street: "34 Sumner Ave",
+    city: "Springfield",
+    state: "MA",
+    zip: "01108"
+  },
+  contact: {
+    email: PUBLIC_EMAIL,
+    phone: "TBD",
+    address: ADDRESS_LINE,
+    mapsUrl: MAPS_URL,
+    // Leave blank unless the church asks for a distinct mailing address.
+    mailingAddress: ""
+  },
+
+  map: {
+    embedSrc:
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2961.4635291201326!2d-72.5766111!3d42.1059871!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x3c9b7d2fd5f3b6f2!2sFirst%20Springfield%20Seventh-day%20Adventist%20Church!5e0!3m2!1sen!2sus!4v0000000000000",
+    directions: VISIT_NOTES.directions
+  },
+
+  visit: VISIT_NOTES,
+
+  team: {
+    leadership: [
+      { name: PASTOR_NAME, role: "Pastor", email: PUBLIC_EMAIL },
+      { name: "Head Elder", role: "Elder", email: PUBLIC_EMAIL },
+      { name: "Church Clerk", role: "Clerk", email: PUBLIC_EMAIL }
+    ]
+  },
+
+  schedule: weekSchedule,
+  portals,
+
+  nav,
+  quickActions,
+
+  // Used by the legacy footer component
+  social,
+
+  // Team page sections
+  leadershipTeam,
+  ministryLeads,
+
+  // Contact page topics
+  contactTopics
+};
 </file>
 
 </files>

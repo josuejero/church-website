@@ -1,0 +1,35 @@
+---
+import Card from "../ui/Card.astro";
+import Grid from "../ui/CardGrid.astro";
+
+type CardItem = {
+  title: string;
+  description?: string;
+  href?: string;
+};
+
+type Props = {
+  title?: string;
+  subtitle?: string;
+  cards: CardItem[];
+  columns?: number;
+  columnsMin?: number;
+};
+
+const { title, subtitle, cards, columns, columnsMin = 240 } = Astro.props;
+---
+
+<section class="stack">
+  {(title || subtitle) && (
+    <header class="stack" style="gap: var(--space-2);">
+      {title && <h2 style="margin: 0;">{title}</h2>}
+      {subtitle && <p class="muted" style="margin: 0;">{subtitle}</p>}
+    </header>
+  )}
+
+  <Grid columns={columns} columnsMin={columnsMin}>
+    {cards.map((c) => (
+      <Card title={c.title} description={c.description} href={c.href} />
+    ))}
+  </Grid>
+</section>

@@ -1,0 +1,16 @@
+---
+import HeroUI from "../ui/Hero.astro";
+
+export type Props = {
+  title: string;
+  subtitle?: string;
+  primaryCtaLabel?: string;
+  primaryCtaHref?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+};
+
+const props = Astro.props as Props;
+---
+
+<HeroUI {...props} />

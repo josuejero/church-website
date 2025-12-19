@@ -1,84 +1,39 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Schedule from "../../../components/ui/Schedule.astro";
-import Button from "../../../components/ui/Button.astro";
 import { site } from "../../../data/site";
 ---
 
 <BaseLayout
   title="Plan a Visit"
-  description="Service times, directions, parking, and what to expect when visiting Springfield Hispanic SDA Church."
+  description={`Service times, directions, parking, and what to expect when visiting ${site.name}.`}
 >
   <div class="stack">
     <h1 style="margin: 0;">Plan a Visit</h1>
-    <p class="muted" style="margin: 0;">
-      We’re glad you’re here. Below are the essentials for your first visit.
-    </p>
 
-    <section class="card" aria-labelledby="visit-essentials">
-      <h2 id="visit-essentials" style="margin-top: 0;">Visit essentials</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        <strong>Address:</strong>{" "}
-        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">{site.contact.address}</a>
-      </p>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        <strong>Phone:</strong>{" "}
-        <a href={`tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`}>{site.contact.phone}</a>
-      </p>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        {site.visit.languageNote}
-      </p>
-      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
-        <Button href={site.contact.mapsUrl} external variant="secondary">Open in Maps</Button>
-        <Button href="/connect/contact" variant="ghost">Contact</Button>
-      </div>
-    </section>
+    <Schedule title="Service Times" items={site.schedule} />
 
-    <section aria-labelledby="visit-times">
-      <h2 id="visit-times" style="margin: 0;">Service times</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        These are our regular weekly meeting times.
+    <section class="card">
+      <h2 style="margin-top: 0;">Directions</h2>
+      <p class="muted">
+        Address:{" "}
+        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">
+          {site.contact.address}
+        </a>
       </p>
-      <div style="margin-top: var(--space-4);">
-        <Schedule title="This week" items={site.schedule} />
-      </div>
-    </section>
 
-    <section class="card" aria-labelledby="what-to-expect">
-      <h2 id="what-to-expect" style="margin-top: 0;">What to expect</h2>
-      <ul style="margin: var(--space-3) 0 0; padding-left: 1.1rem;">
-        <li>Come as you are - you don’t need to dress a certain way.</li>
-        <li>Sabbath School is a time for Bible study and discussion.</li>
-        <li>The Worship Service includes music, prayer, Scripture reading, and a message from Scripture.</li>
-        <li>If you’re visiting for the first time, feel free to introduce yourself to an usher or greeter.</li>
-        <li>If you have kids, ask someone to point you to the appropriate classroom or seating area.</li>
-      </ul>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        {site.visit.accessibilityNote}
-      </p>
-    </section>
-
-    <section class="card" aria-labelledby="directions">
-      <h2 id="directions" style="margin-top: 0;">Directions (quick summary)</h2>
-      <ol style="margin: var(--space-3) 0 0; padding-left: 1.1rem;">
-        {site.visit.directions.map((step) => (
-          <li>{step}</li>
+      <ul class="muted">
+        {site.visit.directions.map((d) => (
+          <li>{d}</li>
         ))}
-      </ol>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        {site.visit.parkingNote}
-      </p>
+      </ul>
     </section>
 
-    <section class="card" aria-labelledby="visit-questions">
-      <h2 id="visit-questions" style="margin-top: 0;">Questions before you come?</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        If you’re unsure where to enter, what time to arrive, or you need help with directions, contact us and we’ll do our best to help.
-      </p>
-      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
-        <Button href="/connect/contact" variant="secondary">Contact</Button>
-        <Button href="/connect/prayer" variant="ghost">Prayer</Button>
-      </div>
+    <section class="card">
+      <h2 style="margin-top: 0;">What to expect</h2>
+      <p class="muted">{site.visit.languageNote}</p>
+      <p class="muted">{site.visit.parkingNote}</p>
+      <p class="muted">{site.visit.accessibilityNote}</p>
     </section>
   </div>
 </BaseLayout>

@@ -1,8 +1,8 @@
 ---
 title: "Children’s Ministry"
 summary: "Bible stories, songs, and activities designed for kids to grow in faith and community."
-leaderName: "Ministry Leader"
-contactEmail: "info@example.org"
+leaderName: "Children’s Ministry Team"
+contactEmail: "firstspringfieldsda@gmail.com"
 meetingTime: "Sabbaths during the service"
 ctaLabel: "Contact us"
 ctaHref: "/connect/contact/"

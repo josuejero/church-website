@@ -1,8 +1,32 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import PlaceholderPage from "../../components/PlaceholderPage.astro";
+import CardGrid from "../../components/sections/CardGrid.astro";
+import { site } from "../../data/site";
 ---
 
-<BaseLayout title="Serve">
-  <PlaceholderPage title="Serve" />
+<BaseLayout title="Serve" description={`Find a place to belong, serve, and grow with ${site.name}.`}>
+  <div class="stack">
+    <h1 style="margin: 0;">Serve</h1>
+
+    <CardGrid
+      title="Get involved"
+      cards={[
+        {
+          title: "Volunteer",
+          description: "Find a place to serve based on your interests.",
+          href: "/resources/forms"
+        },
+        {
+          title: "Prayer",
+          description: "Join our prayer ministry or submit a request.",
+          href: "/connect/prayer"
+        },
+        {
+          title: "Contact",
+          description: "Reach out and we’ll help you get connected.",
+          href: "/connect/contact"
+        }
+      ]}
+    />
+  </div>
 </BaseLayout>

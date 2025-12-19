@@ -1,61 +1,37 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Schedule from "../../../components/ui/Schedule.astro";
-import Button from "../../../components/ui/Button.astro";
 import { site } from "../../../data/site";
 ---
 
 <BaseLayout
   title="Worship With Us"
-  description="Learn what Sabbath School, Worship Service, and Prayer Meeting are like at Springfield Hispanic SDA Church."
+  description={`Learn what Sabbath School, Worship Service, and midweek Prayer Meeting are like at ${site.name}.`}
 >
   <div class="stack">
     <h1 style="margin: 0;">Worship With Us</h1>
-    <p class="muted" style="margin: 0;">
-      We gather each week to study the Bible, worship God, and support one another.
-    </p>
 
-    <Schedule title="Service times" items={site.schedule} />
+    <Schedule title="Weekly Schedule" items={site.schedule} />
 
-    <section class="card" aria-labelledby="sabbath-school">
-      <h2 id="sabbath-school" style="margin-top: 0;">Sabbath School</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        A Bible study time with discussion and learning. This is a great place to meet people and ask questions.
-      </p>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        If you’re new to church or new to the Bible, you are still welcome - you can listen, learn, and participate as much as you want.
+    <section class="card">
+      <h2 style="margin-top: 0;">Sabbath School</h2>
+      <p class="muted">
+        Sabbath School is a Bible study time for all ages, with classes for children and adults.
       </p>
     </section>
 
-    <section class="card" aria-labelledby="worship-service">
-      <h2 id="worship-service" style="margin-top: 0;">Worship Service</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        Worship typically includes singing, prayer, Scripture reading, and a message. Visitors are always welcome.
-      </p>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        If you arrive a few minutes early, it’s usually easier to find a seat and get oriented.
+    <section class="card">
+      <h2 style="margin-top: 0;">Worship Service</h2>
+      <p class="muted">
+        Our worship service includes singing, prayer, Scripture, and a message from the Bible.
       </p>
     </section>
 
-    <section class="card" aria-labelledby="prayer-meeting">
-      <h2 id="prayer-meeting" style="margin-top: 0;">Prayer Meeting</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        Midweek prayer and Bible study (see the schedule above for the regular time).
+    <section class="card">
+      <h2 style="margin-top: 0;">Midweek Prayer Meeting</h2>
+      <p class="muted">
+        Join us midweek for prayer, encouragement, and Bible study.
       </p>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
-        Prayer Meeting is a quieter gathering focused on encouragement, community support, and prayer.
-      </p>
-    </section>
-
-    <section class="card" aria-labelledby="next-steps">
-      <h2 id="next-steps" style="margin-top: 0;">Next steps</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        If you’d like someone to reach out, or you have questions before visiting, contact us anytime.
-      </p>
-      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
-        <Button href="/connect/plan-a-visit" variant="secondary">Plan a visit</Button>
-        <Button href="/connect/contact" variant="ghost">Contact</Button>
-      </div>
     </section>
   </div>
 </BaseLayout>

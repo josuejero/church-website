@@ -1,0 +1,51 @@
+---
+import ContentCard from "../content/ContentCard.astro";
+import { getCollection } from "astro:content";
+
+type Props = {
+  title?: string;
+  limit?: number;
+  showViewAll?: boolean;
+};
+
+const { title = "Upcoming Events", limit = 3, showViewAll = true } = Astro.props;
+
+const events = await getCollection("events", ({ data }) =>
+  import.meta.env.PROD ? data.draft !== true : true
+);
+
+const now = new Date();
+const upcoming = events
+  .filter((e) => e.data.start >= now)
+  .sort((a, b) => a.data.start.valueOf() - b.data.start.valueOf())
+  .slice(0, limit);
+
+const fmt = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
+---
+
+<section class="stack">
+  <div style="display:flex; align-items:baseline; justify-content:space-between; gap: var(--space-4);">
+    <h2 style="margin: 0;">{title}</h2>
+    {showViewAll && (
+      <a class="muted" href="/events/" style="text-decoration: none; font-weight: 700;">
+        View all
+      </a>
+    )}
+  </div>
+
+  {upcoming.length === 0 ? (
+    <p class="muted" style="margin: 0;">No upcoming events are published yet.</p>
+  ) : (
+    <div class="grid grid--cards">
+      {upcoming.map((e) => (
+        <ContentCard
+          href={`/events/${e.id}/`}
+          title={e.data.title}
+          summary={e.data.summary}
+          meta={fmt.format(e.data.start)}
+          tags={e.data.tags}
+        />
+      ))}
+    </div>
+  )}
+</section>

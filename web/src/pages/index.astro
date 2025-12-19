@@ -1,95 +1,44 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/ui/Hero.astro";
-import Schedule from "../components/ui/Schedule.astro";
-import Card from "../components/ui/Card.astro";
-import CardGrid from "../components/ui/CardGrid.astro";
-import Banner from "../components/ui/Banner.astro";
-import Button from "../components/ui/Button.astro";
+import Hero from "../components/sections/Hero.astro";
+import CardGrid from "../components/sections/CardGrid.astro";
+import EventList from "../components/sections/EventList.astro";
+import SermonHighlight from "../components/sections/SermonHighlight.astro";
 import { site } from "../data/site";
 ---
 
-<BaseLayout
-  title={site.name}
-  description="Service times, directions, and resources for Springfield Hispanic Seventh-day Adventist Church in Springfield, Massachusetts."
->
-  <div class="stack">
-    <Banner
-      message="New here? Plan your first visit - we’d love to meet you."
-      ctaLabel="Plan a visit"
-      ctaHref="/connect/plan-a-visit"
-    />
+<BaseLayout title={site.name} description={site.description}>
+  <Hero
+    title="Welcome"
+    subtitle="We are a Seventh-day Adventist church family in Springfield, MA."
+    primaryCtaLabel="Plan a Visit"
+    primaryCtaHref="/connect/plan-a-visit"
+    secondaryCtaLabel="Watch Live"
+    secondaryCtaHref="/media/live"
+  />
 
-    <Hero
-      title="Welcome"
-      subtitle={`${site.shortName} is a local Seventh-day Adventist church in Springfield, MA. ${site.visit.languageNote}`}
-      primaryCtaLabel="Plan a visit"
-      primaryCtaHref="/connect/plan-a-visit"
-      secondaryCtaLabel="Watch live"
-      secondaryCtaHref="/media/live"
-    />
+  <CardGrid
+    title="Get Connected"
+    cards={[
+      {
+        title: "About Us",
+        description: "Learn our mission and what we believe.",
+        href: "/connect/about"
+      },
+      {
+        title: "Service Times",
+        description: "See when we meet each week.",
+        href: "/connect/worship-with-us"
+      },
+      {
+        title: "Prayer",
+        description: "Share a prayer request with our prayer team.",
+        href: "/connect/prayer"
+      }
+    ]}
+  />
 
-    <section aria-labelledby="service-times">
-      <h2 id="service-times" style="margin: 0;">Service times</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        Join us in person or online. Times below are the regular weekly schedule.
-      </p>
-      <div style="margin-top: var(--space-4);">
-        <Schedule title="This week" items={site.schedule} />
-      </div>
-    </section>
+  <EventList title="Upcoming Events" />
 
-    <section aria-labelledby="start-here">
-      <h2 id="start-here" style="margin: 0;">Start here</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        If you’re visiting for the first time, these are the fastest ways to get the basics.
-      </p>
-      <CardGrid columns={3}>
-        <Card
-          title="Plan a Visit"
-          description="Directions, what to expect, and service times."
-          href="/connect/plan-a-visit"
-        />
-        <Card
-          title="Worship With Us"
-          description="Learn what Sabbath School and Worship Service are like."
-          href="/connect/worship-with-us"
-        />
-        <Card
-          title="About"
-          description="Who we are, what we believe, and how to connect."
-          href="/connect/about"
-        />
-        <Card
-          title="Contact"
-          description="Address, phone, email, and reliable ways to reach us."
-          href="/connect/contact"
-        />
-        <Card
-          title="Prayer"
-          description="Submit a prayer request or ask for follow-up."
-          href="/connect/prayer"
-        />
-        <Card
-          title="Give"
-          description="Support the mission of the church online."
-          href="/give"
-        />
-      </CardGrid>
-    </section>
-
-    <section aria-labelledby="find-us" class="card">
-      <h2 id="find-us" style="margin-top: 0;">Find us</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
-        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">{site.contact.address}</a>
-      </p>
-      <p class="small muted" style="margin: var(--space-2) 0 0;">
-        {site.visit.parkingNote}
-      </p>
-      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
-        <Button href={site.contact.mapsUrl} external variant="secondary">Open in Maps</Button>
-        <Button href="/connect/contact" variant="ghost">Contact</Button>
-      </div>
-    </section>
-  </div>
+  <SermonHighlight title="Latest Sermon" />
 </BaseLayout>

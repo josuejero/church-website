@@ -1,2 +1,4 @@
 *.d.ts
 *.svg
+web/.lighthouseci
+web/.wrangler

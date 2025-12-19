@@ -1,0 +1,159 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { site } from "../../../data/site";
+import { mailto } from "../../../lib/links";
+export const prerender = false;
+
+function displayOrTBD(value?: string) {
+  return value && value !== "TBD" ? value : "TBD";
+}
+---
+
+<BaseLayout title="Our Team" description={`Meet the leadership and ministry contacts at ${site.name}.`}>
+  <div class="stack">
+    <h1 style="margin: 0;">Our Team</h1>
+
+    <section class="card">
+      <h2 style="margin-top: 0;">Leadership</h2>
+      <p class="muted">
+        For most questions, starting with the Pastor or Head Elder is a great first step.
+      </p>
+
+      <div class="table">
+        <div class="row head">
+          <div>Role</div>
+          <div>Name</div>
+          <div>Contact</div>
+        </div>
+
+        {(site.leadershipTeam ?? []).map((m) => (
+          <div class="row">
+            <div>{m.role}</div>
+            <div>{displayOrTBD(m.name)}</div>
+            <div>
+              {m.email && m.email !== "TBD" ? (
+                <a href={mailto(m.email!, `${m.role} - ${site.shortName}`)}>{m.email}</a>
+              ) : (
+                <span class="muted">TBD</span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p class="small muted" style="margin-top: var(--space-4);">
+        If a role shows “TBD”, update it in <code>src/data/site.ts</code>.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2 style="margin-top: 0;">Ministry Leads</h2>
+      <p class="muted">
+        Reach out to the ministry lead closest to your question, or use the general email if you’re not sure.
+      </p>
+
+      <div class="table">
+        <div class="row head">
+          <div>Ministry</div>
+          <div>Name</div>
+          <div>Contact</div>
+        </div>
+
+        {(site.ministryLeads ?? []).map((m) => (
+          <div class="row">
+            <div>{m.role}</div>
+            <div>{displayOrTBD(m.name)}</div>
+            <div>
+              {m.email && m.email !== "TBD" ? (
+                <a href={mailto(m.email!, `${m.role} - ${site.shortName}`)}>{m.email}</a>
+              ) : (
+                <span class="muted">TBD</span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin-top: 0;">Who to contact for what</h2>
+      <p class="muted">
+        Not sure who to reach? Start with one of these.
+      </p>
+
+      <div class="table">
+        <div class="row head">
+          <div>Topic</div>
+          <div>Contact</div>
+          <div>How</div>
+        </div>
+
+        {(site.contactTopics ?? []).map((t) => (
+          <div class="row">
+            <div>{t.topic}</div>
+            <div>{t.contactRole}</div>
+            <div>
+              {t.href ? (
+                <a
+                  href={t.href}
+                  target={t.external ? "_blank" : undefined}
+                  rel={t.external ? "noopener noreferrer" : undefined}
+                >
+                  {t.hrefLabel ?? "Open"}
+                </a>
+              ) : t.email ? (
+                <a href={mailto(t.email, `${t.topic} - ${site.shortName}`)}>{t.email}</a>
+              ) : (
+                <span class="muted">TBD</span>
+              )}
+              {t.note ? (
+                <div class="small muted" style="margin-top: var(--space-2);">
+                  {t.note}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .table {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    overflow: hidden;
+    margin-top: var(--space-4);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-white);
+  }
+
+  .row.head {
+    border-top: none;
+    background: var(--color-bg);
+    font-weight: 800;
+  }
+
+  .muted {
+    color: var(--color-text-muted);
+  }
+
+  .small {
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 720px) {
+    .row {
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+    }
+  }
+</style>
