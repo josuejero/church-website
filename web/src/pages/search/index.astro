@@ -12,12 +12,12 @@ import Search from "astro-pagefind/components/Search";
   <div class="stack">
     <Hero title="Search" subtitle="Search resources, bulletins, and site pages." />
 
-    <section aria-label="Site search" class="card" style="padding: var(--space-4);">
-      <label id="site-search-label" for="site-search-input" style="font-weight: 700;">
+    <section aria-label="Site search" class="card stack">
+      <label id="site-search-label" for="site-search-input" class="form-label">
         Search the site
       </label>
 
-      <div style="margin-top: var(--space-2);">
+      <div>
         {/* astro-pagefind expects an id so it can mount Pagefind UI into this element */}
         <Search
           id="site-search"
@@ -74,9 +74,9 @@ import Search from "astro-pagefind/components/Search";
       </script>
 
 
-      <details class="small muted" style="margin: var(--space-3) 0 0;">
+      <details class="small muted stack--tight">
         <summary>How search works</summary>
-        <p style="margin: var(--space-2) 0 0;">
+        <p>
           Search runs in your browser using a static index generated at build time.
           Your search terms are not sent to the site server.
         </p>

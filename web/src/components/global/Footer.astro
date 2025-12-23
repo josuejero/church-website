@@ -6,6 +6,28 @@ const phoneHref = `tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`;
 const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAddress.trim().length);
 const hasFacebook = Boolean(site.portals.facebookUrl && site.portals.facebookUrl !== "TBD");
 const hasYouTube = Boolean(site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD");
+
+function linkAttrs(item: { href: string; external?: boolean }) {
+  return item.external ? { target: "_blank", rel: "noopener noreferrer" } : {};
+}
+
+const primaryNavLabels = ["Visit", "Contact"];
+const primaryActionLabels = ["Watch Live", "Give"];
+
+const isDefined = <T,>(value: T | undefined | null): value is T => Boolean(value);
+
+const findNav = (label: string) => site.nav.find((item) => item.label === label);
+const findAction = (label: string) => site.quickActions.find((item) => item.label === label);
+
+const primaryLinks = [
+  findNav("Visit"),
+  findNav("Contact"),
+  findAction("Watch Live"),
+  findAction("Give")
+].filter(isDefined);
+
+const secondaryNav = site.nav.filter((item) => !primaryNavLabels.includes(item.label));
+const secondaryActions = site.quickActions.filter((item) => !primaryActionLabels.includes(item.label));
 ---
 
 <footer class="site-footer">
@@ -35,6 +57,49 @@ const hasYouTube = Boolean(site.portals.youtubeChannelUrl && site.portals.youtub
     </div>
 
     <nav class="right" aria-label="Footer links">
+      <div class="col col--primary">
+        <div class="col-title">Start here</div>
+        <div class="col-body links">
+          {primaryLinks.map((item) => (
+            <a href={item.href} {...linkAttrs(item)}>
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="col-title">Explore</div>
+        <div class="col-body links">
+          {secondaryNav.map((item) => (
+            <a href={item.href} {...linkAttrs(item)}>
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="col-title">Quick actions</div>
+        <div class="col-body links">
+          {secondaryActions.map((item) => (
+            <a href={item.href} {...linkAttrs(item)}>
+              {item.label}
+            </a>
+          ))}
+          {hasYouTube ? (
+            <a href={site.portals.youtubeChannelUrl} target="_blank" rel="noopener noreferrer">
+              YouTube
+            </a>
+          ) : null}
+          {hasFacebook ? (
+            <a href={site.portals.facebookUrl} target="_blank" rel="noopener noreferrer">
+              Facebook
+            </a>
+          ) : null}
+        </div>
+      </div>
+
       <div class="col">
         <div class="col-title">Service times</div>
         <div class="col-body muted small">
@@ -50,30 +115,6 @@ const hasYouTube = Boolean(site.portals.youtubeChannelUrl && site.portals.youtub
         </div>
       </div>
 
-      <div class="col">
-        <div class="col-title">Watch &amp; Give</div>
-        <div class="col-body links">
-          <a href="/media/live">Watch Live</a>
-          <a href="/give">Give</a>
-          <a href="/media/videos">Videos</a>
-        </div>
-      </div>
-
-      <div class="col">
-        <div class="col-title">Connect</div>
-        <div class="col-body links">
-          <a href="/connect/contact">Contact</a>
-          <a href="/connect/plan-a-visit">Plan a Visit</a>
-          <a href="/connect/prayer">Prayer</a>
-          {hasYouTube ? (
-            <a href={site.portals.youtubeChannelUrl} target="_blank" rel="noopener noreferrer">YouTube</a>
-          ) : null}
-          {hasFacebook ? (
-            <a href={site.portals.facebookUrl} target="_blank" rel="noopener noreferrer">Facebook</a>
-          ) : null}
-          <a href="/privacy">Privacy</a>
-        </div>
-      </div>
     </nav>
   </div>
 </footer>
@@ -126,6 +167,10 @@ const hasYouTube = Boolean(site.portals.youtubeChannelUrl && site.portals.youtub
     letter-spacing: -0.01em;
   }
 
+  .col--primary .col-title {
+    color: var(--color-text);
+  }
+
   .col-body {
     display: grid;
     gap: var(--space-2);
@@ -138,6 +183,10 @@ const hasYouTube = Boolean(site.portals.youtubeChannelUrl && site.portals.youtub
   }
 
   .links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--target-min);
+    padding: 0.2rem 0;
     text-decoration: none;
     color: inherit;
     opacity: 0.9;

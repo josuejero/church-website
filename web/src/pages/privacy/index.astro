@@ -9,15 +9,15 @@ const analyticsEnabled = import.meta.env.PROD && Boolean(import.meta.env.PUBLIC_
   <div class="stack">
     <Hero title="Privacy" subtitle="How this website handles data." />
 
-    <section class="card" style="padding: var(--space-4);">
-      <h2 style="margin-top: 0;">Analytics</h2>
+    <section class="card stack">
+      <h2>Analytics</h2>
       {analyticsEnabled ? (
         <>
           <p class="muted">
             This site uses Cloudflare Web Analytics to understand overall traffic (for example: page views and referrers).
             We use this information to improve content and navigation.
           </p>
-          <ul class="muted" style="margin-top: var(--space-2);">
+          <ul class="muted">
             <li>We measure aggregated traffic, not individual user behavior.</li>
             <li>We do not sell personal information.</li>
             <li>We do not use this analytics setup for ad targeting.</li>
@@ -41,7 +41,7 @@ const analyticsEnabled = import.meta.env.PROD && Boolean(import.meta.env.PUBLIC_
       </p>
 
       <h2>Contact</h2>
-      <p class="muted" style="margin-bottom: 0;">
+      <p class="muted">
         If you have privacy questions, please contact the church.
       </p>
     </section>

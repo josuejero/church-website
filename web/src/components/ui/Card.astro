@@ -12,7 +12,7 @@ const { title, description, href } = Astro.props;
   <a class="card card--link" href={href} aria-label={title}>
     <div class="card__title">{title}</div>
     {description && <p class="card__desc muted">{description}</p>}
-    <div class="card__cta" aria-hidden="true">Learn more</div>
+    <span class="card__cta link" aria-hidden="true">Learn more</span>
   </a>
 ) : (
   <div class="card">
@@ -22,16 +22,6 @@ const { title, description, href } = Astro.props;
 )}
 
 <style>
-  .card--link {
-    display: block;
-    color: inherit;
-    text-decoration: none;
-  }
-
-  .card--link:hover {
-    text-decoration: none;
-  }
-
   .card__title {
     font-weight: 800;
     font-size: var(--font-size-2);
@@ -44,6 +34,5 @@ const { title, description, href } = Astro.props;
 
   .card__cta {
     font-weight: 700;
-    text-decoration: underline;
   }
 </style>

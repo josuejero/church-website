@@ -9,12 +9,12 @@ import { site } from "../../../data/site";
   description={`Service times, directions, parking, and what to expect when visiting ${site.name}.`}
 >
   <div class="stack">
-    <h1 style="margin: 0;">Plan a Visit</h1>
+    <h1>Plan a Visit</h1>
 
     <Schedule title="Service Times" items={site.schedule} />
 
-    <section class="card">
-      <h2 style="margin-top: 0;">Directions</h2>
+    <section class="card stack">
+      <h2>Directions</h2>
       <p class="muted">
         Address:{" "}
         <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">
@@ -29,8 +29,8 @@ import { site } from "../../../data/site";
       </ul>
     </section>
 
-    <section class="card">
-      <h2 style="margin-top: 0;">What to expect</h2>
+    <section class="card stack">
+      <h2>What to expect</h2>
       <p class="muted">{site.visit.languageNote}</p>
       <p class="muted">{site.visit.parkingNote}</p>
       <p class="muted">{site.visit.accessibilityNote}</p>

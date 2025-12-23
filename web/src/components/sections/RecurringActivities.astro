@@ -1,0 +1,129 @@
+---
+import { oneOffEvents, recurringActivities } from "../../data/activities";
+import { site } from "../../data/site";
+
+type Props = {
+  title?: string;
+  subtitle?: string;
+  showNotes?: boolean;
+};
+
+const { title = "Activities", subtitle, showNotes = true } = Astro.props;
+
+const now = new Date();
+const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+const fmtDate = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "medium",
+  timeZone: site.timeZone
+});
+const fmtDateTime = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: site.timeZone
+});
+
+const isFilled = (value?: string) => Boolean(value && value.trim() && value !== "TBD");
+const cleanedRecurring = recurringActivities.filter((activity) => {
+  const title = activity.title?.trim();
+  if (!title || title.toLowerCase().startsWith("etc")) {
+    return false;
+  }
+  return isFilled(activity.cadence) || isFilled(activity.time);
+});
+
+const oneOffUpcoming = oneOffEvents
+  .map((event) => {
+    const startAt = new Date(event.start);
+    return {
+      ...event,
+      startAt,
+      hasTime: event.start.includes("T")
+    };
+  })
+  .filter((event) => {
+    if (Number.isNaN(event.startAt.valueOf())) {
+      return false;
+    }
+    return event.hasTime ? event.startAt >= now : event.startAt >= startOfToday;
+  })
+  .sort((a, b) => a.startAt.valueOf() - b.startAt.valueOf());
+---
+
+<section class="stack">
+  <header class="stack--tight">
+    <h2>{title}</h2>
+    {subtitle && <p class="muted">{subtitle}</p>}
+  </header>
+
+  {oneOffUpcoming.length > 0 && (
+    <div class="stack--tight">
+      <h3>One-off events</h3>
+      <ul class="recurring-list">
+        {oneOffUpcoming.map((event) => (
+          <li class="recurring-item">
+            <p class="recurring-text">
+              {event.link ? <a href={event.link}>{event.title}</a> : <span>{event.title}</span>}
+              {` on ${
+                event.hasTime ? fmtDateTime.format(event.startAt) : fmtDate.format(event.startAt)
+              }`}
+            </p>
+            {showNotes && event.note && <span class="recurring-note">{event.note}</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+
+  {oneOffUpcoming.length > 0 && <h3>Recurring activities</h3>}
+  <ul class="recurring-list">
+    {cleanedRecurring.map((activity) => (
+      <li class="recurring-item">
+        <p class="recurring-text">
+          {activity.link ? (
+            <a href={activity.link}>{activity.title}</a>
+          ) : (
+            <span>{activity.title}</span>
+          )}
+          {activity.cadence && ` ${activity.cadence}`}
+          {activity.time && ` at ${activity.time}`}
+          {(activity.cadence || activity.time) && "."}
+        </p>
+        {showNotes && activity.note && <span class="recurring-note">{activity.note}</span>}
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .recurring-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .recurring-item {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  .recurring-text {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .recurring-text a {
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .recurring-text a:hover {
+    text-decoration: underline;
+  }
+
+  .recurring-note {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+</style>

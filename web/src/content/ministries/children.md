@@ -2,10 +2,11 @@
 title: "Children’s Ministry"
 summary: "Bible stories, songs, and activities designed for kids to grow in faith and community."
 leaderName: "Children’s Ministry Team"
-contactEmail: "firstspringfieldsda@gmail.com"
+leaderEmail: "firstspringfieldsda@gmail.com"
 meetingTime: "Sabbaths during the service"
+category: "Children & Youth"
 ctaLabel: "Contact us"
-ctaHref: "/connect/contact/"
+ctaHref: "/connect/contact"
 tags: ["kids", "families"]
 ---
 

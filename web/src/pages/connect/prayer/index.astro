@@ -7,28 +7,28 @@ const prayerFormUrl = site.portals?.prayerFormUrl;
 const hasPrayerForm = Boolean(prayerFormUrl && prayerFormUrl !== "TBD");
 ---
 
-<BaseLayout title="Prayer" description={`Submit a prayer request to ${site.name}.`}>
+<BaseLayout title="Prayer Request" description={`Submit a prayer request to ${site.name}.`}>
   <div class="stack">
-    <h1 style="margin: 0;">Prayer</h1>
+    <h1>Prayer Request</h1>
 
-    <section class="card">
-      <h2 style="margin-top: 0;">How can we pray for you?</h2>
+    <section class="card stack">
+      <h2>How can we pray for you?</h2>
       <p class="muted">
         We believe prayer matters. Share a request and our prayer team will pray with you.
       </p>
 
-      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
+      <div class="cluster">
         {hasPrayerForm ? (
-          <Button href={prayerFormUrl} external variant="secondary">Submit prayer request</Button>
+          <Button href={prayerFormUrl} external variant="secondary">Submit Prayer Request</Button>
         ) : (
           <Button href={`mailto:${site.contact.email}?subject=Prayer%20Request`} variant="secondary">
-            Email a prayer request
+            Email a Prayer Request
           </Button>
         )}
         <Button href="/connect/contact" variant="ghost">Contact</Button>
       </div>
 
-      <p class="small muted" style="margin-top: var(--space-4);">
+      <p class="small muted">
         Please avoid including sensitive information.
       </p>
     </section>

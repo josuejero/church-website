@@ -6,20 +6,20 @@ import { site } from "../../data/site";
 
 <BaseLayout title="Give" description={`Support ${site.name} through online giving.`}>
   <div class="stack">
-    <h1 style="margin: 0;">Give</h1>
+    <h1>Give</h1>
 
-    <section class="card">
-      <h2 style="margin-top: 0;">Thank you for your generosity</h2>
+    <section class="card stack">
+      <h2>Thank you for your generosity</h2>
       <p class="muted">
         Your giving supports ministry, outreach, and the mission of our church.
       </p>
 
-      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
+      <div class="cluster">
         <Button href={site.portals.givingUrl} external variant="secondary">Give Online</Button>
         <Button href="/connect/contact" variant="ghost">Questions?</Button>
       </div>
 
-      <p class="small muted" style="margin-top: var(--space-4);">
+      <p class="small muted">
         If you prefer to give in person, you can also give during worship service.
       </p>
     </section>

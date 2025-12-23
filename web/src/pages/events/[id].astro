@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Hero from '../../components/ui/Hero.astro';
 import { getCollection, render } from 'astro:content';
+import { site } from '../../data/site';
 
 export async function getStaticPaths() {
   const events = await getCollection('events', ({ data }) => {
@@ -17,11 +18,15 @@ export async function getStaticPaths() {
 const { event } = Astro.props;
 const { Content } = await render(event);
 
-const fmtDate = new Intl.DateTimeFormat('en-US', {
+const fmtDate = new Intl.DateTimeFormat(site.locale, {
   dateStyle: 'full',
   timeStyle: 'short',
-  timeZone: 'America/New_York',
+  timeZone: site.timeZone,
 });
+
+const locationName = event.data.locationName ?? "";
+const address =
+  event.data.address ?? (locationName === site.name ? site.contact.address : "");
 
 const when = event.data.end
   ? `${fmtDate.format(event.data.start)} – ${fmtDate.format(event.data.end)}`
@@ -31,26 +36,28 @@ const when = event.data.end
 <BaseLayout title={event.data.title} description={event.data.summary}>
   <Hero title={event.data.title} subtitle={event.data.summary} />
 
-  <section class="container stack">
-    <div class="card stack" style="gap: 0.5rem;">
-      <p class="muted" style="margin: 0;"><strong>When:</strong> {when}</p>
-      {event.data.locationName && (
-        <p class="muted" style="margin: 0;"><strong>Where:</strong> {event.data.locationName}</p>
+  <section class="stack">
+    <div class="card stack--tight">
+      <p class="muted"><strong>When:</strong> {when}</p>
+      {locationName && (
+        <p class="muted"><strong>Where:</strong> {locationName}</p>
       )}
-      {event.data.address && (
-        <p class="muted" style="margin: 0;"><strong>Address:</strong> {event.data.address}</p>
+      {address && (
+        <p class="muted"><strong>Address:</strong> {address}</p>
       )}
       {event.data.registrationUrl && (
-        <p style="margin: 0;">
+        <p>
           <a class="link" href={event.data.registrationUrl} rel="noopener noreferrer">Register / Learn more</a>
         </p>
       )}
     </div>
 
-    <article class="card stack">
-      <Content />
+    <article class="card">
+      <div class="prose">
+        <Content />
+      </div>
     </article>
 
-    <p><a class="link" href="/events/">← Back to Events</a></p>
+    <p><a class="link" href="/events">← Back to Events</a></p>
   </section>
 </BaseLayout>

@@ -2,7 +2,9 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Hero from '../../components/ui/Hero.astro';
 import ContentCard from '../../components/content/ContentCard.astro';
+import RecurringActivities from '../../components/sections/RecurringActivities.astro';
 import { getCollection } from 'astro:content';
+import { site } from '../../data/site';
 
 const events = await getCollection('events', ({ data }) => {
   return import.meta.env.PROD ? data.draft !== true : true;
@@ -18,10 +20,10 @@ const past = events
   .sort((a, b) => b.data.start.valueOf() - a.data.start.valueOf())
   .slice(0, 12);
 
-const fmt = new Intl.DateTimeFormat('en-US', {
+const fmt = new Intl.DateTimeFormat(site.locale, {
   dateStyle: 'medium',
   timeStyle: 'short',
-  timeZone: 'America/New_York',
+  timeZone: site.timeZone,
 });
 ---
 
@@ -31,40 +33,46 @@ const fmt = new Intl.DateTimeFormat('en-US', {
     subtitle="See what’s coming up and what we’ve recently hosted."
   />
 
-  <section class="container stack">
-    <h2>Upcoming</h2>
+  <section class="stack--loose">
+    <RecurringActivities />
 
-    {upcoming.length === 0 ? (
-      <p class="muted">No upcoming events are published yet.</p>
-    ) : (
-      <div class="grid--cards">
-        {upcoming.map((e) => (
-          <ContentCard
-            href={`/events/${e.id}/`}
-            title={e.data.title}
-            summary={e.data.summary}
-            meta={fmt.format(e.data.start)}
-            tags={e.data.tags}
-          />
-        ))}
-      </div>
-    )}
+    <div class="stack">
+      <h2>Upcoming</h2>
 
-    <h2 style="margin-top: 2.5rem;">Recent</h2>
-    {past.length === 0 ? (
-      <p class="muted">No past events are published yet.</p>
-    ) : (
-      <div class="grid--cards">
-        {past.map((e) => (
-          <ContentCard
-            href={`/events/${e.id}/`}
-            title={e.data.title}
-            summary={e.data.summary}
-            meta={fmt.format(e.data.start)}
-            tags={e.data.tags}
-          />
-        ))}
-      </div>
-    )}
+      {upcoming.length === 0 ? (
+        <p class="muted">No upcoming events are published yet.</p>
+      ) : (
+        <div class="grid--cards">
+          {upcoming.map((e) => (
+            <ContentCard
+              href={`/events/${e.id}`}
+              title={e.data.title}
+              summary={e.data.summary}
+              meta={fmt.format(e.data.start)}
+              tags={e.data.tags}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+
+    <div class="stack">
+      <h2>Recent</h2>
+      {past.length === 0 ? (
+        <p class="muted">No past events are published yet.</p>
+      ) : (
+        <div class="grid--cards">
+          {past.map((e) => (
+            <ContentCard
+              href={`/events/${e.id}`}
+              title={e.data.title}
+              summary={e.data.summary}
+              meta={fmt.format(e.data.start)}
+              tags={e.data.tags}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   </section>
 </BaseLayout>

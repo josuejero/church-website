@@ -9,8 +9,8 @@ type Props = {
 const { title = "This Week", items } = Astro.props;
 ---
 
-<section class="card">
-  <h2 style="margin-top: 0;">{title}</h2>
+<section class="card stack--tight">
+  <h2>{title}</h2>
   <ul class="schedule">
     {items.map((item) => (
       <li class="schedule__item">

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getCollection, getEntry } from "astro:content";
+import { mailto } from "../../lib/links";
 
 export async function getStaticPaths() {
   const ministries = await getCollection("ministries", ({ data }) =>
@@ -15,6 +16,15 @@ const ministry = await getEntry("ministries", id!);
 if (!ministry) throw new Error(`Ministry not found: ${id}`);
 
 const data: any = (ministry as any).data ?? {};
+const isFilled = (value?: string) => Boolean(value && value.trim() && value !== "TBD");
+const meetingTime = isFilled(data.meetingTime) ? data.meetingTime : "";
+const leaderName = isFilled(data.leaderName) ? data.leaderName : "";
+const leaderEmail = isFilled(data.leaderEmail)
+  ? data.leaderEmail
+  : isFilled(data.contactEmail)
+    ? data.contactEmail
+    : "";
+const fallbackMessage = "Contact us for current meeting details.";
 
 let Content: any = null;
 // Only Markdown/MDX entries have entry.render()
@@ -35,13 +45,43 @@ const description =
 
 <BaseLayout title={title} description={description}>
   <div class="stack">
-    <h1 style="margin: 0;">{title}</h1>
+    <h1>{title}</h1>
+
+    <section class="card">
+      <div class="stack--tight">
+        <div class="stack--tight">
+          <h2>When we meet</h2>
+          {meetingTime ? (
+            <p class="muted">{meetingTime}</p>
+          ) : (
+            <p class="muted">
+              <a class="link" href="/connect/contact">{fallbackMessage}</a>
+            </p>
+          )}
+        </div>
+        <div class="stack--tight">
+          <h2>Contact</h2>
+          <div class="muted stack--tight">
+            {leaderName ? <div>{leaderName}</div> : null}
+            {leaderEmail ? (
+              <a href={mailto(leaderEmail, `${title} ministry`)}>{leaderEmail}</a>
+            ) : (
+              <a class="link" href="/connect/contact">{fallbackMessage}</a>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
 
     {Content ? (
-      <Content />
-    ) : (
       <section class="card">
-        <p class="muted" style="margin: 0;">{description}</p>
+        <div class="prose">
+          <Content />
+        </div>
+      </section>
+    ) : (
+      <section class="card stack--tight">
+        <p class="muted">{description}</p>
       </section>
     )}
   </div>

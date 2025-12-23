@@ -25,9 +25,11 @@ const ministries = defineCollection({
   loader: glob({ pattern: "**/[^_]*.md", base: "./src/content/ministries" }),
   schema: shared.extend({
     leaderName: z.string().optional(),
+    leaderEmail: z.string().optional(),
     meetingTime: z.string().optional(),
     contactEmail: z.string().optional(),
     contactPhone: z.string().optional(),
+    category: z.string().optional(),
     ctaLabel: z.string().optional(),
     ctaHref: z.string().optional(),
   }),

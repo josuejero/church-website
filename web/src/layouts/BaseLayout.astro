@@ -65,8 +65,10 @@ const ogLocale = locale.replace("-", "_");
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <Header />
-    <main id="main">
-      <slot />
+    <main id="main" class="main">
+      <div class="container">
+        <slot />
+      </div>
     </main>
     <Footer />
   </body>

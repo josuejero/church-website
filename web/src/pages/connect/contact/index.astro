@@ -16,21 +16,21 @@ const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAd
   description={`Contact ${site.name}: address, service times, phone, and email.`}
 >
   <div class="stack">
-    <h1 style="margin: 0;">Contact</h1>
+    <h1>Contact</h1>
 
-    <section class="card" aria-labelledby="contact-address">
-      <h2 id="contact-address" style="margin-top: 0;">Address</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
+    <section class="card stack" aria-labelledby="contact-address">
+      <h2 id="contact-address">Address</h2>
+      <p class="muted">
         <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">{site.contact.address}</a>
       </p>
 
       {hasMailing ? (
-        <p class="small muted" style="margin: var(--space-2) 0 0;">
+        <p class="small muted">
           Mail: {site.contact.mailingAddress}
         </p>
       ) : null}
 
-      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
+      <div class="cluster">
         <Button href={site.contact.mapsUrl} external variant="secondary">Open in Maps</Button>
         <Button href="/connect/plan-a-visit" variant="ghost">Plan a Visit</Button>
       </div>
@@ -38,30 +38,30 @@ const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAd
 
     <Schedule title="Service Times" items={site.schedule} />
 
-    <section class="card" aria-labelledby="contact-phone">
-      <h2 id="contact-phone" style="margin-top: 0;">Phone</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
+    <section class="card stack" aria-labelledby="contact-phone">
+      <h2 id="contact-phone">Phone</h2>
+      <p class="muted">
         <a href={phoneHref}>{site.contact.phone}</a>
       </p>
-      <p class="small muted" style="margin: var(--space-3) 0 0;">
+      <p class="small muted">
         If nobody answers, please leave a message and include a callback number.
       </p>
     </section>
 
-    <section class="card" aria-labelledby="contact-email">
-      <h2 id="contact-email" style="margin-top: 0;">Email</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
+    <section class="card stack--tight" aria-labelledby="contact-email">
+      <h2 id="contact-email">Email</h2>
+      <p class="muted">
         <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
       </p>
     </section>
 
-    <section class="card" aria-labelledby="contact-watch-give">
-      <h2 id="contact-watch-give" style="margin-top: 0;">Watch &amp; Give</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
+    <section class="card stack" aria-labelledby="contact-watch-give">
+      <h2 id="contact-watch-give">Watch &amp; Give</h2>
+      <p class="muted">
         Watch live (when available) or give online.
       </p>
 
-      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
+      <div class="cluster">
         <Button href="/media/live" variant="secondary">Watch Live</Button>
         <Button href="/give" variant="ghost">Give</Button>
         {hasYouTube ? (
@@ -73,26 +73,22 @@ const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAd
       </div>
     </section>
 
-    <section class="card" aria-labelledby="contact-form">
-      <h2 id="contact-form" style="margin-top: 0;">Message us</h2>
+    <section class="card stack" aria-labelledby="contact-form">
+      <h2 id="contact-form">Message us</h2>
       {hasContactForm ? (
-        <div>
-          <p class="muted" style="margin: var(--space-2) 0 0;">
+        <>
+          <p class="muted">
             Use our contact form and we’ll follow up as soon as possible.
           </p>
-          <div style="margin-top: var(--space-4);">
-            <Button href={site.portals.contactFormUrl} external variant="secondary">Open contact form</Button>
-          </div>
-          <p class="small muted" style="margin: var(--space-3) 0 0;">
+          <Button href={site.portals.contactFormUrl} external variant="secondary">Open contact form</Button>
+          <p class="small muted">
             Please avoid including sensitive information.
           </p>
-        </div>
+        </>
       ) : (
-        <div>
-          <p class="muted" style="margin: var(--space-2) 0 0;">
-            A contact form link can be added here once it’s ready. For now, please call or email.
-          </p>
-        </div>
+        <p class="muted">
+          A contact form is coming soon. For now, please call or email us.
+        </p>
       )}
     </section>
   </div>

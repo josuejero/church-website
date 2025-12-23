@@ -44,7 +44,7 @@ const PASTOR_NAME = "Pastor Abankwah Amoakohene";
 
 const TIME_ZONE = "America/New_York";
 
-const ADDRESS_LINE = "34 Sumner Ave, Springfield, MA 01108";
+const ADDRESS_LINE = "1118 Sumner Ave, Springfield, MA 01118-2154";
 const MAPS_URL =
   "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(ADDRESS_LINE);
 
@@ -61,6 +61,15 @@ const VISIT_NOTES = {
     "If you need accessibility accommodations, please contact us ahead of time so we can assist."
 };
 
+const MISSION = {
+  statement:
+    "Make disciples of Jesus Christ who live as His loving witnesses and proclaim to all people the everlasting gospel of the Three Angels' Messages in preparation for His soon return (Matt 28:18-20, Acts 1:8, Rev 14:6-12).",
+  method:
+    "Guided by the Bible and the Holy Spirit, Seventh-day Adventists pursue the mission of making disciples through Christ-like living, healing, serving, proclaiming, teaching, and training.",
+  vision:
+    "In harmony with Bible revelation, Seventh-day Adventists see as the climax of God's plan the restoration of all His creation to full harmony with His perfect will and righteousness."
+};
+
 // Single source of truth for public links + service times
 const portals: PortalLinks = {
   // If you have a church-specific AdventistGiving link, replace this.
@@ -70,18 +79,18 @@ const portals: PortalLinks = {
   youtubeLiveEmbedUrl:
     "https://www.youtube.com/embed/live_stream?channel=UCkmryvqlHb3JIwVLc07FZwA",
   // Add the official Facebook page when confirmed.
-  facebookUrl: "TBD",
+  facebookUrl: "",
   // Optional forms (set to real URLs when ready)
-  prayerFormUrl: "TBD",
-  contactFormUrl: "TBD",
-  volunteerFormUrl: "TBD",
+  prayerFormUrl: "",
+  contactFormUrl: "",
+  volunteerFormUrl: "",
   // Official AdventistChurchConnect site (currently under construction)
   oldWebsiteUrl: "https://firstspringfieldma.adventistchurch.org/"
 };
 
 const weekSchedule: ScheduleItem[] = [
   { label: "Sabbath School", day: "Saturday", time: "10:00 AM" },
-  { label: "Worship Service", day: "Saturday", time: "11:15 AM" },
+  { label: "Worship", day: "Saturday", time: "11:15 AM" },
   { label: "Prayer Meeting", day: "Wednesday", time: "7:00 PM" }
 ];
 
@@ -118,7 +127,7 @@ const contactTopics: ContactTopic[] = [
     note: "We can connect you with a study group or set up a visit."
   },
   {
-    topic: "Prayer request",
+    topic: "Prayer Request",
     contactRole: "Prayer Team",
     email: PUBLIC_EMAIL,
     href: hasPrayerForm ? portals.prayerFormUrl : "/connect/contact",
@@ -150,12 +159,13 @@ const contactTopics: ContactTopic[] = [
 
 // Visitor-facing nav (matches real routes and keeps the header feeling “finished”)
 const nav: NavItem[] = [
-  { label: "Home", href: "/" },
+  { label: "Visit", href: "/connect/plan-a-visit" },
+  { label: "Contact", href: "/connect/contact" },
   { label: "About Us", href: "/connect/about" },
   { label: "Our Team", href: "/connect/team" },
   { label: "Ministries", href: "/ministries" },
-  { label: "Calendar", href: "/events" },
-  { label: "Contact", href: "/connect/contact" }
+  { label: "Events", href: "/events" },
+  { label: "Privacy", href: "/privacy" }
 ];
 
 // “Always available” actions (show as buttons in the header)
@@ -164,7 +174,7 @@ const quickActions: NavItem[] = [
   { label: "Give", href: "/give" },
   { label: "Prayer Request", href: "/connect/prayer" },
   { label: "Bulletins", href: "/resources/bulletins" },
-  { label: "Volunteer", href: "/connect/volunteer" }
+  { label: "Volunteer", href: "/serve" }
 ];
 
 // Social links used in the legacy footer component
@@ -184,14 +194,14 @@ export const site = {
   description:
     "A Seventh-day Adventist church community in Springfield, MA. Join us for worship, Bible study, and service.",
   address: {
-    street: "34 Sumner Ave",
+    street: "1118 Sumner Ave",
     city: "Springfield",
     state: "MA",
-    zip: "01108"
+    zip: "01118-2154"
   },
   contact: {
     email: PUBLIC_EMAIL,
-    phone: "TBD",
+    phone: "413-782-6260",
     address: ADDRESS_LINE,
     mapsUrl: MAPS_URL,
     // Leave blank unless the church asks for a distinct mailing address.
@@ -205,6 +215,7 @@ export const site = {
   },
 
   visit: VISIT_NOTES,
+  mission: MISSION,
 
   team: {
     leadership: [

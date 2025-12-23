@@ -11,12 +11,12 @@ const { href, title, summary, meta, tags } = Astro.props;
 const safeTags = tags ?? [];
 ---
 
-<article class="card">
-  {meta && <p class="muted" style="margin: 0; font-size: 0.95rem;">{meta}</p>}
-  <h3 style="margin: 0.25rem 0;">
-    <a href={href} class="link">{title}</a>
+<a class="card card--link stack--tight" href={href}>
+  {meta && <p class="muted small">{meta}</p>}
+  <h3>
+    <span class="link">{title}</span>
   </h3>
-  <p class="muted" style="margin: 0.25rem 0 0;">{summary}</p>
+  <p class="muted">{summary}</p>
 
   {safeTags.length > 0 && (
     <ul class="tags" aria-label="Tags">
@@ -25,7 +25,7 @@ const safeTags = tags ?? [];
       ))}
     </ul>
   )}
-</article>
+</a>
 
 <style>
   .tags {
@@ -40,7 +40,7 @@ const safeTags = tags ?? [];
     font-size: 0.85rem;
     padding: 0.2rem 0.55rem;
     border-radius: 999px;
-    border: 1px solid var(--border);
-    background: color-mix(in oklab, var(--surface) 90%, white 10%);
+    border: 1px solid var(--color-border);
+    background: color-mix(in oklab, var(--color-surface) 90%, white 10%);
   }
 </style>

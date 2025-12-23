@@ -1,6 +1,7 @@
 ---
 import ContentCard from "../content/ContentCard.astro";
 import { getCollection } from "astro:content";
+import { site } from "../../data/site";
 
 type Props = {
   title?: string;
@@ -20,26 +21,30 @@ const upcoming = events
   .sort((a, b) => a.data.start.valueOf() - b.data.start.valueOf())
   .slice(0, limit);
 
-const fmt = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
+const fmt = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: site.timeZone
+});
 ---
 
 <section class="stack">
-  <div style="display:flex; align-items:baseline; justify-content:space-between; gap: var(--space-4);">
-    <h2 style="margin: 0;">{title}</h2>
+  <div class="cluster cluster--between cluster--baseline cluster--loose">
+    <h2>{title}</h2>
     {showViewAll && (
-      <a class="muted" href="/events/" style="text-decoration: none; font-weight: 700;">
+      <a class="link" href="/events">
         View all
       </a>
     )}
   </div>
 
   {upcoming.length === 0 ? (
-    <p class="muted" style="margin: 0;">No upcoming events are published yet.</p>
+    <p class="muted">No upcoming events are published yet.</p>
   ) : (
-    <div class="grid grid--cards">
+    <div class="grid--cards">
       {upcoming.map((e) => (
         <ContentCard
-          href={`/events/${e.id}/`}
+          href={`/events/${e.id}`}
           title={e.data.title}
           summary={e.data.summary}
           meta={fmt.format(e.data.start)}

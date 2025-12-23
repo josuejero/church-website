@@ -3,6 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Hero from "../components/sections/Hero.astro";
 import CardGrid from "../components/sections/CardGrid.astro";
 import EventList from "../components/sections/EventList.astro";
+import RecurringActivities from "../components/sections/RecurringActivities.astro";
 import SermonHighlight from "../components/sections/SermonHighlight.astro";
 import { site } from "../data/site";
 ---
@@ -10,7 +11,7 @@ import { site } from "../data/site";
 <BaseLayout title={site.name} description={site.description}>
   <Hero
     title="Welcome"
-    subtitle="We are a Seventh-day Adventist church family in Springfield, MA."
+    subtitle="A vibrant, multicultural Seventh-day Adventist church in the heart of Springfield, MA."
     primaryCtaLabel="Plan a Visit"
     primaryCtaHref="/connect/plan-a-visit"
     secondaryCtaLabel="Watch Live"
@@ -26,12 +27,17 @@ import { site } from "../data/site";
         href: "/connect/about"
       },
       {
-        title: "Service Times",
-        description: "See when we meet each week.",
+        title: "Adult Sabbath School",
+        description: "Discover the mission, goals, and study focus of Adult Sabbath School.",
+        href: "/ministries/adult-sabbath-school"
+      },
+      {
+        title: "Worship With Us",
+        description: "See when we meet and what to expect.",
         href: "/connect/worship-with-us"
       },
       {
-        title: "Prayer",
+        title: "Prayer Request",
         description: "Share a prayer request with our prayer team.",
         href: "/connect/prayer"
       }
@@ -39,6 +45,8 @@ import { site } from "../data/site";
   />
 
   <EventList title="Upcoming Events" />
+
+  <RecurringActivities />
 
   <SermonHighlight title="Latest Sermon" />
 </BaseLayout>

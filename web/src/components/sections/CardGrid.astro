@@ -21,9 +21,9 @@ const { title, subtitle, cards, columns, columnsMin = 240 } = Astro.props;
 
 <section class="stack">
   {(title || subtitle) && (
-    <header class="stack" style="gap: var(--space-2);">
-      {title && <h2 style="margin: 0;">{title}</h2>}
-      {subtitle && <p class="muted" style="margin: 0;">{subtitle}</p>}
+    <header class="stack--tight">
+      {title && <h2>{title}</h2>}
+      {subtitle && <p class="muted">{subtitle}</p>}
     </header>
   )}
 

@@ -1,25 +1,102 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import { site } from "../../../data/site";
+
+const { mission } = site;
 ---
 
 <BaseLayout title="About Us" description={`About ${site.name} in Springfield, Massachusetts.`}>
   <div class="stack">
-    <h1 style="margin: 0;">About Us</h1>
+    <h1>About Us</h1>
 
-    <section class="card">
-      <h2 style="margin-top: 0;">Who we are</h2>
+    <section class="card stack--tight">
       <p class="muted">
-        We are a local congregation of the Seventh-day Adventist Church. Our mission is to share the hope
-        found in Jesus through worship, community, service, and Bible-centered teaching.
+        Our church is a vibrant, multicultural community located in the heart of Springfield, the
+        third-largest city in the Commonwealth of Massachusetts. As of 2024, Springfield has an
+        estimated population of approximately 154,888 residents, with around 25% living below the
+        federal poverty line. Our church serves as a welcoming and safe haven for immigrants, refugees,
+        and all who seek spiritual support and community.
       </p>
     </section>
 
-    <section class="card">
-      <h2 style="margin-top: 0;">What we believe</h2>
+    <section class="card stack--tight">
+      <h2>Our Mission</h2>
       <p class="muted">
-        Seventh-day Adventists are Christians who believe in the Bible, the life and teachings of Jesus,
-        and the promise of His return. We also value Sabbath rest, healthy living, and serving others.
+        {mission.statement}
+      </p>
+    </section>
+
+    <section class="card stack--tight">
+      <h2>Our Method</h2>
+      <p class="muted">{mission.method}</p>
+    </section>
+
+    <section class="card stack--tight">
+      <h2>Our Vision</h2>
+      <p class="muted">
+        {mission.vision}
+      </p>
+    </section>
+
+    <section class="card stack--tight">
+      <h2>Who We Are</h2>
+      <p class="muted">
+        We are a Christian faith community that is part of the worldwide Seventh-day Adventist Church.
+        Rooted in the Bible and centered on Jesus Christ, we seek to reflect God’s love through worship,
+        service, and community outreach.
+      </p>
+
+      <p class="muted">
+        As Seventh-day Adventists, we value spiritual growth, healthy living, strong families, and
+        compassionate service. We believe the church is not just a building, but a people called to live
+        out their faith daily, serving God and our community with humility, integrity, and purpose.
+      </p>
+
+      <p class="muted">
+        We welcome individuals and families from all backgrounds to join us as we grow in faith, study
+        God’s Word, and prepare for the return of Jesus Christ.
+      </p>
+    </section>
+
+    <section class="card stack--tight">
+      <h2>What We Believe</h2>
+      <p class="muted">
+        Seventh-day Adventists accept the Bible as the inspired Word of God and base our beliefs on its
+        teachings. Our core beliefs include:
+      </p>
+
+      <ul class="muted">
+        <li>
+          God – One God: Father, Son, and Holy Spirit, a loving Creator who desires a personal
+          relationship with every person.
+        </li>
+        <li>
+          Jesus Christ – Fully God and fully human, whose life, death, and resurrection provide
+          salvation and hope for all.
+        </li>
+        <li>The Bible – God’s authoritative revelation of His will and truth.</li>
+        <li>Salvation – A gift of grace received through faith in Jesus Christ, not by works.</li>
+        <li>
+          The Sabbath – The seventh day of the week, Saturday, observed as a sacred day of rest, worship,
+          and fellowship.
+        </li>
+        <li>
+          The Church – A community of believers called to worship God, support one another, and share
+          the gospel.
+        </li>
+        <li>
+          Health and Wholeness – A holistic approach to life that honors God by caring for the body,
+          mind, and spirit.
+        </li>
+        <li>
+          The Second Coming – The personal, visible return of Jesus Christ, which is the blessed hope of
+          the church.
+        </li>
+      </ul>
+
+      <p class="muted">
+        We seek to live out these beliefs with love, compassion, and faithfulness as we serve God and
+        others.
       </p>
 
       <p class="muted">

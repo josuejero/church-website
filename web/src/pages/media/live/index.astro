@@ -10,7 +10,7 @@ const hasYouTube = site.portals.youtubeChannelUrl && site.portals.youtubeChannel
 
 <BaseLayout title="Watch Live" description={`Watch ${site.shortName} live.`}>
   <div class="stack">
-    <h1 style="margin: 0;">Watch Live</h1>
+    <h1>Watch Live</h1>
 
     {hasEmbed ? (
       <YouTubeEmbed
@@ -18,23 +18,25 @@ const hasYouTube = site.portals.youtubeChannelUrl && site.portals.youtubeChannel
         embedUrl={site.portals.youtubeLiveEmbedUrl}
       />
     ) : (
-      <section class="card">
-        <h2 style="margin-top: 0;">Live stream coming soon</h2>
+      <section class="card stack--tight">
+        <h2>Live stream coming soon</h2>
         <p class="muted">
-          Set <code>portals.youtubeLiveEmbedUrl</code> in <code>src/data/site.ts</code>.
+          We’re preparing a live stream. Check back soon or join us in person.
         </p>
+        <div class="cluster">
+          <Button href="/connect/plan-a-visit" variant="secondary">Plan a Visit</Button>
+          <Button href="/media/videos" variant="ghost">Watch Videos</Button>
+        </div>
       </section>
     )}
 
     {hasYouTube ? (
-      <div>
-        <Button href={site.portals.youtubeChannelUrl} external variant="secondary">
-          Open YouTube channel
-        </Button>
-      </div>
+      <Button href={site.portals.youtubeChannelUrl} external variant="secondary">
+        Open YouTube channel
+      </Button>
     ) : (
       <p class="small muted">
-        Add <code>portals.youtubeChannelUrl</code> in <code>src/data/site.ts</code>.
+        YouTube channel coming soon.
       </p>
     )}
   </div>

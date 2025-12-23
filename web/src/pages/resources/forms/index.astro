@@ -14,25 +14,25 @@ const hasVolunteerForm = site.portals.volunteerFormUrl && site.portals.volunteer
 
 <BaseLayout title="Forms" description="Official request and signup forms.">
   <div class="stack">
-    <h1 style="margin: 0;">Forms</h1>
-    <p class="muted" style="margin: 0;">
+    <h1>Forms</h1>
+    <p class="muted">
       Official request and signup forms. If a form is not available, you can always contact the church.
     </p>
 
-    <section class="card" aria-labelledby="forms-help">
-      <h2 id="forms-help" style="margin-top: 0;">Need help right now?</h2>
-      <p class="muted" style="margin: var(--space-2) 0 0;">
+    <section class="card stack" aria-labelledby="forms-help">
+      <h2 id="forms-help">Need help right now?</h2>
+      <p class="muted">
         Call us at <a href={phoneHref}>{site.contact.phone}</a> or visit the <a href="/connect/contact">Contact</a> page.
       </p>
     </section>
 
-    <section aria-labelledby="forms-list">
-      <h2 id="forms-list" style="margin: 0;">Available forms</h2>
+    <section class="stack" aria-labelledby="forms-list">
+      <h2 id="forms-list">Available forms</h2>
 
       <CardGrid columnsMin={260}>
         {hasPrayerForm && (
           <Card
-            title="Prayer request"
+            title="Prayer Request"
             description="Share a prayer request. Optionally ask for follow-up."
             href={site.portals.prayerFormUrl}
           />
@@ -63,7 +63,7 @@ const hasVolunteerForm = site.portals.volunteerFormUrl && site.portals.volunteer
         )}
       </CardGrid>
 
-      <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3); flex-wrap: wrap;">
+      <div class="cluster">
         {hasPrayerForm && (
           <Button href={site.portals.prayerFormUrl} external variant="secondary">Open prayer form</Button>
         )}
@@ -72,7 +72,7 @@ const hasVolunteerForm = site.portals.volunteerFormUrl && site.portals.volunteer
         )}
       </div>
 
-      <p class="small muted" style="margin: var(--space-4) 0 0;">
+      <p class="small muted">
         Privacy note: only share information you’re comfortable sharing with a church prayer/team inbox.
       </p>
     </section>

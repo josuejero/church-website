@@ -170,6 +170,9 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
   }
 
   .nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--target-min);
     text-decoration: none;
     color: inherit;
     font-weight: 700;
@@ -226,6 +229,7 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     align-items: center;
     gap: var(--space-2);
     font-weight: 700;
+    min-height: var(--target-min);
   }
 
   .menu__summary::-webkit-details-marker {
@@ -255,6 +259,9 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
   }
 
   .menu__link {
+    display: flex;
+    align-items: center;
+    min-height: var(--target-min);
     text-decoration: none;
     color: inherit;
     font-weight: 700;
@@ -289,6 +296,9 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
   }
 
   .menu__sublink {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--target-min);
     text-decoration: none;
     color: inherit;
     opacity: 0.9;

@@ -9,25 +9,54 @@ const ministries = await getCollection('ministries', ({ data }) => {
 });
 
 const sorted = ministries.sort((a, b) => a.data.title.localeCompare(b.data.title));
+const grouped = sorted.reduce(
+  (acc, ministry) => {
+    const category = ministry.data.category ?? "Other";
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(ministry);
+    return acc;
+  },
+  {} as Record<string, typeof sorted>
+);
+const categoryOrder = [
+  "Children & Youth",
+  "Men",
+  "Women",
+  "Outreach",
+  "Bible Study",
+  "Leadership",
+  "Other",
+];
+const orderedCategories = [
+  ...categoryOrder.filter((category) => grouped[category]?.length),
+  ...Object.keys(grouped)
+    .filter((category) => !categoryOrder.includes(category))
+    .sort((a, b) => a.localeCompare(b)),
+];
 ---
 
 <BaseLayout title="Ministries" description="Ways to serve and grow together.">
   <Hero title="Ministries" subtitle="Find a place to belong and serve." />
 
-  <section class="container stack">
+  <section class="stack">
     {sorted.length === 0 ? (
       <p class="muted">No ministries are published yet.</p>
     ) : (
-      <div class="grid--cards">
-        {sorted.map((m) => (
-          <ContentCard
-            href={`/ministries/${m.id}/`}
-            title={m.data.title}
-            summary={m.data.summary}
-            tags={m.data.tags}
-          />
-        ))}
-      </div>
+      orderedCategories.map((category) => (
+        <section class="stack--tight">
+          <h2>{category}</h2>
+          <div class="grid--cards">
+            {grouped[category].map((m) => (
+              <ContentCard
+                href={`/ministries/${m.id}`}
+                title={m.data.title}
+                summary={m.data.summary}
+                tags={m.data.tags}
+              />
+            ))}
+          </div>
+        </section>
+      ))
     )}
   </section>
 </BaseLayout>

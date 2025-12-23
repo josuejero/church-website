@@ -12,7 +12,7 @@ export default defineConfig({
   // Used for canonical URLs + sitemap/robots generation.
   // In Cloudflare Pages: set PUBLIC_SITE_URL to your production domain (e.g. https://example.org)
   site: site ?? "http://localhost:4321",
-  trailingSlash: "always",
+  trailingSlash: "never",
 
   integrations: [
     mdx(),
@@ -21,7 +21,7 @@ export default defineConfig({
     pagefind(),
     sitemap({
       // Internal site search is not a page you want indexed.
-      filter: (page) => !page.endsWith("/search/"),
+      filter: (page) => !page.endsWith("/search"),
     }),
   ],
 

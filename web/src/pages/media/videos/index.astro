@@ -8,23 +8,22 @@ const hasYouTube = site.portals.youtubeChannelUrl && site.portals.youtubeChannel
 
 <BaseLayout title="Videos" description={`Recent videos from ${site.name}.`}>
   <div class="stack">
-    <h1 style="margin: 0;">Videos</h1>
+    <h1>Videos</h1>
 
-    <section class="card">
-      <h2 style="margin-top: 0;">Watch on YouTube</h2>
+    <section class="card stack">
+      <h2>Watch on YouTube</h2>
       <p class="muted">
         Browse recent messages and live streams on our YouTube channel.
       </p>
 
       {hasYouTube ? (
-        <div style="margin-top: var(--space-4);">
-          <Button href={site.portals.youtubeChannelUrl} external variant="secondary">
-            Browse on YouTube
-          </Button>
-        </div>
+        <Button href={site.portals.youtubeChannelUrl} external variant="secondary">
+          Browse on YouTube
+        </Button>
       ) : (
-        <p class="small muted" style="margin-top: var(--space-4);">
-          Add the YouTube channel link in <code>src/data/site.ts</code>.
+        <p class="small muted">
+          Our YouTube channel is coming soon. Check back or{" "}
+          <a class="link" href="/connect/contact">contact us</a> for the latest links.
         </p>
       )}
     </section>

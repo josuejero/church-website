@@ -4,17 +4,18 @@ import { site } from "../../../data/site";
 import { mailto } from "../../../lib/links";
 export const prerender = false;
 
-function displayOrTBD(value?: string) {
-  return value && value !== "TBD" ? value : "TBD";
-}
+const isFilled = (value?: string) => Boolean(value && value.trim() && value !== "TBD");
+const fallbackName = "Contact us";
+const fallbackHref = "/connect/contact";
+const fallbackLabel = "Contact us for current details.";
 ---
 
 <BaseLayout title="Our Team" description={`Meet the leadership and ministry contacts at ${site.name}.`}>
   <div class="stack">
-    <h1 style="margin: 0;">Our Team</h1>
+    <h1>Our Team</h1>
 
-    <section class="card">
-      <h2 style="margin-top: 0;">Leadership</h2>
+    <section class="card stack">
+      <h2>Leadership</h2>
       <p class="muted">
         For most questions, starting with the Pastor or Head Elder is a great first step.
       </p>
@@ -26,28 +27,29 @@ function displayOrTBD(value?: string) {
           <div>Contact</div>
         </div>
 
-        {(site.leadershipTeam ?? []).map((m) => (
-          <div class="row">
-            <div>{m.role}</div>
-            <div>{displayOrTBD(m.name)}</div>
-            <div>
-              {m.email && m.email !== "TBD" ? (
-                <a href={mailto(m.email!, `${m.role} - ${site.shortName}`)}>{m.email}</a>
-              ) : (
-                <span class="muted">TBD</span>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+        {(site.leadershipTeam ?? []).map((m) => {
+          const name = isFilled(m.name) ? m.name : fallbackName;
+          const email = isFilled(m.email) ? m.email : "";
 
-      <p class="small muted" style="margin-top: var(--space-4);">
-        If a role shows “TBD”, update it in <code>src/data/site.ts</code>.
-      </p>
+          return (
+            <div class="row">
+              <div>{m.role}</div>
+              <div>{name}</div>
+              <div>
+                {email ? (
+                  <a href={mailto(email, `${m.role} - ${site.shortName}`)}>{email}</a>
+                ) : (
+                  <a class="link" href={fallbackHref}>{fallbackLabel}</a>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </section>
 
-    <section class="card">
-      <h2 style="margin-top: 0;">Ministry Leads</h2>
+    <section class="card stack">
+      <h2>Ministry Leads</h2>
       <p class="muted">
         Reach out to the ministry lead closest to your question, or use the general email if you’re not sure.
       </p>
@@ -59,24 +61,29 @@ function displayOrTBD(value?: string) {
           <div>Contact</div>
         </div>
 
-        {(site.ministryLeads ?? []).map((m) => (
-          <div class="row">
-            <div>{m.role}</div>
-            <div>{displayOrTBD(m.name)}</div>
-            <div>
-              {m.email && m.email !== "TBD" ? (
-                <a href={mailto(m.email!, `${m.role} - ${site.shortName}`)}>{m.email}</a>
-              ) : (
-                <span class="muted">TBD</span>
-              )}
+        {(site.ministryLeads ?? []).map((m) => {
+          const name = isFilled(m.name) ? m.name : fallbackName;
+          const email = isFilled(m.email) ? m.email : "";
+
+          return (
+            <div class="row">
+              <div>{m.role}</div>
+              <div>{name}</div>
+              <div>
+                {email ? (
+                  <a href={mailto(email, `${m.role} - ${site.shortName}`)}>{email}</a>
+                ) : (
+                  <a class="link" href={fallbackHref}>{fallbackLabel}</a>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
 
-    <section class="card">
-      <h2 style="margin-top: 0;">Who to contact for what</h2>
+    <section class="card stack">
+      <h2>Who to contact for what</h2>
       <p class="muted">
         Not sure who to reach? Start with one of these.
       </p>
@@ -88,32 +95,33 @@ function displayOrTBD(value?: string) {
           <div>How</div>
         </div>
 
-        {(site.contactTopics ?? []).map((t) => (
-          <div class="row">
-            <div>{t.topic}</div>
-            <div>{t.contactRole}</div>
-            <div>
-              {t.href ? (
-                <a
-                  href={t.href}
-                  target={t.external ? "_blank" : undefined}
-                  rel={t.external ? "noopener noreferrer" : undefined}
-                >
-                  {t.hrefLabel ?? "Open"}
-                </a>
-              ) : t.email ? (
-                <a href={mailto(t.email, `${t.topic} - ${site.shortName}`)}>{t.email}</a>
-              ) : (
-                <span class="muted">TBD</span>
-              )}
-              {t.note ? (
-                <div class="small muted" style="margin-top: var(--space-2);">
-                  {t.note}
-                </div>
-              ) : null}
+        {(site.contactTopics ?? []).map((t) => {
+          const topicHref = isFilled(t.href) ? t.href : "";
+          const topicEmail = isFilled(t.email) ? t.email : "";
+
+          return (
+            <div class="row">
+              <div>{t.topic}</div>
+              <div>{t.contactRole}</div>
+              <div class="stack--tight">
+                {topicHref ? (
+                  <a
+                    href={topicHref}
+                    target={t.external ? "_blank" : undefined}
+                    rel={t.external ? "noopener noreferrer" : undefined}
+                  >
+                    {t.hrefLabel ?? "Open"}
+                  </a>
+                ) : topicEmail ? (
+                  <a href={mailto(topicEmail, `${t.topic} - ${site.shortName}`)}>{topicEmail}</a>
+                ) : (
+                  <a class="link" href={fallbackHref}>{fallbackLabel}</a>
+                )}
+                {t.note ? <div class="small muted">{t.note}</div> : null}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   </div>
@@ -124,7 +132,6 @@ function displayOrTBD(value?: string) {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-2);
     overflow: hidden;
-    margin-top: var(--space-4);
   }
 
   .row {
