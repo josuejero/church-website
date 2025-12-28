@@ -119,6 +119,7 @@ web/
       events/
         sabbath-service.md
       ministries/
+        adult-sabbath-school.md
         adventurers.md
         bible-study.md
         board-meeting.md
@@ -224,343 +225,6 @@ package.json
 
 <files>
 This section contains the contents of the repository's files.
-
-<file path="web/src/components/sections/RecurringActivities.astro">
----
-import { oneOffEvents, recurringActivities } from "../../data/activities";
-import { site } from "../../data/site";
-
-type Props = {
-  title?: string;
-  subtitle?: string;
-  showNotes?: boolean;
-};
-
-const { title = "Activities", subtitle, showNotes = true } = Astro.props;
-
-const now = new Date();
-const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-const fmtDate = new Intl.DateTimeFormat(site.locale, {
-  dateStyle: "medium",
-  timeZone: site.timeZone
-});
-const fmtDateTime = new Intl.DateTimeFormat(site.locale, {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: site.timeZone
-});
-
-const isFilled = (value?: string) => Boolean(value && value.trim() && value !== "TBD");
-const cleanedRecurring = recurringActivities.filter((activity) => {
-  const title = activity.title?.trim();
-  if (!title || title.toLowerCase().startsWith("etc")) {
-    return false;
-  }
-  return isFilled(activity.cadence) || isFilled(activity.time);
-});
-
-const oneOffUpcoming = oneOffEvents
-  .map((event) => {
-    const startAt = new Date(event.start);
-    return {
-      ...event,
-      startAt,
-      hasTime: event.start.includes("T")
-    };
-  })
-  .filter((event) => {
-    if (Number.isNaN(event.startAt.valueOf())) {
-      return false;
-    }
-    return event.hasTime ? event.startAt >= now : event.startAt >= startOfToday;
-  })
-  .sort((a, b) => a.startAt.valueOf() - b.startAt.valueOf());
----
-
-<section class="stack">
-  <header class="stack--tight">
-    <h2>{title}</h2>
-    {subtitle && <p class="muted">{subtitle}</p>}
-  </header>
-
-  {oneOffUpcoming.length > 0 && (
-    <div class="stack--tight">
-      <h3>One-off events</h3>
-      <ul class="recurring-list">
-        {oneOffUpcoming.map((event) => (
-          <li class="recurring-item">
-            <p class="recurring-text">
-              {event.link ? <a href={event.link}>{event.title}</a> : <span>{event.title}</span>}
-              {` on ${
-                event.hasTime ? fmtDateTime.format(event.startAt) : fmtDate.format(event.startAt)
-              }`}
-            </p>
-            {showNotes && event.note && <span class="recurring-note">{event.note}</span>}
-          </li>
-        ))}
-      </ul>
-    </div>
-  )}
-
-  {oneOffUpcoming.length > 0 && <h3>Recurring activities</h3>}
-  <ul class="recurring-list">
-    {cleanedRecurring.map((activity) => (
-      <li class="recurring-item">
-        <p class="recurring-text">
-          {activity.link ? (
-            <a href={activity.link}>{activity.title}</a>
-          ) : (
-            <span>{activity.title}</span>
-          )}
-          {activity.cadence && ` ${activity.cadence}`}
-          {activity.time && ` at ${activity.time}`}
-          {(activity.cadence || activity.time) && "."}
-        </p>
-        {showNotes && activity.note && <span class="recurring-note">{activity.note}</span>}
-      </li>
-    ))}
-  </ul>
-</section>
-
-<style>
-  .recurring-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: var(--space-3);
-  }
-
-  .recurring-item {
-    display: grid;
-    gap: var(--space-1);
-  }
-
-  .recurring-text {
-    margin: 0;
-    font-size: 1rem;
-  }
-
-  .recurring-text a {
-    font-weight: 600;
-    text-decoration: none;
-  }
-
-  .recurring-text a:hover {
-    text-decoration: underline;
-  }
-
-  .recurring-note {
-    font-size: 0.85rem;
-    color: var(--color-text-muted);
-  }
-</style>
-</file>
-
-<file path="web/src/content/ministries/adventurers.md">
----
-title: "Adventurers"
-summary: "A fun, faith-based club for children and their families."
-leaderName: "Adventurers Leaders"
-leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "1st and 3rd Sabbath"
-category: "Children & Youth"
-tags: ["kids", "families", "faith"]
----
-
-## Overview
-
-Adventurers helps kids grow in faith, friendships, and family involvement.
-
-## How to get involved
-
-Come to a meeting or contact the leaders to learn more.
-</file>
-
-<file path="web/src/content/ministries/bible-study.md">
----
-title: "Bible Study"
-summary: "Interactive study and discussion of Scripture."
-leaderName: "Bible Study Facilitator"
-leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "4th Sabbath"
-category: "Bible Study"
-tags: ["bible", "study", "growth"]
----
-
-## Overview
-
-We read the Bible together and talk about how to live it out.
-
-## How to get involved
-
-Bring your Bible and join the discussion.
-</file>
-
-<file path="web/src/content/ministries/board-meeting.md">
----
-title: "Board Meeting"
-summary: "Monthly planning and oversight for church leadership."
-leaderName: "Church Board"
-leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "2nd Tuesday"
-category: "Leadership"
-draft: true
-tags: ["leadership", "members"]
----
-
-## Overview
-
-Board meetings are for members and invited guests to plan and shepherd church life.
-
-## How to get involved
-
-If you are a board member, watch for the monthly agenda and meeting link.
-</file>
-
-<file path="web/src/content/ministries/community-meal-spaghetti.md">
----
-title: "Community Meal - Spaghetti"
-summary: "A free community meal to share food, fellowship, and care."
-leaderName: "Community Meal Team"
-leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "4th Wednesday"
-category: "Outreach"
-tags: ["outreach", "community", "hospitality"]
----
-
-## Overview
-
-Neighbors are welcome to a warm meal and friendly conversation.
-
-## How to get involved
-
-Volunteer or invite a friend to join us.
-</file>
-
-<file path="web/src/content/ministries/mens-ministry.md">
----
-title: "Men's Ministry"
-summary: "Brotherhood, prayer, and service to strengthen men of faith."
-leaderName: "Men's Ministry Team"
-leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "Fridays at 7:00 PM"
-category: "Men"
-tags: ["men", "fellowship", "service"]
----
-
-## Overview
-
-We gather for encouragement, prayer, and practical ways to serve families and the church.
-
-## How to get involved
-
-Reach out to the leader or show up on a Friday night.
-</file>
-
-<file path="web/src/content/ministries/pathfinders.md">
----
-title: "Pathfinders"
-summary: "A Christ-centered club for teens focused on leadership, service, and adventure."
-leaderName: "Pathfinders Leadership"
-leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "1st and 3rd Sabbath"
-category: "Children & Youth"
-tags: ["youth", "teens", "discipleship"]
----
-
-## Overview
-
-We help teens build friendships, skills, and a deeper walk with Jesus.
-
-## How to get involved
-
-Join a meeting or contact the leaders for details.
-</file>
-
-<file path="web/src/content/ministries/womens-ministry.md">
----
-title: "Women's Ministry"
-summary: "Connection, encouragement, and discipleship for women of all ages."
-leaderName: "Women's Ministry Team"
-leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "1st Tuesday of each month"
-category: "Women"
-tags: ["women", "discipleship", "community"]
----
-
-## Overview
-
-We meet to grow in faith, share life, and support one another.
-
-## How to get involved
-
-Contact the ministry team to get the latest details.
-</file>
-
-<file path="web/src/data/activities.ts">
-export type RecurringActivity = {
-  title: string;
-  cadence: string;
-  time: string;
-  link: string;
-  note: string;
-};
-
-export type OneOffEvent = {
-  title: string;
-  start: string;
-  link?: string;
-  note?: string;
-};
-
-export const recurringActivities: RecurringActivity[] = [
-  {
-    title: "Pathfinders and Adventurers",
-    cadence: "meet on the first and third Sabbath",
-    time: "",
-    link: "/ministries/pathfinders",
-    note: "Public"
-  },
-  {
-    title: "Board meeting",
-    cadence: "is on the second Tuesday of every month",
-    time: "",
-    link: "/ministries/board-meeting",
-    note: "Members only"
-  },
-  {
-    title: "Men's ministry",
-    cadence: "is every Friday",
-    time: "7:00 PM",
-    link: "/ministries/mens-ministry",
-    note: "Public"
-  },
-  {
-    title: "Women's ministry",
-    cadence: "is on the first Tuesday of every month",
-    time: "",
-    link: "/ministries/womens-ministry",
-    note: "Public"
-  },
-  {
-    title: "Free spaghetti dinner",
-    cadence: "the 4th Wednesday of every month",
-    time: "",
-    link: "/ministries/community-meal-spaghetti",
-    note: "Public"
-  },
-  {
-    title: "Bible study",
-    cadence: "the 4th Sabbath",
-    time: "",
-    link: "/ministries/bible-study",
-    note: "Public"
-  }
-];
-
-export const oneOffEvents: OneOffEvent[] = [];
-</file>
 
 <file path=".github/ISSUE_TEMPLATE/content-update.md">
 ---
@@ -1286,6 +950,1095 @@ A task is ready when:
 <file path="web/public/.assetsignore">
 _worker.js
 _routes.json
+</file>
+
+<file path="web/src/components/sections/Hero.astro">
+---
+import HeroUI from "../ui/Hero.astro";
+
+export type Props = {
+  title: string;
+  subtitle?: string;
+  primaryCtaLabel?: string;
+  primaryCtaHref?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+};
+
+const props = Astro.props as Props;
+---
+
+<HeroUI {...props} />
+</file>
+
+<file path="web/src/components/sections/RecurringActivities.astro">
+---
+import { oneOffEvents, recurringActivities } from "../../data/activities";
+import { site } from "../../data/site";
+
+type Props = {
+  title?: string;
+  subtitle?: string;
+  showNotes?: boolean;
+};
+
+const { title = "Activities", subtitle, showNotes = true } = Astro.props;
+
+const now = new Date();
+const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+const fmtDate = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "medium",
+  timeZone: site.timeZone
+});
+const fmtDateTime = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: site.timeZone
+});
+
+const isFilled = (value?: string) => Boolean(value && value.trim() && value !== "TBD");
+const cleanedRecurring = recurringActivities.filter((activity) => {
+  const title = activity.title?.trim();
+  if (!title || title.toLowerCase().startsWith("etc")) {
+    return false;
+  }
+  return isFilled(activity.cadence) || isFilled(activity.time);
+});
+
+const oneOffUpcoming = oneOffEvents
+  .map((event) => {
+    const startAt = new Date(event.start);
+    return {
+      ...event,
+      startAt,
+      hasTime: event.start.includes("T")
+    };
+  })
+  .filter((event) => {
+    if (Number.isNaN(event.startAt.valueOf())) {
+      return false;
+    }
+    return event.hasTime ? event.startAt >= now : event.startAt >= startOfToday;
+  })
+  .sort((a, b) => a.startAt.valueOf() - b.startAt.valueOf());
+---
+
+<section class="stack">
+  <header class="stack--tight">
+    <h2>{title}</h2>
+    {subtitle && <p class="muted">{subtitle}</p>}
+  </header>
+
+  {oneOffUpcoming.length > 0 && (
+    <div class="stack--tight">
+      <h3>One-off events</h3>
+      <ul class="recurring-list">
+        {oneOffUpcoming.map((event) => (
+          <li class="recurring-item">
+            <p class="recurring-text">
+              {event.link ? <a href={event.link}>{event.title}</a> : <span>{event.title}</span>}
+              {` on ${
+                event.hasTime ? fmtDateTime.format(event.startAt) : fmtDate.format(event.startAt)
+              }`}
+            </p>
+            {showNotes && event.note && <span class="recurring-note">{event.note}</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+
+  {oneOffUpcoming.length > 0 && <h3>Recurring activities</h3>}
+  <ul class="recurring-list">
+    {cleanedRecurring.map((activity) => (
+      <li class="recurring-item">
+        <p class="recurring-text">
+          {activity.link ? (
+            <a href={activity.link}>{activity.title}</a>
+          ) : (
+            <span>{activity.title}</span>
+          )}
+          {activity.cadence && ` ${activity.cadence}`}
+          {activity.time && ` at ${activity.time}`}
+          {(activity.cadence || activity.time) && "."}
+        </p>
+        {showNotes && activity.note && <span class="recurring-note">{activity.note}</span>}
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .recurring-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .recurring-item {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  .recurring-text {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .recurring-text a {
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .recurring-text a:hover {
+    text-decoration: underline;
+  }
+
+  .recurring-note {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+</style>
+</file>
+
+<file path="web/src/components/ui/ButtonLink.astro">
+---
+import Button from "./Button.astro";
+
+type Props = {
+  href: string;
+  external?: boolean;
+  variant?: "primary" | "secondary";
+  size?: "sm" | "md" | "lg";
+};
+
+const { href, external, variant = "primary", size = "md" } = Astro.props;
+---
+
+<Button href={href} external={external} variant={variant} size={size}>
+  <slot />
+</Button>
+</file>
+
+<file path="web/src/components/ui/YouTubeEmbed.astro">
+---
+import YouTubeEmbedMedia from "../media/YouTubeEmbed.astro";
+
+export type Props = {
+  title: string;
+  /** Full YouTube embed URL, e.g. https://www.youtube.com/embed/VIDEO_ID */
+  embedUrl: string;
+};
+
+const props = Astro.props as Props;
+---
+
+<YouTubeEmbedMedia {...props} />
+</file>
+
+<file path="web/src/components/Welcome.astro">
+---
+import astroLogo from '../assets/astro.svg';
+import background from '../assets/background.svg';
+---
+
+<div id="container">
+	<img id="background" src={background.src} alt="" fetchpriority="high" />
+	<main>
+		<section id="hero">
+			<a href="https://astro.build"
+				><img src={astroLogo.src} width="115" height="48" alt="Astro Homepage" /></a
+			>
+			<h1>
+				To get started, open the <code><pre>src/pages</pre></code> directory in your project.
+			</h1>
+			<section id="links">
+				<a class="button" href="https://docs.astro.build">Read our docs</a>
+				<a href="https://astro.build/chat"
+					>Join our Discord <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36"
+						><path
+							fill="currentColor"
+							d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"
+						></path></svg
+					>
+				</a>
+			</section>
+		</section>
+	</main>
+
+	<a href="https://astro.build/blog/astro-5/" id="news" class="box">
+		<svg width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"
+			><path
+				d="M24.667 12c1.333 1.414 2 3.192 2 5.334 0 4.62-4.934 5.7-7.334 12C18.444 28.567 18 27.456 18 26c0-4.642 6.667-7.053 6.667-14Zm-5.334-5.333c1.6 1.65 2.4 3.43 2.4 5.333 0 6.602-8.06 7.59-6.4 17.334C13.111 27.787 12 25.564 12 22.666c0-4.434 7.333-8 7.333-16Zm-6-5.333C15.111 3.555 16 5.556 16 7.333c0 8.333-11.333 10.962-5.333 22-3.488-.774-6-4-6-8 0-8.667 8.666-10 8.666-20Z"
+				fill="#111827"></path></svg
+		>
+		<h2>What's New in Astro 5.0?</h2>
+		<p>
+			From content layers to server islands, click to learn more about the new features and
+			improvements in Astro 5.0
+		</p>
+	</a>
+</div>
+
+<style>
+	#background {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: -1;
+		filter: blur(100px);
+	}
+
+	#container {
+		font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
+		height: 100%;
+	}
+
+	main {
+		height: 100%;
+		display: flex;
+		justify-content: center;
+	}
+
+	#hero {
+		display: flex;
+		align-items: start;
+		flex-direction: column;
+		justify-content: center;
+		padding: 16px;
+	}
+
+	h1 {
+		font-size: 22px;
+		margin-top: 0.25em;
+	}
+
+	#links {
+		display: flex;
+		gap: 16px;
+	}
+
+	#links a {
+		display: flex;
+		align-items: center;
+		padding: 10px 12px;
+		color: #111827;
+		text-decoration: none;
+		transition: color 0.2s;
+	}
+
+	#links a:hover {
+		color: rgb(78, 80, 86);
+	}
+
+	#links a svg {
+		height: 1em;
+		margin-left: 8px;
+	}
+
+	#links a.button {
+		color: white;
+		background: linear-gradient(83.21deg, #3245ff 0%, #bc52ee 100%);
+		box-shadow:
+			inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+			inset 0 -2px 0 rgba(0, 0, 0, 0.24);
+		border-radius: 10px;
+	}
+
+	#links a.button:hover {
+		color: rgb(230, 230, 230);
+		box-shadow: none;
+	}
+
+	pre {
+		font-family:
+			ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono',
+			monospace;
+		font-weight: normal;
+		background: linear-gradient(14deg, #d83333 0%, #f041ff 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		margin: 0;
+	}
+
+	h2 {
+		margin: 0 0 1em;
+		font-weight: normal;
+		color: #111827;
+		font-size: 20px;
+	}
+
+	p {
+		color: #4b5563;
+		font-size: 16px;
+		line-height: 24px;
+		letter-spacing: -0.006em;
+		margin: 0;
+	}
+
+	code {
+		display: inline-block;
+		background:
+			linear-gradient(66.77deg, #f3cddd 0%, #f5cee7 100%) padding-box,
+			linear-gradient(155deg, #d83333 0%, #f041ff 18%, #f5cee7 45%) border-box;
+		border-radius: 8px;
+		border: 1px solid transparent;
+		padding: 6px 8px;
+	}
+
+	.box {
+		padding: 16px;
+		background: rgba(255, 255, 255, 1);
+		border-radius: 16px;
+		border: 1px solid white;
+	}
+
+	#news {
+		position: absolute;
+		bottom: 16px;
+		right: 16px;
+		max-width: 300px;
+		text-decoration: none;
+		transition: background 0.2s;
+		backdrop-filter: blur(50px);
+	}
+
+	#news:hover {
+		background: rgba(255, 255, 255, 0.55);
+	}
+
+	@media screen and (max-height: 368px) {
+		#news {
+			display: none;
+		}
+	}
+
+	@media screen and (max-width: 768px) {
+		#container {
+			display: flex;
+			flex-direction: column;
+		}
+
+		#hero {
+			display: block;
+			padding-top: 10%;
+		}
+
+		#links {
+			flex-wrap: wrap;
+		}
+
+		#links a.button {
+			padding: 14px 18px;
+		}
+
+		#news {
+			right: 16px;
+			left: 16px;
+			bottom: 2.5rem;
+			max-width: 100%;
+		}
+
+		h1 {
+			line-height: 1.5;
+		}
+	}
+</style>
+</file>
+
+<file path="web/src/content/bulletins/2025-12-13.md">
+---
+title: "Sabbath Bulletin"
+date: "2025-12-13"
+summary: "Archive sample bulletin."
+pdfUrl: "/bulletins/2025-12-13.pdf"
+---
+</file>
+
+<file path="web/src/content/bulletins/2025-12-20.md">
+---
+title: "Sabbath Bulletin"
+date: "2025-12-20"
+summary: "Order of service, announcements, and weekly schedule."
+pdfUrl: "/bulletins/2025-12-20.pdf"
+---
+</file>
+
+<file path="web/src/content/ministries/adult-sabbath-school.md">
+---
+title: "Adult Sabbath School"
+summary: "A Christ-centered Sabbath School focused on prayer, member care, service, and Bible study."
+leaderName: "Sabbath School Superintendent"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "Sabbaths at 10:00 AM"
+category: "Bible Study"
+tags: ["adult", "sabbath school", "bible study", "prayer", "service"]
+---
+
+## Mission Statement
+
+The Mission of the Adult Sabbath School Department of the First Springfield Seventh-day Adventist Church is to provide structured opportunities for its members and visitors to experience a living relationship with Jesus Christ through an emphasis on prayer, member care, service, and Bible study.
+
+## Goals and Objectives
+
+<div class="grid--cards">
+  <div class="card stack--tight">
+    <h3>Prayer</h3>
+    <p>
+      We recognize that prayer is a primary foundation of Spiritual life. Therefore, each class will
+      spend time in group prayer. Ample opportunity will be made to receive prayer requests, and prayer
+      will be made not only by class leaders, but individual members will pray for class needs, church
+      needs, and the overall importance of each person being filled with the Holy Spirit.
+    </p>
+  </div>
+  <div class="card stack--tight">
+    <h3>Member Care</h3>
+    <p>
+      We recognize that each individual is a part of the larger body, and that Scripture calls us to
+      care for one another. Therefore, each class will spend time in discerning the needs of its
+      members, and planning ways to reach out and meet those needs. Obeying the Scriptural injunction
+      to "Bear one another's burdens," we will seek to lift the spiritual, social, emotional, and
+      financial needs of our brothers and sisters within the family of God as we have opportunity.
+      Each class will seek to reach out to its inactive or missing members in a regular and consistent
+      manner.
+    </p>
+  </div>
+  <div class="card stack--tight">
+    <h3>Service</h3>
+    <p>
+      We recognize that God has directed that service be the criteria by which greatness is measured.
+      Following our Lord's example, each class will plan and execute a service program in some area of
+      need. Such programs will range from practical help given to needy persons to evangelistic or
+      missionary work in the Pioneer Valley area, or even in the larger world field as God leads.
+      Opportunities will be provided to receive training that will facilitate the outreach of the
+      Sabbath School program.
+    </p>
+  </div>
+  <div class="card stack--tight">
+    <h3>Bible Study</h3>
+    <p>
+      We recognize that the study of Scripture is the primary way that we may come to know our Lord
+      Jesus Christ and the power of His gospel. Seeking to increase our understanding of Scripture,
+      each class will spend time in appropriate and relevant Bible study, using either the Adult
+      Sabbath School Quarterly, or other materials approved by the Sabbath School Council. New classes
+      will be encouraged to form that center around shared interests and needs as it pertains to
+      applying Scripture to all aspects of our lives.
+    </p>
+  </div>
+</div>
+</file>
+
+<file path="web/src/content/ministries/adventurers.md">
+---
+title: "Adventurers"
+summary: "A fun, faith-based club for children and their families."
+leaderName: "Adventurers Leaders"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "1st and 3rd Sabbath"
+category: "Children & Youth"
+tags: ["kids", "families", "faith"]
+---
+
+## Overview
+
+Adventurers helps kids grow in faith, friendships, and family involvement.
+
+## How to get involved
+
+Come to a meeting or contact the leaders to learn more.
+</file>
+
+<file path="web/src/content/ministries/bible-study.md">
+---
+title: "Bible Study"
+summary: "Interactive study and discussion of Scripture."
+leaderName: "Bible Study Facilitator"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "4th Sabbath"
+category: "Bible Study"
+tags: ["bible", "study", "growth"]
+---
+
+## Overview
+
+We read the Bible together and talk about how to live it out.
+
+## How to get involved
+
+Bring your Bible and join the discussion.
+</file>
+
+<file path="web/src/content/ministries/board-meeting.md">
+---
+title: "Board Meeting"
+summary: "Monthly planning and oversight for church leadership."
+leaderName: "Church Board"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "2nd Tuesday"
+category: "Leadership"
+draft: true
+tags: ["leadership", "members"]
+---
+
+## Overview
+
+Board meetings are for members and invited guests to plan and shepherd church life.
+
+## How to get involved
+
+If you are a board member, watch for the monthly agenda and meeting link.
+</file>
+
+<file path="web/src/content/ministries/community-meal-spaghetti.md">
+---
+title: "Community Meal - Spaghetti"
+summary: "A free community meal to share food, fellowship, and care."
+leaderName: "Community Meal Team"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "4th Wednesday"
+category: "Outreach"
+tags: ["outreach", "community", "hospitality"]
+---
+
+## Overview
+
+Neighbors are welcome to a warm meal and friendly conversation.
+
+## How to get involved
+
+Volunteer or invite a friend to join us.
+</file>
+
+<file path="web/src/content/ministries/mens-ministry.md">
+---
+title: "Men's Ministry"
+summary: "Brotherhood, prayer, and service to strengthen men of faith."
+leaderName: "Men's Ministry Team"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "Fridays at 7:00 PM"
+category: "Men"
+tags: ["men", "fellowship", "service"]
+---
+
+## Overview
+
+We gather for encouragement, prayer, and practical ways to serve families and the church.
+
+## How to get involved
+
+Reach out to the leader or show up on a Friday night.
+</file>
+
+<file path="web/src/content/ministries/pathfinders.md">
+---
+title: "Pathfinders"
+summary: "A Christ-centered club for teens focused on leadership, service, and adventure."
+leaderName: "Pathfinders Leadership"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "1st and 3rd Sabbath"
+category: "Children & Youth"
+tags: ["youth", "teens", "discipleship"]
+---
+
+## Overview
+
+We help teens build friendships, skills, and a deeper walk with Jesus.
+
+## How to get involved
+
+Join a meeting or contact the leaders for details.
+</file>
+
+<file path="web/src/content/ministries/womens-ministry.md">
+---
+title: "Women's Ministry"
+summary: "Connection, encouragement, and discipleship for women of all ages."
+leaderName: "Women's Ministry Team"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "1st Tuesday of each month"
+category: "Women"
+tags: ["women", "discipleship", "community"]
+---
+
+## Overview
+
+We meet to grow in faith, share life, and support one another.
+
+## How to get involved
+
+Contact the ministry team to get the latest details.
+</file>
+
+<file path="web/src/data/activities.ts">
+export type RecurringActivity = {
+  title: string;
+  cadence: string;
+  time: string;
+  link: string;
+  note: string;
+};
+
+export type OneOffEvent = {
+  title: string;
+  start: string;
+  link?: string;
+  note?: string;
+};
+
+export const recurringActivities: RecurringActivity[] = [
+  {
+    title: "Pathfinders and Adventurers",
+    cadence: "meet on the first and third Sabbath",
+    time: "",
+    link: "/ministries/pathfinders",
+    note: "Public"
+  },
+  {
+    title: "Board meeting",
+    cadence: "is on the second Tuesday of every month",
+    time: "",
+    link: "/ministries/board-meeting",
+    note: "Members only"
+  },
+  {
+    title: "Men's ministry",
+    cadence: "is every Friday",
+    time: "7:00 PM",
+    link: "/ministries/mens-ministry",
+    note: "Public"
+  },
+  {
+    title: "Women's ministry",
+    cadence: "is on the first Tuesday of every month",
+    time: "",
+    link: "/ministries/womens-ministry",
+    note: "Public"
+  },
+  {
+    title: "Free spaghetti dinner",
+    cadence: "the 4th Wednesday of every month",
+    time: "",
+    link: "/ministries/community-meal-spaghetti",
+    note: "Public"
+  },
+  {
+    title: "Bible study",
+    cadence: "the 4th Sabbath",
+    time: "",
+    link: "/ministries/bible-study",
+    note: "Public"
+  }
+];
+
+export const oneOffEvents: OneOffEvent[] = [];
+</file>
+
+<file path="web/src/data/videos.json">
+[
+  {
+    "title": "Sabbath Worship Service",
+    "date": "2025-12-13",
+    "youtubeId": "TBD",
+    "summary": "Weekly worship service."
+  },
+  {
+    "title": "Bible Study / Message",
+    "date": "2025-12-06",
+    "youtubeId": "TBD",
+    "summary": "Sermon and reflection."
+  },
+  {
+    "title": "Special Program",
+    "date": "2025-11-29",
+    "youtubeId": "TBD",
+    "summary": "Guest speaker or special event."
+  }
+]
+</file>
+
+<file path="web/src/layouts/Layout.astro">
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Astro Basics</title>
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>
+
+<style>
+	html,
+	body {
+		margin: 0;
+		width: 100%;
+		height: 100%;
+	}
+</style>
+</file>
+
+<file path="web/src/lib/links.ts">
+export function mailto(email: string, subject?: string) {
+  const e = (email ?? "").trim();
+  if (!e) return "";
+  const params = subject ? `?subject=${encodeURIComponent(subject)}` : "";
+  return `mailto:${e}${params}`;
+}
+</file>
+
+<file path="web/src/pages/404.astro">
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Page not found">
+  <h1>Page not found</h1>
+  <p class="muted">We couldn’t find that page. Try one of these options:</p>
+
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="/media">Media</a></li>
+    <li><a href="/give">Give</a></li>
+    <li><a href="/connect">Connect</a></li>
+  </ul>
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/robots.txt.ts">
+import type { APIRoute } from "astro";
+
+// Force this endpoint to be emitted as a static file in dist/robots.txt
+export const prerender = true;
+
+export const GET: APIRoute = ({ site: astroSite, url }) => {
+  // Prefer Astro config `site` when present, otherwise use the request origin
+  // (important for local LHCI ports like http://localhost:51310)
+  const origin = (astroSite?.toString() ?? url.origin).replace(/\/$/, "");
+
+  const sitemapUrl = new URL("/sitemap-index.xml", origin).toString();
+
+  const body = [
+    "User-agent: *",
+    "Allow: /",
+    "",
+    `Sitemap: ${sitemapUrl}`,
+    "",
+  ].join("\n");
+
+  return new Response(body, {
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "public, max-age=3600",
+    },
+  });
+};
+</file>
+
+<file path="web/test-results/.last-run.json">
+{
+  "status": "passed",
+  "failedTests": []
+}
+</file>
+
+<file path="web/tests/e2e/phase-7-sitefiles.spec.ts">
+import { expect, test } from "@playwright/test";
+
+test("robots.txt exists and references sitemap", async ({ page }) => {
+  await page.goto("/robots.txt");
+  const body = await page.textContent("body");
+  expect(body).toContain("User-agent:");
+  expect(body).toContain("Sitemap:");
+});
+
+test("sitemap index exists", async ({ page }) => {
+  await page.goto("/sitemap-index.xml");
+  const body = await page.textContent("body");
+  expect(body).toContain("<sitemapindex");
+});
+</file>
+
+<file path="web/.gitignore">
+# build output
+dist/
+
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment variables
+.env
+.env.production
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+</file>
+
+<file path="web/lighthouserc.cjs">
+module.exports = {
+  ci: {
+    collect: {
+      staticDistDir: "./dist",
+      numberOfRuns: 3
+    },
+    assert: {
+      assertions: {
+        "categories:performance": ["error", { "minScore": 0.9 }],
+        "categories:accessibility": ["error", { "minScore": 0.95 }],
+        "categories:seo": ["error", { "minScore": 0.95 }],
+        "categories:best-practices": ["error", { "minScore": 0.95 }]
+      }
+    },
+    upload: {
+      target: "filesystem",
+      outputDir: "./.lighthouseci"
+    }
+  }
+};
+</file>
+
+<file path="web/linkinator.config.json">
+{
+  "recurse": true,
+  "cleanUrls": true,
+  "checkFragments": true,
+  "timeout": 30000,
+  "concurrency": 50,
+  "skip": [
+    "^mailto:",
+    "^tel:",
+    "^https?://"
+  ]
+}
+</file>
+
+<file path="web/README.md">
+# Astro Starter Kit: Basics
+
+```sh
+npm create astro@latest -- --template basics
+```
+
+> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+
+## 🚀 Project Structure
+
+Inside of your Astro project, you'll see the following folders and files:
+
+```text
+/
+├── public/
+│   └── favicon.svg
+├── src
+│   ├── assets
+│   │   └── astro.svg
+│   ├── components
+│   │   └── Welcome.astro
+│   ├── layouts
+│   │   └── Layout.astro
+│   └── pages
+│       └── index.astro
+└── package.json
+```
+
+To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+
+## 🧞 Commands
+
+All commands are run from the root of the project, from a terminal:
+
+| Command                   | Action                                           |
+| :------------------------ | :----------------------------------------------- |
+| `npm install`             | Installs dependencies                            |
+| `npm run dev`             | Starts local dev server at `localhost:4321`      |
+| `npm run build`           | Build your production site to `./dist/`          |
+| `npm run preview`         | Preview your build locally, before deploying     |
+| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
+| `npm run astro -- --help` | Get help using the Astro CLI                     |
+
+## 👀 Want to learn more?
+
+Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+</file>
+
+<file path="web/wrangler.jsonc">
+{
+	"main": "dist/_worker.js/index.js",
+	"name": "web",
+  "compatibility_date": "2025-12-19",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": "./dist"
+	},
+	"observability": {
+    "enabled": true
+  }
+}
+</file>
+
+<file path=".editorconfig">
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.md]
+trim_trailing_whitespace = false
+</file>
+
+<file path=".gitignore">
+# Node
+node_modules/
+
+# Astro
+web/dist/
+web/.astro/
+
+# OS
+.DS_Store
+</file>
+
+<file path=".nvmrc">
+20
+</file>
+
+<file path="package.json">
+{
+  "dependencies": {
+    "@astrojs/sitemap": "3.6.0"
+  }
+}
+</file>
+
+<file path="docs/phase-0/source-of-truth.yml">
+church:
+  public_name: "First Springfield Seventh-day Adventist Church"
+  address:
+    street: "1118 Sumner Ave"
+    city: "Springfield"
+    state: "MA"
+    zip: "01118-2154"
+  phone: "(413) 782-6260"
+  email_public: "firstspringfieldsda@gmail.com"
+  languages:
+    primary: "English"
+
+schedule:
+  sabbath_school:
+    day: "Saturday"
+    time: "10:00 AM"
+  worship_service:
+    day: "Saturday"
+    time: "11:15 AM"
+  prayer_meeting:
+    day: "Wednesday"
+    time: "7:00 PM"
+
+portals:
+  giving_url: "https://adventistgiving.org/"
+  youtube_channel_url: "https://www.youtube.com/@1stspringfieldsdama74"
+  facebook_url: "TBD"
+  prayer_form_url: "TBD"
+  contact_form_url: "TBD"
+  volunteer_form_url: "TBD"
+  official_site_url: "https://firstspringfieldma.adventistchurch.org/"
+
+copy:
+  homepage_tagline: "A Christian community in Springfield, MA"
+  welcome_message: "We would love to have you join our church family."
+</file>
+
+<file path="web/.github/workflows/ci.yml">
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: ["main", "master"]
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+
+    env:
+      # Ensures canonical URLs + sitemap/robots generation are deterministic in CI
+      PUBLIC_SITE_URL: http://127.0.0.1:4321
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: E2E tests
+        run: npm run test:e2e:ci
+
+      - name: Internal link check
+        run: npm run test:links:ci
+
+      - name: Lighthouse CI
+        run: npm run lighthouse:ci
+
+      - name: Upload Lighthouse artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouseci
+          path: web/.lighthouseci
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: web/playwright-report
 </file>
 
 <file path="web/src/components/content/ContentCard.astro">
@@ -2014,7 +2767,7 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
   <div class="cluster cluster--between cluster--baseline cluster--loose">
     <h2>{title}</h2>
     {showViewAll && (
-      <a class="link" href="/events/">
+      <a class="link" href="/events">
         View all
       </a>
     )}
@@ -2026,7 +2779,7 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
     <div class="grid--cards">
       {upcoming.map((e) => (
         <ContentCard
-          href={`/events/${e.id}/`}
+          href={`/events/${e.id}`}
           title={e.data.title}
           summary={e.data.summary}
           meta={fmt.format(e.data.start)}
@@ -2036,25 +2789,6 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
     </div>
   )}
 </section>
-</file>
-
-<file path="web/src/components/sections/Hero.astro">
----
-import HeroUI from "../ui/Hero.astro";
-
-export type Props = {
-  title: string;
-  subtitle?: string;
-  primaryCtaLabel?: string;
-  primaryCtaHref?: string;
-  secondaryCtaLabel?: string;
-  secondaryCtaHref?: string;
-};
-
-const props = Astro.props as Props;
----
-
-<HeroUI {...props} />
 </file>
 
 <file path="web/src/components/sections/SermonHighlight.astro">
@@ -2090,7 +2824,7 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
   timeZone: site.timeZone
 });
 const meta = latest?.date ? fmt.format(new Date(latest.date)) : undefined;
-const youtubeHref = hasYouTube ? site.portals.youtubeChannelUrl : "/media/videos/";
+const youtubeHref = hasYouTube ? site.portals.youtubeChannelUrl : "/media/videos";
 ---
 
 <section class="stack">
@@ -2118,7 +2852,7 @@ const youtubeHref = hasYouTube ? site.portals.youtubeChannelUrl : "/media/videos
       )}
 
       <div class="cluster">
-        <Button href="/media/videos/" variant="secondary">More videos</Button>
+        <Button href="/media/videos" variant="secondary">More videos</Button>
         {hasYouTube ? (
           <Button href={youtubeHref} external>Open YouTube</Button>
         ) : null}
@@ -2264,23 +2998,33 @@ const className = `btn btn--${variant} btn--${size}`;
 </style>
 </file>
 
-<file path="web/src/components/ui/ButtonLink.astro">
+<file path="web/src/components/ui/CardGrid.astro">
 ---
-import Button from "./Button.astro";
-
 type Props = {
-  href: string;
-  external?: boolean;
-  variant?: "primary" | "secondary";
-  size?: "sm" | "md" | "lg";
+  /** Fixed number of columns (e.g. 3). */
+  columns?: number;
+  /** Responsive min column width in px (auto-fit). */
+  columnsMin?: number;
 };
 
-const { href, external, variant = "primary", size = "md" } = Astro.props;
+const { columns, columnsMin = 240 } = Astro.props;
+
+const template =
+  typeof columns === "number"
+    ? `repeat(${columns}, minmax(0, 1fr))`
+    : `repeat(auto-fit, minmax(${columnsMin}px, 1fr))`;
 ---
 
-<Button href={href} external={external} variant={variant} size={size}>
+<div class="grid" style={`grid-template-columns: ${template};`}>
   <slot />
-</Button>
+</div>
+
+<style>
+  .grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+</style>
 </file>
 
 <file path="web/src/components/ui/Hero.astro">
@@ -2402,22 +3146,6 @@ const { title = "This Week", items } = Astro.props;
 </style>
 </file>
 
-<file path="web/src/components/ui/YouTubeEmbed.astro">
----
-import YouTubeEmbedMedia from "../media/YouTubeEmbed.astro";
-
-export type Props = {
-  title: string;
-  /** Full YouTube embed URL, e.g. https://www.youtube.com/embed/VIDEO_ID */
-  embedUrl: string;
-};
-
-const props = Astro.props as Props;
----
-
-<YouTubeEmbedMedia {...props} />
-</file>
-
 <file path="web/src/components/PlaceholderPage.astro">
 ---
 type Props = {
@@ -2436,244 +3164,13 @@ const { title, message } = Astro.props;
 </section>
 </file>
 
-<file path="web/src/components/Welcome.astro">
----
-import astroLogo from '../assets/astro.svg';
-import background from '../assets/background.svg';
----
-
-<div id="container">
-	<img id="background" src={background.src} alt="" fetchpriority="high" />
-	<main>
-		<section id="hero">
-			<a href="https://astro.build"
-				><img src={astroLogo.src} width="115" height="48" alt="Astro Homepage" /></a
-			>
-			<h1>
-				To get started, open the <code><pre>src/pages</pre></code> directory in your project.
-			</h1>
-			<section id="links">
-				<a class="button" href="https://docs.astro.build">Read our docs</a>
-				<a href="https://astro.build/chat"
-					>Join our Discord <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36"
-						><path
-							fill="currentColor"
-							d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"
-						></path></svg
-					>
-				</a>
-			</section>
-		</section>
-	</main>
-
-	<a href="https://astro.build/blog/astro-5/" id="news" class="box">
-		<svg width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"
-			><path
-				d="M24.667 12c1.333 1.414 2 3.192 2 5.334 0 4.62-4.934 5.7-7.334 12C18.444 28.567 18 27.456 18 26c0-4.642 6.667-7.053 6.667-14Zm-5.334-5.333c1.6 1.65 2.4 3.43 2.4 5.333 0 6.602-8.06 7.59-6.4 17.334C13.111 27.787 12 25.564 12 22.666c0-4.434 7.333-8 7.333-16Zm-6-5.333C15.111 3.555 16 5.556 16 7.333c0 8.333-11.333 10.962-5.333 22-3.488-.774-6-4-6-8 0-8.667 8.666-10 8.666-20Z"
-				fill="#111827"></path></svg
-		>
-		<h2>What's New in Astro 5.0?</h2>
-		<p>
-			From content layers to server islands, click to learn more about the new features and
-			improvements in Astro 5.0
-		</p>
-	</a>
-</div>
-
-<style>
-	#background {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		z-index: -1;
-		filter: blur(100px);
-	}
-
-	#container {
-		font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
-		height: 100%;
-	}
-
-	main {
-		height: 100%;
-		display: flex;
-		justify-content: center;
-	}
-
-	#hero {
-		display: flex;
-		align-items: start;
-		flex-direction: column;
-		justify-content: center;
-		padding: 16px;
-	}
-
-	h1 {
-		font-size: 22px;
-		margin-top: 0.25em;
-	}
-
-	#links {
-		display: flex;
-		gap: 16px;
-	}
-
-	#links a {
-		display: flex;
-		align-items: center;
-		padding: 10px 12px;
-		color: #111827;
-		text-decoration: none;
-		transition: color 0.2s;
-	}
-
-	#links a:hover {
-		color: rgb(78, 80, 86);
-	}
-
-	#links a svg {
-		height: 1em;
-		margin-left: 8px;
-	}
-
-	#links a.button {
-		color: white;
-		background: linear-gradient(83.21deg, #3245ff 0%, #bc52ee 100%);
-		box-shadow:
-			inset 0 0 0 1px rgba(255, 255, 255, 0.12),
-			inset 0 -2px 0 rgba(0, 0, 0, 0.24);
-		border-radius: 10px;
-	}
-
-	#links a.button:hover {
-		color: rgb(230, 230, 230);
-		box-shadow: none;
-	}
-
-	pre {
-		font-family:
-			ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono',
-			monospace;
-		font-weight: normal;
-		background: linear-gradient(14deg, #d83333 0%, #f041ff 100%);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		margin: 0;
-	}
-
-	h2 {
-		margin: 0 0 1em;
-		font-weight: normal;
-		color: #111827;
-		font-size: 20px;
-	}
-
-	p {
-		color: #4b5563;
-		font-size: 16px;
-		line-height: 24px;
-		letter-spacing: -0.006em;
-		margin: 0;
-	}
-
-	code {
-		display: inline-block;
-		background:
-			linear-gradient(66.77deg, #f3cddd 0%, #f5cee7 100%) padding-box,
-			linear-gradient(155deg, #d83333 0%, #f041ff 18%, #f5cee7 45%) border-box;
-		border-radius: 8px;
-		border: 1px solid transparent;
-		padding: 6px 8px;
-	}
-
-	.box {
-		padding: 16px;
-		background: rgba(255, 255, 255, 1);
-		border-radius: 16px;
-		border: 1px solid white;
-	}
-
-	#news {
-		position: absolute;
-		bottom: 16px;
-		right: 16px;
-		max-width: 300px;
-		text-decoration: none;
-		transition: background 0.2s;
-		backdrop-filter: blur(50px);
-	}
-
-	#news:hover {
-		background: rgba(255, 255, 255, 0.55);
-	}
-
-	@media screen and (max-height: 368px) {
-		#news {
-			display: none;
-		}
-	}
-
-	@media screen and (max-width: 768px) {
-		#container {
-			display: flex;
-			flex-direction: column;
-		}
-
-		#hero {
-			display: block;
-			padding-top: 10%;
-		}
-
-		#links {
-			flex-wrap: wrap;
-		}
-
-		#links a.button {
-			padding: 14px 18px;
-		}
-
-		#news {
-			right: 16px;
-			left: 16px;
-			bottom: 2.5rem;
-			max-width: 100%;
-		}
-
-		h1 {
-			line-height: 1.5;
-		}
-	}
-</style>
-</file>
-
-<file path="web/src/content/bulletins/2025-12-13.md">
----
-title: "Sabbath Bulletin"
-date: "2025-12-13"
-summary: "Archive sample bulletin."
-pdfUrl: "/bulletins/2025-12-13.pdf"
----
-</file>
-
-<file path="web/src/content/bulletins/2025-12-20.md">
----
-title: "Sabbath Bulletin"
-date: "2025-12-20"
-summary: "Order of service, announcements, and weekly schedule."
-pdfUrl: "/bulletins/2025-12-20.pdf"
----
-</file>
-
 <file path="web/src/content/resources/2025/12/16/welcome-packet.md">
 ---
 title: "Welcome Packet"
 summary: "A quick overview of our church, what we believe, and how to get connected."
 published: "2025-12-16"
 category: "New Here"
-attachmentUrl: "/resources/forms/" # replace with a real PDF path if/when you add one
+attachmentUrl: "/resources/forms" # replace with a real PDF path if/when you add one
 ---
 
 ## Inside
@@ -2683,61 +3180,12 @@ attachmentUrl: "/resources/forms/" # replace with a real PDF path if/when you ad
 - Ways to connect
 </file>
 
-<file path="web/src/data/videos.json">
+<file path="web/src/data/week-schedule.json">
 [
-  {
-    "title": "Sabbath Worship Service",
-    "date": "2025-12-13",
-    "youtubeId": "TBD",
-    "summary": "Weekly worship service."
-  },
-  {
-    "title": "Bible Study / Message",
-    "date": "2025-12-06",
-    "youtubeId": "TBD",
-    "summary": "Sermon and reflection."
-  },
-  {
-    "title": "Special Program",
-    "date": "2025-11-29",
-    "youtubeId": "TBD",
-    "summary": "Guest speaker or special event."
-  }
+  { "label": "Sabbath School", "day": "Saturday", "time": "10:00 AM" },
+  { "label": "Worship Service", "day": "Saturday", "time": "11:15 AM" },
+  { "label": "Prayer Meeting", "day": "Wednesday", "time": "7:00 PM" }
 ]
-</file>
-
-<file path="web/src/layouts/Layout.astro">
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<slot />
-	</body>
-</html>
-
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>
-</file>
-
-<file path="web/src/lib/links.ts">
-export function mailto(email: string, subject?: string) {
-  const e = (email ?? "").trim();
-  if (!e) return "";
-  const params = subject ? `?subject=${encodeURIComponent(subject)}` : "";
-  return `mailto:${e}${params}`;
-}
 </file>
 
 <file path="web/src/pages/connect/team/index.astro">
@@ -2970,7 +3418,7 @@ const when = event.data.end
       </div>
     </article>
 
-    <p><a class="link" href="/events/">← Back to Events</a></p>
+    <p><a class="link" href="/events">← Back to Events</a></p>
   </section>
 </BaseLayout>
 </file>
@@ -3023,7 +3471,7 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
         <div class="grid--cards">
           {upcoming.map((e) => (
             <ContentCard
-              href={`/events/${e.id}/`}
+              href={`/events/${e.id}`}
               title={e.data.title}
               summary={e.data.summary}
               meta={fmt.format(e.data.start)}
@@ -3042,7 +3490,7 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
         <div class="grid--cards">
           {past.map((e) => (
             <ContentCard
-              href={`/events/${e.id}/`}
+              href={`/events/${e.id}`}
               title={e.data.title}
               summary={e.data.summary}
               meta={fmt.format(e.data.start)}
@@ -3164,57 +3612,9 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
       </div>
     </article>
 
-    <p><a class="link" href="/resources/">← Back to Resources</a></p>
+    <p><a class="link" href="/resources">← Back to Resources</a></p>
   </section>
 </BaseLayout>
-</file>
-
-<file path="web/src/pages/404.astro">
----
-import BaseLayout from "../layouts/BaseLayout.astro";
----
-
-<BaseLayout title="Page not found">
-  <h1>Page not found</h1>
-  <p class="muted">We couldn’t find that page. Try one of these options:</p>
-
-  <ul>
-    <li><a href="/">Home</a></li>
-    <li><a href="/media">Media</a></li>
-    <li><a href="/give">Give</a></li>
-    <li><a href="/connect">Connect</a></li>
-  </ul>
-</BaseLayout>
-</file>
-
-<file path="web/src/pages/robots.txt.ts">
-import type { APIRoute } from "astro";
-
-// Force this endpoint to be emitted as a static file in dist/robots.txt
-export const prerender = true;
-
-export const GET: APIRoute = ({ site: astroSite, url }) => {
-  // Prefer Astro config `site` when present, otherwise use the request origin
-  // (important for local LHCI ports like http://localhost:51310)
-  const origin = (astroSite?.toString() ?? url.origin).replace(/\/$/, "");
-
-  const sitemapUrl = new URL("/sitemap-index.xml", origin).toString();
-
-  const body = [
-    "User-agent: *",
-    "Allow: /",
-    "",
-    `Sitemap: ${sitemapUrl}`,
-    "",
-  ].join("\n");
-
-  return new Response(body, {
-    headers: {
-      "Content-Type": "text/plain; charset=utf-8",
-      "Cache-Control": "public, max-age=3600",
-    },
-  });
-};
 </file>
 
 <file path="web/src/styles/a11y.css">
@@ -3316,28 +3716,21 @@ export const GET: APIRoute = ({ site: astroSite, url }) => {
 }
 </file>
 
-<file path="web/test-results/.last-run.json">
-{
-  "status": "passed",
-  "failedTests": []
-}
-</file>
-
 <file path="web/tests/e2e/content-collections.spec.ts">
 import { expect, test } from '@playwright/test';
 
 test('Events hub loads', async ({ page }) => {
-  await page.goto('/events/');
+  await page.goto('/events');
   await expect(page.getByRole('heading', { name: 'Events' })).toBeVisible();
 });
 
 test('Ministries hub loads', async ({ page }) => {
-  await page.goto('/ministries/');
+  await page.goto('/ministries');
   await expect(page.getByRole('heading', { name: 'Ministries' })).toBeVisible();
 });
 
 test('Resources hub loads', async ({ page }) => {
-  await page.goto('/resources/');
+  await page.goto('/resources');
   await expect(page.getByRole('heading', { name: 'Resources', exact: true })).toBeVisible();
 });
 </file>
@@ -3346,7 +3739,7 @@ test('Resources hub loads', async ({ page }) => {
 import { expect, test } from "@playwright/test";
 
 test("Media hub loads", async ({ page }) => {
-  await page.goto("/media/");
+  await page.goto("/media");
   await expect(page.getByRole("heading", { name: "Media", exact: true })).toBeVisible();
 
   const quickLinks = page.getByRole("region", { name: "Quick links" });
@@ -3355,24 +3748,24 @@ test("Media hub loads", async ({ page }) => {
 });
 
 test("Live page loads", async ({ page }) => {
-  await page.goto("/media/live/");
+  await page.goto("/media/live");
   await expect(page.getByRole("heading", { name: "Watch Live", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Open YouTube channel", exact: true })).toBeVisible();
 });
 
 test("Videos page loads", async ({ page }) => {
-  await page.goto("/media/videos/");
+  await page.goto("/media/videos");
   await expect(page.getByRole("heading", { name: "Videos", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Browse on YouTube", exact: true })).toBeVisible();
 });
 
 test("Bulletins page loads", async ({ page }) => {
-  await page.goto("/resources/bulletins/");
+  await page.goto("/resources/bulletins");
   await expect(page.getByRole("heading", { name: "Bulletins", exact: true })).toBeVisible();
 });
 
 test("Forms directory loads", async ({ page }) => {
-  await page.goto("/resources/forms/");
+  await page.goto("/resources/forms");
   await expect(page.getByRole("heading", { name: "Forms", exact: true })).toBeVisible();
 });
 </file>
@@ -3381,7 +3774,7 @@ test("Forms directory loads", async ({ page }) => {
 import { expect, test } from "playwright/test";
 
 test("Search page loads", async ({ page }) => {
-  await page.goto("/search/");
+  await page.goto("/search");
   await expect(page.getByRole("heading", { name: "Search", exact: true })).toBeVisible();
 
   // Astro Pagefind <Search id="site-search" ... /> should render an input inside this container.
@@ -3392,7 +3785,7 @@ test("Search page loads", async ({ page }) => {
 test("Search returns results for a common term", async ({ page }) => {
   // This test is intentionally loose to reduce flakiness.
   // It just verifies that results can render.
-  await page.goto("/search/");
+  await page.goto("/search");
 
   const input = page.locator("#site-search input");
   await expect(input).toBeVisible({ timeout: 10_000 });
@@ -3412,19 +3805,19 @@ import { expect, test } from "@playwright/test";
 
 const PAGES = [
   "/",
-  "/connect/plan-a-visit/",
-  "/connect/team/",
-  "/events/",
-  "/resources/",
-  "/media/",
-  "/search/",
+  "/connect/plan-a-visit",
+  "/connect/team",
+  "/events",
+  "/resources",
+  "/media",
+  "/search",
 ];
 
 for (const path of PAGES) {
   test(`a11y (axe) - ${path}`, async ({ page }) => {
     await page.goto(path);
 
-    if (path === "/search/") {
+    if (path === "/search") {
       await page.locator("#site-search input.pagefind-ui__search-input").waitFor();
 
       // Ensure the Pagefind input has a real label (axe: label-title-only)
@@ -3458,12 +3851,12 @@ import { expect, test } from "@playwright/test";
 
 const PAGES: Array<{ path: string; robots: string }> = [
   { path: "/", robots: "index,follow" },
-  { path: "/connect/plan-a-visit/", robots: "index,follow" },
-  { path: "/connect/team/", robots: "index,follow" },
-  { path: "/events/", robots: "index,follow" },
-  { path: "/resources/", robots: "index,follow" },
-  { path: "/media/", robots: "index,follow" },
-  { path: "/search/", robots: "noindex,follow" }
+  { path: "/connect/plan-a-visit", robots: "index,follow" },
+  { path: "/connect/team", robots: "index,follow" },
+  { path: "/events", robots: "index,follow" },
+  { path: "/resources", robots: "index,follow" },
+  { path: "/media", robots: "index,follow" },
+  { path: "/search", robots: "noindex,follow" }
 ];
 
 for (const { path, robots } of PAGES) {
@@ -3489,295 +3882,28 @@ for (const { path, robots } of PAGES) {
 }
 </file>
 
-<file path="web/tests/e2e/phase-7-sitefiles.spec.ts">
-import { expect, test } from "@playwright/test";
-
-test("robots.txt exists and references sitemap", async ({ page }) => {
-  await page.goto("/robots.txt");
-  const body = await page.textContent("body");
-  expect(body).toContain("User-agent:");
-  expect(body).toContain("Sitemap:");
-});
-
-test("sitemap index exists", async ({ page }) => {
-  await page.goto("/sitemap-index.xml");
-  const body = await page.textContent("body");
-  expect(body).toContain("<sitemapindex");
-});
+<file path="web/.env.example">
+# Future use (Phase 5+)
+# PUBLIC_SITE_URL=https://example.com
+PUBLIC_CF_ANALYTICS_TOKEN=
 </file>
 
-<file path="web/.gitignore">
-# build output
-dist/
-
-# generated types
-.astro/
-
-# dependencies
-node_modules/
-
-# logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# environment variables
-.env
-.env.production
-
-# macOS-specific files
-.DS_Store
-
-# jetbrains setting folder
-.idea/
-</file>
-
-<file path="web/lighthouserc.cjs">
-module.exports = {
-  ci: {
-    collect: {
-      staticDistDir: "./dist",
-      numberOfRuns: 3
-    },
-    assert: {
-      assertions: {
-        "categories:performance": ["error", { "minScore": 0.9 }],
-        "categories:accessibility": ["error", { "minScore": 0.95 }],
-        "categories:seo": ["error", { "minScore": 0.95 }],
-        "categories:best-practices": ["error", { "minScore": 0.95 }]
-      }
-    },
-    upload: {
-      target: "filesystem",
-      outputDir: "./.lighthouseci"
-    }
-  }
-};
-</file>
-
-<file path="web/linkinator.config.json">
+<file path="web/tsconfig.json">
 {
-  "recurse": true,
-  "cleanUrls": true,
-  "checkFragments": true,
-  "timeout": 30000,
-  "concurrency": 50,
-  "skip": [
-    "^mailto:",
-    "^tel:",
-    "^https?://"
-  ]
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "resolveJsonModule": true
+  },
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"]
 }
 </file>
 
-<file path="web/README.md">
-# Astro Starter Kit: Basics
-
-```sh
-npm create astro@latest -- --template basics
-```
-
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
-```
-
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
-</file>
-
-<file path="web/wrangler.jsonc">
-{
-	"main": "dist/_worker.js/index.js",
-	"name": "web",
-  "compatibility_date": "2025-12-19",
-  "compatibility_flags": [
-    "nodejs_compat",
-    "global_fetch_strictly_public"
-  ],
-	"assets": {
-		"binding": "ASSETS",
-		"directory": "./dist"
-	},
-	"observability": {
-    "enabled": true
-  }
-}
-</file>
-
-<file path=".editorconfig">
-root = true
-
-[*]
-charset = utf-8
-end_of_line = lf
-insert_final_newline = true
-trim_trailing_whitespace = true
-
-[*.md]
-trim_trailing_whitespace = false
-</file>
-
-<file path=".gitignore">
-# Node
-node_modules/
-
-# Astro
-web/dist/
-web/.astro/
-
-# OS
-.DS_Store
-</file>
-
-<file path=".nvmrc">
-20
-</file>
-
-<file path="package.json">
-{
-  "dependencies": {
-    "@astrojs/sitemap": "3.6.0"
-  }
-}
-</file>
-
-<file path="docs/phase-0/source-of-truth.yml">
-church:
-  public_name: "First Springfield Seventh-day Adventist Church"
-  address:
-    street: "1118 Sumner Ave"
-    city: "Springfield"
-    state: "MA"
-    zip: "01118-2154"
-  phone: "(413) 782-6260"
-  email_public: "firstspringfieldsda@gmail.com"
-  languages:
-    primary: "English"
-
-schedule:
-  sabbath_school:
-    day: "Saturday"
-    time: "10:00 AM"
-  worship_service:
-    day: "Saturday"
-    time: "11:15 AM"
-  prayer_meeting:
-    day: "Wednesday"
-    time: "7:00 PM"
-
-portals:
-  giving_url: "https://adventistgiving.org/"
-  youtube_channel_url: "https://www.youtube.com/@1stspringfieldsdama74"
-  facebook_url: "TBD"
-  prayer_form_url: "TBD"
-  contact_form_url: "TBD"
-  volunteer_form_url: "TBD"
-  official_site_url: "https://firstspringfieldma.adventistchurch.org/"
-
-copy:
-  homepage_tagline: "A Christian community in Springfield, MA"
-  welcome_message: "We would love to have you join our church family."
-</file>
-
-<file path="web/.github/workflows/ci.yml">
-name: CI
-
-on:
-  pull_request:
-  push:
-    branches: ["main", "master"]
-
-jobs:
-  web:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
-
-    env:
-      # Ensures canonical URLs + sitemap/robots generation are deterministic in CI
-      PUBLIC_SITE_URL: http://127.0.0.1:4321
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Typecheck
-        run: npm run check
-
-      - name: Build
-        run: npm run build
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: E2E tests
-        run: npm run test:e2e:ci
-
-      - name: Internal link check
-        run: npm run test:links:ci
-
-      - name: Lighthouse CI
-        run: npm run lighthouse:ci
-
-      - name: Upload Lighthouse artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lighthouseci
-          path: web/.lighthouseci
-
-      - name: Upload Playwright report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: web/playwright-report
+<file path=".repomixignore">
+*.d.ts
+*.svg
+web/.lighthouseci
+web/.wrangler
 </file>
 
 <file path="web/src/components/ui/Card.astro">
@@ -3821,35 +3947,6 @@ const { title, description, href } = Astro.props;
 </style>
 </file>
 
-<file path="web/src/components/ui/CardGrid.astro">
----
-type Props = {
-  /** Fixed number of columns (e.g. 3). */
-  columns?: number;
-  /** Responsive min column width in px (auto-fit). */
-  columnsMin?: number;
-};
-
-const { columns, columnsMin = 240 } = Astro.props;
-
-const template =
-  typeof columns === "number"
-    ? `repeat(${columns}, minmax(0, 1fr))`
-    : `repeat(auto-fit, minmax(${columnsMin}px, 1fr))`;
----
-
-<div class="grid" style={`grid-template-columns: ${template};`}>
-  <slot />
-</div>
-
-<style>
-  .grid {
-    display: grid;
-    gap: var(--space-4);
-  }
-</style>
-</file>
-
 <file path="web/src/content/events/sabbath-service.md">
 ---
 title: "Sabbath Worship Service"
@@ -3880,7 +3977,7 @@ leaderEmail: "firstspringfieldsda@gmail.com"
 meetingTime: "Sabbaths during the service"
 category: "Children & Youth"
 ctaLabel: "Contact us"
-ctaHref: "/connect/contact/"
+ctaHref: "/connect/contact"
 tags: ["kids", "families"]
 ---
 
@@ -3893,18 +3990,25 @@ We support families by providing age-appropriate activities and a safe environme
 Talk to the greeter team or use the contact form.
 </file>
 
-<file path="web/src/data/week-schedule.json">
-[
-  { "label": "Sabbath School", "day": "Saturday", "time": "10:00 AM" },
-  { "label": "Worship Service", "day": "Saturday", "time": "11:15 AM" },
-  { "label": "Prayer Meeting", "day": "Wednesday", "time": "7:00 PM" }
-]
+<file path="web/src/data/site-links.json">
+{
+  "givingUrl": "https://adventistgiving.org/",
+  "youtubeChannelUrl": "https://www.youtube.com/@1stspringfieldsdama74",
+  "youtubeLiveEmbedUrl": "https://www.youtube.com/embed/live_stream?channel=UCkmryvqlHb3JIwVLc07FZwA",
+  "facebookUrl": "TBD",
+  "prayerFormUrl": "TBD",
+  "contactFormUrl": "TBD",
+  "volunteerFormUrl": "TBD",
+  "oldWebsiteUrl": "https://firstspringfieldma.adventistchurch.org/"
+}
 </file>
 
 <file path="web/src/pages/connect/about/index.astro">
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import { site } from "../../../data/site";
+
+const { mission } = site;
 ---
 
 <BaseLayout title="About Us" description={`About ${site.name} in Springfield, Massachusetts.`}>
@@ -3912,7 +4016,6 @@ import { site } from "../../../data/site";
     <h1>About Us</h1>
 
     <section class="card stack--tight">
-      <h2>Springfield + community context</h2>
       <p class="muted">
         Our church is a vibrant, multicultural community located in the heart of Springfield, the
         third-largest city in the Commonwealth of Massachusetts. As of 2024, Springfield has an
@@ -3920,29 +4023,25 @@ import { site } from "../../../data/site";
         federal poverty line. Our church serves as a welcoming and safe haven for immigrants, refugees,
         and all who seek spiritual support and community.
       </p>
-      <p class="muted">Census.gov</p>
-      <p class="muted">+1</p>
     </section>
 
     <section class="card stack--tight">
       <h2>Our Mission</h2>
       <p class="muted">
-        The mission of the Seventh-day Adventist Church is to make disciples of Jesus Christ who live as
-        His loving witnesses and proclaim the everlasting gospel to all people in preparation for His
-        soon return. United by our love for God, we embrace people of all cultures and backgrounds. As
-        we grow in faith together, we serve our community with love, respect, and compassion.
+        {mission.statement}
       </p>
-      <p class="muted">gc.adventist.org</p>
-      <p class="muted">+1</p>
+    </section>
+
+    <section class="card stack--tight">
+      <h2>Our Method</h2>
+      <p class="muted">{mission.method}</p>
     </section>
 
     <section class="card stack--tight">
       <h2>Our Vision</h2>
       <p class="muted">
-        In harmony with Bible revelation, Seventh-day Adventists envision the restoration of all
-        creation to full harmony with God’s perfect will and righteousness.
+        {mission.vision}
       </p>
-      <p class="muted">gc.adventist.org</p>
     </section>
 
     <section class="card stack--tight">
@@ -4235,7 +4334,7 @@ const orderedCategories = [
           <div class="grid--cards">
             {grouped[category].map((m) => (
               <ContentCard
-                href={`/ministries/${m.id}/`}
+                href={`/ministries/${m.id}`}
                 title={m.data.title}
                 summary={m.data.summary}
                 tags={m.data.tags}
@@ -4824,41 +4923,25 @@ const bulletins = defineCollection({
 export const collections = { events, ministries, resources, bulletins };
 </file>
 
-<file path="web/.env.example">
-# Future use (Phase 5+)
-# PUBLIC_SITE_URL=https://example.com
-PUBLIC_CF_ANALYTICS_TOKEN=
-</file>
+<file path="web/playwright.config.ts">
+import { defineConfig } from '@playwright/test';
 
-<file path="web/tsconfig.json">
-{
-  "extends": "astro/tsconfigs/strict",
-  "compilerOptions": {
-    "resolveJsonModule": true
+const HOST = '127.0.0.1';
+const PORT = 4321;
+const BASE_URL = `http://${HOST}:${PORT}/`;
+
+export default defineConfig({
+  webServer: {
+    // Cloudflare adapter doesn't support `astro preview`; run the built worker via Wrangler instead.
+    command: `npm run build && npx wrangler dev --local --port ${PORT}`,
+    url: BASE_URL,
+    timeout: 120 * 1000,
+    reuseExistingServer: !process.env.CI,
   },
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"]
-}
-</file>
-
-<file path=".repomixignore">
-*.d.ts
-*.svg
-web/.lighthouseci
-web/.wrangler
-</file>
-
-<file path="web/src/data/site-links.json">
-{
-  "givingUrl": "https://adventistgiving.org/",
-  "youtubeChannelUrl": "https://www.youtube.com/@1stspringfieldsdama74",
-  "youtubeLiveEmbedUrl": "https://www.youtube.com/embed/live_stream?channel=UCkmryvqlHb3JIwVLc07FZwA",
-  "facebookUrl": "TBD",
-  "prayerFormUrl": "TBD",
-  "contactFormUrl": "TBD",
-  "volunteerFormUrl": "TBD",
-  "oldWebsiteUrl": "https://firstspringfieldma.adventistchurch.org/"
-}
+  use: {
+    baseURL: BASE_URL,
+  },
+});
 </file>
 
 <file path="web/src/pages/connect/contact/index.astro">
@@ -5254,16 +5337,16 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
     <div class="grid--cards">
       <article class="card stack--tight">
         <h3>
-          <a class="link" href="/search/">Search</a>
+          <a class="link" href="/search">Search</a>
         </h3>
         <p class="muted">Find resources, bulletins, and more.</p>
       </article>
       <article class="card stack--tight">
-        <h3><a class="link" href="/resources/bulletins/">Bulletins</a></h3>
+        <h3><a class="link" href="/resources/bulletins">Bulletins</a></h3>
         <p class="muted">Weekly PDFs and archives.</p>
       </article>
       <article class="card stack--tight">
-        <h3><a class="link" href="/resources/forms/">Forms</a></h3>
+        <h3><a class="link" href="/resources/forms">Forms</a></h3>
         <p class="muted">Requests, sign-ups, and contact info.</p>
       </article>
     </div>
@@ -5277,7 +5360,7 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
         <div class="grid--cards">
           {latest.map((r) => (
             <ContentCard
-              href={`/resources/${r.id}/`}
+              href={`/resources/${r.id}`}
               title={r.data.title}
               summary={r.data.summary}
               meta={fmt.format(r.data.published)}
@@ -5315,7 +5398,7 @@ export default defineConfig({
     pagefind(),
     sitemap({
       // Internal site search is not a page you want indexed.
-      filter: (page) => !page.endsWith("/search/"),
+      filter: (page) => !page.endsWith("/search"),
     }),
   ],
 
@@ -5329,25 +5412,56 @@ export default defineConfig({
 });
 </file>
 
-<file path="web/playwright.config.ts">
-import { defineConfig } from '@playwright/test';
-
-const HOST = '127.0.0.1';
-const PORT = 4321;
-const BASE_URL = `http://${HOST}:${PORT}/`;
-
-export default defineConfig({
-  webServer: {
-    // Cloudflare adapter doesn't support `astro preview`; run the built worker via Wrangler instead.
-    command: `npm run build && npx wrangler dev --local --port ${PORT}`,
-    url: BASE_URL,
-    timeout: 120 * 1000,
-    reuseExistingServer: !process.env.CI,
+<file path="web/package.json">
+{
+  "name": "web",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test:e2e": "npm run build && playwright test",
+    "test:e2e:ci": "playwright test",
+    "test:links": "npm run build && linkinator ./dist --config ./linkinator.config.json",
+    "test:links:ci": "linkinator ./dist --config ./linkinator.config.json",
+    "lighthouse": "npm run build && lhci autorun --config=./lighthouserc.cjs",
+    "lighthouse:ci": "lhci autorun --config=./lighthouserc.cjs",
+    "qa": "npm run check && npm run test:e2e && npm run test:links && npm run lighthouse",
+    "format": "prettier --write ."
   },
-  use: {
-    baseURL: BASE_URL,
+  "dependencies": {
+    "@astrojs/check": "0.9.6",
+    "@astrojs/cloudflare": "12.6.12",
+    "@astrojs/mdx": "^4.3.1",
+    "@astrojs/rss": "^4.0.12",
+    "@astrojs/sitemap": "^3.5.1",
+    "@astrojs/svelte": "^7.0.2",
+    "@fontsource-variable/inter": "^5.2.5",
+    "astro": "^5.4.2",
+    "astro-compress": "^2.3.3",
+    "astro-icon": "^1.1.5",
+    "astro-pagefind": "^1.7.0",
+    "gray-matter": "^4.0.3",
+    "sharp": "^0.34.2",
+    "svelte": "^5.25.3",
+    "zod": "^3.24.2"
   },
-});
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.51.1",
+    "@types/node": "^22.13.9",
+    "linkinator": "^7.5.0",
+    "prettier": "^3.5.3",
+    "prettier-plugin-astro": "^0.14.1",
+    "prettier-plugin-svelte": "^3.3.3",
+    "typescript": "5.9.3"
+  }
+}
 </file>
 
 <file path="web/src/layouts/BaseLayout.astro">
@@ -5458,6 +5572,11 @@ import { site } from "../data/site";
         href: "/connect/about"
       },
       {
+        title: "Adult Sabbath School",
+        description: "Discover the mission, goals, and study focus of Adult Sabbath School.",
+        href: "/ministries/adult-sabbath-school"
+      },
+      {
         title: "Worship With Us",
         description: "See when we meet and what to expect.",
         href: "/connect/worship-with-us"
@@ -5476,58 +5595,6 @@ import { site } from "../data/site";
 
   <SermonHighlight title="Latest Sermon" />
 </BaseLayout>
-</file>
-
-<file path="web/package.json">
-{
-  "name": "web",
-  "type": "module",
-  "version": "0.0.1",
-  "private": true,
-  "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "check": "astro check",
-    "test:e2e": "npm run build && playwright test",
-    "test:e2e:ci": "playwright test",
-    "test:links": "npm run build && linkinator ./dist --config ./linkinator.config.json",
-    "test:links:ci": "linkinator ./dist --config ./linkinator.config.json",
-    "lighthouse": "npm run build && lhci autorun --config=./lighthouserc.cjs",
-    "lighthouse:ci": "lhci autorun --config=./lighthouserc.cjs",
-    "qa": "npm run check && npm run test:e2e && npm run test:links && npm run lighthouse",
-    "format": "prettier --write ."
-  },
-  "dependencies": {
-    "@astrojs/check": "0.9.6",
-    "@astrojs/cloudflare": "12.6.12",
-    "@astrojs/mdx": "^4.3.1",
-    "@astrojs/rss": "^4.0.12",
-    "@astrojs/sitemap": "^3.5.1",
-    "@astrojs/svelte": "^7.0.2",
-    "@fontsource-variable/inter": "^5.2.5",
-    "astro": "^5.4.2",
-    "astro-compress": "^2.3.3",
-    "astro-icon": "^1.1.5",
-    "astro-pagefind": "^1.7.0",
-    "gray-matter": "^4.0.3",
-    "sharp": "^0.34.2",
-    "svelte": "^5.25.3",
-    "zod": "^3.24.2"
-  },
-  "devDependencies": {
-    "@axe-core/playwright": "^4.11.0",
-    "@lhci/cli": "^0.15.1",
-    "@playwright/test": "^1.51.1",
-    "@types/node": "^22.13.9",
-    "linkinator": "^7.5.0",
-    "prettier": "^3.5.3",
-    "prettier-plugin-astro": "^0.14.1",
-    "prettier-plugin-svelte": "^3.3.3",
-    "typescript": "5.9.3"
-  }
-}
 </file>
 
 <file path="web/src/data/site.ts">
@@ -5592,6 +5659,15 @@ const VISIT_NOTES = {
     "Street parking is available near the church. Please arrive a few minutes early to find a spot.",
   accessibilityNote:
     "If you need accessibility accommodations, please contact us ahead of time so we can assist."
+};
+
+const MISSION = {
+  statement:
+    "Make disciples of Jesus Christ who live as His loving witnesses and proclaim to all people the everlasting gospel of the Three Angels' Messages in preparation for His soon return (Matt 28:18-20, Acts 1:8, Rev 14:6-12).",
+  method:
+    "Guided by the Bible and the Holy Spirit, Seventh-day Adventists pursue the mission of making disciples through Christ-like living, healing, serving, proclaiming, teaching, and training.",
+  vision:
+    "In harmony with Bible revelation, Seventh-day Adventists see as the climax of God's plan the restoration of all His creation to full harmony with His perfect will and righteousness."
 };
 
 // Single source of truth for public links + service times
@@ -5739,6 +5815,7 @@ export const site = {
   },
 
   visit: VISIT_NOTES,
+  mission: MISSION,
 
   team: {
     leadership: [

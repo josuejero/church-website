@@ -1,15 +1,18 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/sections/Hero.astro";
+import HeroBanner from "../components/sections/HeroBanner.astro";
 import CardGrid from "../components/sections/CardGrid.astro";
 import EventList from "../components/sections/EventList.astro";
 import RecurringActivities from "../components/sections/RecurringActivities.astro";
 import SermonHighlight from "../components/sections/SermonHighlight.astro";
 import { site } from "../data/site";
+import bridgeDusk from "../assets/photos/bridge-dusk.jpg";
 ---
 
 <BaseLayout title={site.name} description={site.description}>
-  <Hero
+  <HeroBanner
+    background={bridgeDusk}
+    objectPosition="50% 35%"
     title="Welcome"
     subtitle="A vibrant, multicultural Seventh-day Adventist church in the heart of Springfield, MA."
     primaryCtaLabel="Plan a Visit"
