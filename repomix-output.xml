@@ -87,6 +87,10 @@ web/
     _headers
     .assetsignore
   src/
+    assets/
+      photos/
+        bridge-dusk.jpg
+        first-springfield-exterior.png
     components/
       content/
         ContentCard.astro
@@ -99,6 +103,7 @@ web/
         CardGrid.astro
         EventList.astro
         Hero.astro
+        HeroBanner.astro
         RecurringActivities.astro
         SermonHighlight.astro
       ui/
@@ -108,8 +113,11 @@ web/
         Card.astro
         CardGrid.astro
         Hero.astro
+        MapEmbed.astro
         Schedule.astro
         YouTubeEmbed.astro
+      Footer.astro
+      Header.astro
       PlaceholderPage.astro
       Welcome.astro
     content/
@@ -225,6 +233,43 @@ package.json
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="web/src/components/ui/MapEmbed.astro">
+---
+export interface Props {
+  src: string;
+  title?: string;
+}
+const { src, title = "Map" } = Astro.props;
+---
+
+<div class="map-embed">
+  <iframe
+    src={src}
+    title={title}
+    loading="lazy"
+    referrerpolicy="no-referrer-when-downgrade"
+    allowfullscreen
+  ></iframe>
+</div>
+
+<style>
+  .map-embed {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-3);
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    background: var(--color-surface);
+  }
+
+  .map-embed iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+</style>
+</file>
 
 <file path=".github/ISSUE_TEMPLATE/content-update.md">
 ---
@@ -971,6 +1016,129 @@ const props = Astro.props as Props;
 <HeroUI {...props} />
 </file>
 
+<file path="web/src/components/sections/HeroBanner.astro">
+---
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import HeroUI from "../ui/Hero.astro";
+
+export type Props = {
+  title: string;
+  subtitle?: string;
+  primaryCtaLabel?: string;
+  primaryCtaHref?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+
+  background: ImageMetadata;
+
+  /**
+   * Keep the bridge centered-ish.
+   * Example: "50% 55%" (x y)
+   */
+  objectPosition?: string;
+};
+
+const {
+  background,
+  objectPosition = "50% 55%",
+  ...heroProps
+} = Astro.props as Props;
+---
+
+<section class="heroBanner fullbleed" style={`--hero-object-position:${objectPosition};`}>
+  <div class="heroBanner__media" aria-hidden="true">
+    <Image
+      src={background}
+      alt=""
+      widths={[640, 960, 1280, 1600, 1920]}
+      sizes="100vw"
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
+      class="heroBanner__img"
+    />
+    <div class="heroBanner__scrim" aria-hidden="true"></div>
+  </div>
+
+  <div class="heroBanner__content">
+    <div class="heroBanner__container">
+      <HeroUI {...heroProps} />
+    </div>
+  </div>
+</section>
+
+<style>
+  .heroBanner {
+    position: relative;
+    padding: var(--space-12) 0;
+    border-bottom: 1px solid var(--color-border);
+    overflow: hidden;
+  }
+
+  .heroBanner__media {
+    position: absolute;
+    inset: 0;
+  }
+
+  .heroBanner__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--hero-object-position);
+    transform: scale(1.02);
+  }
+
+  .heroBanner__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(11, 15, 23, 0.45) 0%,
+      rgba(11, 15, 23, 0.18) 45%,
+      rgba(11, 15, 23, 0.55) 100%
+    );
+  }
+
+  .heroBanner__content {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Match BaseLayout container sizing without nesting issues */
+  .heroBanner__container {
+    width: min(var(--container-max), calc(100% - var(--container-pad)));
+    margin: 0 auto;
+  }
+
+  /* Keep the existing “card” look, but make it sit nicely on the photo */
+  :global(.heroBanner .hero.card) {
+    background: rgba(255, 255, 255, 0.90);
+    backdrop-filter: blur(10px);
+    border-color: rgba(255, 255, 255, 0.35);
+  }
+
+  @media (max-width: 720px) {
+    .heroBanner {
+      padding: var(--space-8) 0;
+    }
+    /* Slightly higher crop on mobile so the bridge line stays visible */
+    .heroBanner {
+      --hero-object-position: 50% 50%;
+    }
+  }
+
+  @media (prefers-reduced-data: reduce) {
+    .heroBanner__media {
+      display: none;
+    }
+    .heroBanner {
+      background: var(--color-surface-2);
+    }
+  }
+</style>
+</file>
+
 <file path="web/src/components/sections/RecurringActivities.astro">
 ---
 import { oneOffEvents, recurringActivities } from "../../data/activities";
@@ -1693,6 +1861,13 @@ export function mailto(email: string, subject?: string) {
   const params = subject ? `?subject=${encodeURIComponent(subject)}` : "";
   return `mailto:${e}${params}`;
 }
+
+export function tel(phone: string) {
+  const p = (phone ?? "").trim();
+  if (!p) return "";
+  const digits = p.replace(/[^0-9+]/g, "");
+  return digits ? `tel:${digits}` : "";
+}
 </file>
 
 <file path="web/src/pages/404.astro">
@@ -1946,6 +2121,7 @@ church:
     state: "MA"
     zip: "01118-2154"
   phone: "(413) 782-6260"
+  pastor_cell: "(240) 850-9452"
   email_public: "firstspringfieldsda@gmail.com"
   languages:
     primary: "English"
@@ -2093,9 +2269,13 @@ const safeTags = tags ?? [];
 <file path="web/src/components/global/Footer.astro">
 ---
 import { site } from "../../data/site";
+import { tel } from "../../lib/links";
 
 const year = new Date().getFullYear();
-const phoneHref = `tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`;
+const churchPhoneHref = tel(site.contact.phone);
+const pastorCellHref = tel(site.contact.pastorCell);
+const pastorCellLabel = site.contact.pastorCellLabel ?? "Pastor Kobe (call/text)";
+const hasPastorCell = Boolean(site.contact.pastorCell && site.contact.pastorCell.trim());
 const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAddress.trim().length);
 const hasFacebook = Boolean(site.portals.facebookUrl && site.portals.facebookUrl !== "TBD");
 const hasYouTube = Boolean(site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD");
@@ -2140,10 +2320,20 @@ const secondaryActions = site.quickActions.filter((item) => !primaryActionLabels
         </div>
       ) : null}
 
-      <div class="muted">
-        <a href={phoneHref}>{site.contact.phone}</a>
-        <span aria-hidden="true"> · </span>
-        <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+      <div class="muted footer-contact">
+        {hasPastorCell ? (
+          <div>
+            <span class="footer-contact-label">{pastorCellLabel}:</span>
+            <a href={pastorCellHref}>{site.contact.pastorCell}</a>
+          </div>
+        ) : null}
+        <div>
+          <span class="footer-contact-label">Church:</span>
+          <a href={churchPhoneHref}>{site.contact.phone}</a>
+        </div>
+        <div>
+          <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+        </div>
       </div>
 
       <div class="muted small">© {year}</div>
@@ -2232,6 +2422,18 @@ const secondaryActions = site.quickActions.filter((item) => !primaryActionLabels
   .muted {
     color: var(--color-text-muted);
     margin-top: var(--space-2);
+  }
+
+  .footer-contact {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin-top: var(--space-2);
+  }
+
+  .footer-contact-label {
+    font-weight: 600;
+    margin-right: 0.35rem;
   }
 
   .small {
@@ -3698,11 +3900,11 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
   --color-surface-muted: var(--color-surface-2);
   --color-text: var(--color-black);
   --color-text-muted: var(--color-gray-600);
-  --color-border: rgba(11, 15, 23, 0.14);
-  --color-border-strong: rgba(11, 15, 23, 0.24);
-  --color-primary: var(--color-blue-600);
-  --color-primary-hover: var(--color-blue-700);
-  --color-focus: var(--color-blue-700);
+  --color-border: rgba(17, 25, 30, 0.16);
+  --color-border-strong: rgba(17, 25, 30, 0.26);
+  --color-primary: #6c1d25;
+  --color-primary-hover: #7f2a32;
+  --color-focus: #2d6cdf;
 
   --container-max: 1100px;
   --container-pad: var(--space-8);
@@ -3945,6 +4147,111 @@ const { title, description, href } = Astro.props;
     font-weight: 700;
   }
 </style>
+</file>
+
+<file path="web/src/components/Header.astro">
+---
+import { site } from "../data/site";
+
+const pathname = Astro.url.pathname;
+
+function isActive(href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(href + "/");
+}
+
+function linkAttrs(item: { href: string; external?: boolean }) {
+  return item.external
+    ? { target: "_blank", rel: "noopener noreferrer" }
+    : {};
+}
+---
+
+<header class="header">
+  <div class="container header__inner">
+    <div class="header__brand">
+      <a href="/">{site.shortName}</a>
+      <div class="small muted">Site under construction (MVP)</div>
+    </div>
+
+    <div class="header__desktop" aria-label="Header navigation">
+      <nav class="nav" aria-label="Primary navigation">
+        {site.nav.map((item) => (
+          <a
+            href={item.href}
+            aria-current={isActive(item.href) ? "page" : undefined}
+            {...linkAttrs(item)}
+          >
+            {item.label}
+          </a>
+        ))}
+      </nav>
+
+      <nav class="nav" aria-label="Quick actions">
+        {site.quickActions.map((item) => (
+          <a
+            href={item.href}
+            style="font-weight: 700;"
+            aria-current={isActive(item.href) ? "page" : undefined}
+            {...linkAttrs(item)}
+          >
+            {item.label}
+          </a>
+        ))}
+      </nav>
+    </div>
+
+    <div class="header__mobile">
+      <details class="menu">
+        <summary aria-label="Open menu">Menu</summary>
+        <div class="menu__panel" aria-label="Mobile menu">
+          <div>
+            <div class="menu__sectionTitle">Navigate</div>
+            <nav class="nav" aria-label="Primary navigation (mobile)">
+              {site.nav.map((item) => (
+                <a
+                  href={item.href}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  {...linkAttrs(item)}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </nav>
+          </div>
+
+          <div>
+            <div class="menu__sectionTitle">Quick actions</div>
+            <nav class="nav" aria-label="Quick actions (mobile)">
+              {site.quickActions.map((item) => (
+                <a
+                  href={item.href}
+                  style="font-weight: 700;"
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  {...linkAttrs(item)}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </nav>
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Close the mobile menu when a link is clicked.
+  document.addEventListener("click", (e) => {
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+
+    const link = target.closest("a");
+    const details = target.closest("details.menu");
+    if (link && details) details.removeAttribute("open");
+  });
+</script>
 </file>
 
 <file path="web/src/content/events/sabbath-service.md">
@@ -4944,14 +5251,77 @@ export default defineConfig({
 });
 </file>
 
+<file path="web/src/components/Footer.astro">
+---
+import { site } from "../data/site";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <div class="footer__cols">
+      <div>
+        <div class="footer__title">{site.name}</div>
+        <p class="muted" style="margin: 0;">
+          <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">
+            {site.contact.address}
+          </a>
+        </p>
+      </div>
+
+      <div>
+        <div class="footer__title">Contact</div>
+        <ul class="footer__list">
+          <li><a href={`tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`}>{site.contact.phone}</a></li>
+          <li><a href={`mailto:${site.contact.email}`}>{site.contact.email}</a></li>
+          <li><a href="/connect/contact">Contact page</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer__title">Service times</div>
+        <ul class="footer__list">
+          {site.schedule.map((item) => (
+            <li><strong>{item.label}:</strong> {item.day} - {item.time}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer__title">Links</div>
+        <div class="nav" aria-label="Footer links">
+          <a href="/give">Give</a>
+          <a href="/media/live">Watch Live</a>
+          <a href="/resources/bulletins">Bulletins</a>
+          <a href="/resources/forms">Forms</a>
+        </div>
+        <div class="nav" aria-label="Social links" style="margin-top: var(--space-2);">
+          {site.social.map((item) => (
+            <a href={item.href} target="_blank" rel="noopener noreferrer">{item.label}</a>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="small muted">© {year} {site.name}</div>
+  </div>
+</footer>
+</file>
+
 <file path="web/src/pages/connect/contact/index.astro">
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Button from "../../../components/ui/Button.astro";
 import Schedule from "../../../components/ui/Schedule.astro";
+import MapEmbed from "../../../components/ui/MapEmbed.astro";
 import { site } from "../../../data/site";
+import { tel } from "../../../lib/links";
 
-const phoneHref = `tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`;
+const phoneHref = tel(site.contact.phone);
+const pastorCellHref = tel(site.contact.pastorCell);
+const pastorCellLabel = site.contact.pastorCellLabel ?? "Pastor Kobe (call/text)";
+const hasPastorCell = Boolean(site.contact.pastorCell && site.contact.pastorCell.trim());
 const hasContactForm = site.portals.contactFormUrl && site.portals.contactFormUrl !== "TBD";
 const hasFacebook = site.portals.facebookUrl && site.portals.facebookUrl !== "TBD";
 const hasYouTube = site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD";
@@ -4981,9 +5351,27 @@ const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAd
         <Button href={site.contact.mapsUrl} external variant="secondary">Open in Maps</Button>
         <Button href="/connect/plan-a-visit" variant="ghost">Plan a Visit</Button>
       </div>
-    </section>
+      </section>
+
+      <section class="card stack" aria-labelledby="contact-map">
+        <h2 id="contact-map">Map</h2>
+        <p class="muted">
+          Prefer Google Maps? <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">Open directions</a>.
+        </p>
+        <MapEmbed src={site.map.embedSrc} title={`${site.name} location map`} />
+      </section>
 
     <Schedule title="Service Times" items={site.schedule} />
+
+    {hasPastorCell ? (
+      <section class="card stack" aria-labelledby="contact-pastor">
+        <h2 id="contact-pastor">{pastorCellLabel}</h2>
+        <p class="muted">
+          The church phone may not be answered 24/7. For a faster response, call or text Pastor Kobe:
+          <a href={pastorCellHref}>{site.contact.pastorCell}</a>
+        </p>
+      </section>
+    ) : null}
 
     <section class="card stack" aria-labelledby="contact-phone">
       <h2 id="contact-phone">Phone</h2>
@@ -5448,7 +5836,8 @@ export default defineConfig({
     "gray-matter": "^4.0.3",
     "sharp": "^0.34.2",
     "svelte": "^5.25.3",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2",
+    "node-addon-api": "^4.3.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
@@ -5459,7 +5848,8 @@ export default defineConfig({
     "prettier": "^3.5.3",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-svelte": "^3.3.3",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "node-gyp": "^9.4.1"
   }
 }
 </file>
@@ -5540,61 +5930,6 @@ const ogLocale = locale.replace("-", "_");
     <Footer />
   </body>
 </html>
-</file>
-
-<file path="web/src/pages/index.astro">
----
-import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/sections/Hero.astro";
-import CardGrid from "../components/sections/CardGrid.astro";
-import EventList from "../components/sections/EventList.astro";
-import RecurringActivities from "../components/sections/RecurringActivities.astro";
-import SermonHighlight from "../components/sections/SermonHighlight.astro";
-import { site } from "../data/site";
----
-
-<BaseLayout title={site.name} description={site.description}>
-  <Hero
-    title="Welcome"
-    subtitle="A vibrant, multicultural Seventh-day Adventist church in the heart of Springfield, MA."
-    primaryCtaLabel="Plan a Visit"
-    primaryCtaHref="/connect/plan-a-visit"
-    secondaryCtaLabel="Watch Live"
-    secondaryCtaHref="/media/live"
-  />
-
-  <CardGrid
-    title="Get Connected"
-    cards={[
-      {
-        title: "About Us",
-        description: "Learn our mission and what we believe.",
-        href: "/connect/about"
-      },
-      {
-        title: "Adult Sabbath School",
-        description: "Discover the mission, goals, and study focus of Adult Sabbath School.",
-        href: "/ministries/adult-sabbath-school"
-      },
-      {
-        title: "Worship With Us",
-        description: "See when we meet and what to expect.",
-        href: "/connect/worship-with-us"
-      },
-      {
-        title: "Prayer Request",
-        description: "Share a prayer request with our prayer team.",
-        href: "/connect/prayer"
-      }
-    ]}
-  />
-
-  <EventList title="Upcoming Events" />
-
-  <RecurringActivities />
-
-  <SermonHighlight title="Latest Sermon" />
-</BaseLayout>
 </file>
 
 <file path="web/src/data/site.ts">
@@ -5802,6 +6137,8 @@ export const site = {
   contact: {
     email: PUBLIC_EMAIL,
     phone: "413-782-6260",
+    pastorCell: "(240) 850-9452",
+    pastorCellLabel: "Pastor Kobe (call/text)",
     address: ADDRESS_LINE,
     mapsUrl: MAPS_URL,
     // Leave blank unless the church asks for a distinct mailing address.
@@ -5841,6 +6178,64 @@ export const site = {
   // Contact page topics
   contactTopics
 };
+</file>
+
+<file path="web/src/pages/index.astro">
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import HeroBanner from "../components/sections/HeroBanner.astro";
+import CardGrid from "../components/sections/CardGrid.astro";
+import EventList from "../components/sections/EventList.astro";
+import RecurringActivities from "../components/sections/RecurringActivities.astro";
+import SermonHighlight from "../components/sections/SermonHighlight.astro";
+import { site } from "../data/site";
+import heroBg from "../assets/photos/first-springfield-exterior.png";
+---
+
+<BaseLayout title={site.name} description={site.description}>
+  <HeroBanner
+    background={heroBg}
+    objectPosition="50% 35%"
+    title="Welcome"
+    subtitle="A vibrant, multicultural Seventh-day Adventist church in the heart of Springfield, MA."
+    primaryCtaLabel="Plan a Visit"
+    primaryCtaHref="/connect/plan-a-visit"
+    secondaryCtaLabel="Watch Live"
+    secondaryCtaHref="/media/live"
+  />
+
+  <CardGrid
+    title="Get Connected"
+    cards={[
+      {
+        title: "About Us",
+        description: "Learn our mission and what we believe.",
+        href: "/connect/about"
+      },
+      {
+        title: "Adult Sabbath School",
+        description: "Discover the mission, goals, and study focus of Adult Sabbath School.",
+        href: "/ministries/adult-sabbath-school"
+      },
+      {
+        title: "Worship With Us",
+        description: "See when we meet and what to expect.",
+        href: "/connect/worship-with-us"
+      },
+      {
+        title: "Prayer Request",
+        description: "Share a prayer request with our prayer team.",
+        href: "/connect/prayer"
+      }
+    ]}
+  />
+
+  <EventList title="Upcoming Events" />
+
+  <RecurringActivities />
+
+  <SermonHighlight title="Latest Sermon" />
+</BaseLayout>
 </file>
 
 </files>

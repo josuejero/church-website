@@ -1,8 +1,12 @@
 ---
 import { site } from "../../data/site";
+import { tel } from "../../lib/links";
 
 const year = new Date().getFullYear();
-const phoneHref = `tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`;
+const churchPhoneHref = tel(site.contact.phone);
+const pastorCellHref = tel(site.contact.pastorCell);
+const pastorCellLabel = site.contact.pastorCellLabel ?? "Pastor Kobe (call/text)";
+const hasPastorCell = Boolean(site.contact.pastorCell && site.contact.pastorCell.trim());
 const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAddress.trim().length);
 const hasFacebook = Boolean(site.portals.facebookUrl && site.portals.facebookUrl !== "TBD");
 const hasYouTube = Boolean(site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD");
@@ -47,10 +51,20 @@ const secondaryActions = site.quickActions.filter((item) => !primaryActionLabels
         </div>
       ) : null}
 
-      <div class="muted">
-        <a href={phoneHref}>{site.contact.phone}</a>
-        <span aria-hidden="true"> · </span>
-        <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+      <div class="muted footer-contact">
+        {hasPastorCell ? (
+          <div>
+            <span class="footer-contact-label">{pastorCellLabel}:</span>
+            <a href={pastorCellHref}>{site.contact.pastorCell}</a>
+          </div>
+        ) : null}
+        <div>
+          <span class="footer-contact-label">Church:</span>
+          <a href={churchPhoneHref}>{site.contact.phone}</a>
+        </div>
+        <div>
+          <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+        </div>
       </div>
 
       <div class="muted small">© {year}</div>
@@ -139,6 +153,18 @@ const secondaryActions = site.quickActions.filter((item) => !primaryActionLabels
   .muted {
     color: var(--color-text-muted);
     margin-top: var(--space-2);
+  }
+
+  .footer-contact {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin-top: var(--space-2);
+  }
+
+  .footer-contact-label {
+    font-weight: 600;
+    margin-right: 0.35rem;
   }
 
   .small {

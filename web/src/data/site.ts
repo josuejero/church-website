@@ -202,6 +202,8 @@ export const site = {
   contact: {
     email: PUBLIC_EMAIL,
     phone: "413-782-6260",
+    pastorCell: "(240) 850-9452",
+    pastorCellLabel: "Pastor Kobe (call/text)",
     address: ADDRESS_LINE,
     mapsUrl: MAPS_URL,
     // Leave blank unless the church asks for a distinct mailing address.

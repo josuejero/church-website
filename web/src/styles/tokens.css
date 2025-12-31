@@ -39,11 +39,11 @@
   --color-surface-muted: var(--color-surface-2);
   --color-text: var(--color-black);
   --color-text-muted: var(--color-gray-600);
-  --color-border: rgba(11, 15, 23, 0.14);
-  --color-border-strong: rgba(11, 15, 23, 0.24);
-  --color-primary: var(--color-blue-600);
-  --color-primary-hover: var(--color-blue-700);
-  --color-focus: var(--color-blue-700);
+  --color-border: rgba(17, 25, 30, 0.16);
+  --color-border-strong: rgba(17, 25, 30, 0.26);
+  --color-primary: #6c1d25;
+  --color-primary-hover: #7f2a32;
+  --color-focus: #2d6cdf;
 
   --container-max: 1100px;
   --container-pad: var(--space-8);
