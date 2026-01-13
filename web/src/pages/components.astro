@@ -1,0 +1,358 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/ui/Button.astro";
+import Banner from "../components/ui/Banner.astro";
+import Card from "../components/ui/Card.astro";
+
+const buttonVariants = [
+  { label: "Primary", variant: "primary" },
+  { label: "Secondary", variant: "secondary" },
+  { label: "Ghost", variant: "ghost" },
+];
+
+const buttonSizes = [
+  { label: "Small", size: "sm" },
+  { label: "Medium (default)", size: "md" },
+  { label: "Large", size: "lg" },
+];
+
+const linkSamples = [
+  { label: "Plan a visit", href: "/connect/plan-a-visit", helper: "Internal CTA", external: false },
+  {
+    label: "Design handoff notes",
+    href: "/docs/ui-handoff.md",
+    helper: "Documents align with design tokens",
+    external: false,
+  },
+  {
+    label: "Cross-device guide",
+    href: "https://playwright.dev/docs/test-configuration",
+    helper: "External resource (opens new tab)",
+    external: true,
+  },
+];
+
+const cards = [
+  {
+    title: "Service snapshot",
+    description: "Button-driven CTAs magnify the worship preview and giving link.",
+    href: "/connect/worship-with-us",
+  },
+  {
+    title: "Ministry stories",
+    description: "Cards frame the latest community updates without extra markup.",
+  },
+];
+
+const badges = [
+  { label: "New", className: "badge badge--primary" },
+  { label: "Draft", className: "badge badge--muted" },
+  { label: "Alert", className: "badge badge--warn" },
+];
+
+const tableRows = [
+  { component: "Button", usage: "Primary, secondary, ghost shapes", pattern: "Hero/CTA pattern" },
+  { component: "Banner", usage: "Info + warning alerts", pattern: "Announcements + policy changes" },
+  { component: "Card", usage: "Service/ministry highlights", pattern: "Grid + stack layouts" },
+];
+
+const listItems = [
+  "Spacing relies on `var(--space-*)` tokens that keep grids and stacks aligned.",
+  "Color, border, and focus tokens (*primary, border, focus*) stay consistent site wide.",
+  "Animations respect `stack` and `cluster` helpers so cards stay responsive.",
+];
+---
+
+<BaseLayout title="Components" description="Living component library for First Springfield’s web toolkit.">
+  <section class="component-hero">
+    <p class="eyebrow">Component library</p>
+    <h1>Components</h1>
+    <p>
+      A compact guide to the shared UI surface, so designers and engineers can see the token-powered elements
+      that ship across First Springfield’s site.
+    </p>
+  </section>
+
+  <section class="component-section">
+    <header>
+      <h2>Buttons</h2>
+      <p>Variants + sizes use the shared tokens so CTAs feel consistent anywhere they appear.</p>
+    </header>
+
+    <div class="component-grid component-grid--variants">
+      {buttonVariants.map(({ label, variant }) => (
+        <article>
+          <p class="component-label">{label}</p>
+          <Button variant={variant} size="md">{label}</Button>
+        </article>
+      ))}
+    </div>
+
+    <div class="component-grid component-grid--sizes">
+      {buttonSizes.map(({ label, size }) => (
+        <article>
+          <p class="component-label">{label}</p>
+          <Button variant="primary" size={size}>{label}</Button>
+        </article>
+      ))}
+    </div>
+
+    <div class="component-grid component-grid--states">
+      <article>
+        <p class="component-label">Disabled</p>
+        <Button variant="primary" size="md" disabled>Disabled</Button>
+      </article>
+      <article>
+        <p class="component-label">Focus-visible</p>
+        <Button variant="primary" size="md" autoFocus>Focus state</Button>
+      </article>
+    </div>
+    <p class="component-hint">Use Tab (or the demo focus button) to see the outline from the site-wide focus token.</p>
+  </section>
+
+  <section class="component-section">
+    <header>
+      <h2>Links + external icon behavior</h2>
+      <p>Shared link styles highlight internal links and signal external destinations.</p>
+    </header>
+    <div class="component-grid component-grid--links">
+      {linkSamples.map(({ label, href, helper, external }) => (
+        <a
+          class="component-link"
+          href={href}
+          target={external ? "_blank" : undefined}
+          rel={external ? "noreferrer noopener" : undefined}
+        >
+          <span>{label}</span>
+          <span class="component-link__hint">{helper}</span>
+          {external ? <span aria-hidden="true" class="component-link__icon">↗</span> : null}
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="component-section">
+    <header>
+      <h2>Banner states</h2>
+      <p>Alert banners sport info or warn tones to stay calm yet clear.</p>
+    </header>
+    <div class="component-grid component-grid--banners">
+      <Banner message="Service updates land here before they reach the hero." tone="info" ctaLabel="Learn more" ctaHref="/connect/about" />
+      <Banner message="Safety and campus policies use the warning tone." tone="warn" ctaLabel="Welcoming summary" ctaHref="/connect/worship-with-us" />
+    </div>
+  </section>
+
+  <section class="component-section">
+    <header>
+      <h2>Cards & badges</h2>
+      <p>Cards stretch into grids; badges keep metadata compact.</p>
+    </header>
+    <div class="component-grid component-grid--cards">
+      {cards.map((card) => (
+        <Card title={card.title} description={card.description} href={card.href} />
+      ))}
+    </div>
+    <div class="badge-row">
+      {badges.map((badge) => (
+        <span class={badge.className}>{badge.label}</span>
+      ))}
+    </div>
+  </section>
+
+  <section class="component-section">
+    <header>
+      <h2>Table & list styles</h2>
+      <p>Responsive tables and stacks keep content legible on every viewport.</p>
+    </header>
+    <div class="component-table-wrapper">
+      <table class="component-table">
+        <thead>
+          <tr>
+            <th scope="col">Component</th>
+            <th scope="col">Usage</th>
+            <th scope="col">Pattern</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tableRows.map((row) => (
+            <tr>
+              <td>{row.component}</td>
+              <td>{row.usage}</td>
+              <td>{row.pattern}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <ul class="component-list">
+      {listItems.map((item) => (
+        <li>{item}</li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: var(--font-size-0);
+    margin-bottom: var(--space-2);
+    color: var(--color-text-muted);
+  }
+
+  .component-hero {
+    margin-bottom: var(--space-8);
+  }
+
+  .component-section {
+    margin-bottom: var(--space-10);
+  }
+
+  .component-section header h2 {
+    margin: 0 0 var(--space-2);
+  }
+
+  .component-section header p {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .component-grid {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  }
+
+  .component-grid--variants,
+  .component-grid--sizes,
+  .component-grid--states {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .component-grid--links {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+
+  .component-grid--cards {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .component-grid--banners {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .component-label {
+    margin: 0;
+    font-size: var(--font-size-0);
+    color: var(--color-text-muted);
+  }
+
+  .component-hint {
+    margin-top: var(--space-3);
+    font-size: var(--font-size-0);
+    color: var(--color-text-muted);
+  }
+
+  .component-link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-3);
+    padding: var(--space-3);
+    text-decoration: none;
+    color: inherit;
+    background: var(--color-surface);
+  }
+
+  .component-link:hover,
+  .component-link:focus-visible {
+    border-color: var(--color-border-strong);
+    box-shadow: var(--shadow-1);
+  }
+
+  .component-link__hint {
+    font-size: var(--font-size-0);
+    color: var(--color-text-muted);
+  }
+
+  .component-link__icon {
+    font-size: 0.9rem;
+    color: var(--color-primary);
+  }
+
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-2);
+    font-weight: 600;
+    font-size: var(--font-size-0);
+  }
+
+  .badge--primary {
+    background: #fdecea;
+    color: #991b1b;
+  }
+
+  .badge--muted {
+    background: var(--color-gray-50);
+    color: var(--color-gray-600);
+  }
+
+  .badge--warn {
+    background: #fff4e5;
+    color: #b45309;
+  }
+
+  .component-table-wrapper {
+    overflow-x: auto;
+    margin-top: var(--space-4);
+  }
+
+  .component-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--color-border);
+  }
+
+  .component-table th,
+  .component-table td {
+    padding: var(--space-3);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .component-table th {
+    font-size: var(--font-size-0);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-text-muted);
+  }
+
+  .component-list {
+    margin-top: var(--space-4);
+    padding-left: 1.2rem;
+    color: var(--color-text);
+  }
+
+  .component-list li + li {
+    margin-top: var(--space-2);
+  }
+
+  @media (max-width: 640px) {
+    .component-grid--variants,
+    .component-grid--sizes,
+    .component-grid--states {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

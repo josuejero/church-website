@@ -26,6 +26,11 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
       testMatch: /.*smoke\.spec\.ts/,
     },
+    {
+      name: 'mobile-smoke',
+      use: { ...devices['iPhone 13'] },
+      testMatch: /.*smoke\.spec\.ts/,
+    },
   ],
   webServer: {
     command: `npm run build && npx wrangler dev --local --ip ${HOST} --port ${PORT} --log-level error`,

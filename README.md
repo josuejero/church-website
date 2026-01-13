@@ -6,6 +6,14 @@ This repo hosts the new First Springfield SDA site built with Astro and Cloudfla
 
 **Live demo:** https://firstspringfieldma.adventistchurch.org/
 
+## Why this project is a UI-intern-quality repo
+
+- **UI from spec:** the designer handoff lives in [docs/ui-handoff.md](docs/ui-handoff.md), showing how colors, spacing, and layout principles translate into code.
+- **Cross-browser smoke:** Playwright runs the Chromium full suite plus Firefox/WebKit smoke tests to prove it works everywhere.
+- **Accessibility:** axe scans are part of the CI workflow so every push guards against regressions.
+- **Performance:** Lighthouse CI budgets are enforced to keep the experience fast.
+- **Cross-device:** Playwright `mobile-smoke` project plus device emulation validate the UI at representative mobile viewports.
+
 ## Getting started
 
 1. `cd web`
@@ -28,6 +36,7 @@ The remaining scripts live inside `web/package.json`. `npm run build` produces a
 - Astro + Cloudflare Workers deliver content-first rendering with partial hydration where it makes the most sense.
 - Tokens govern spacing, typography, color, and elevation so the component library stays cohesive.
 - Accessibility-first surface rules (focus-visible, skip link, 44px tap targets, semantic headings) keep the site welcoming to everyone.
+- Accessibility commitment: We follow WCAG 2.2 intent—44px tap targets, strong focus indicators, meaningful heading hierarchy, and keyboard navigation via the skip link so the UI feels reliable on every device (`web/src/styles/a11y.css`, `web/tests/e2e/phase-7-a11y.spec.ts`).
 - A smoke suite (Playwright E2E, Linkinator links, Lighthouse CI) keeps regressions off the branch.
 - Performance, accessibility, best practices, and SEO budgets run inside CI so builds never slip below the target thresholds.
 
@@ -42,6 +51,7 @@ The remaining scripts live inside `web/package.json`. `npm run build` produces a
 ![Latest Lighthouse CI run](docs/assets/lighthouse-latest.png)
 
 We enforce a small Lighthouse CI budget in order to catch “death by a thousand cuts” (unoptimized images, heavy scripts, accidental layout shifts) before it reaches production:
+- The CI workflow now runs `treosh/lighthouse-ci-action`, uploads `web/.lighthouseci` as the `lighthouseci` artifact, and posts a PR comment (`tag: lighthouse-ci`) that links to the temporary HTML report so reviewers see the latest scores without rerunning locally.
 - Performance score must stay at or above 0.90.
 - Accessibility score must stay at or above 0.95.
 - Best Practices score must stay at or above 0.95.
@@ -53,6 +63,8 @@ Lighthouse category assertions operate on a 0–1 scale in CI configs, so 0.90 c
 
 - [Design handoff](docs/ui-handoff.md)
 - [Web developer README](web/README.md)
+- [Component guide (living style guide)](/components)
+- [Community health docs](CONTRIBUTING.md) _(includes CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, LICENSE)_
 
 ## Troubleshooting
 

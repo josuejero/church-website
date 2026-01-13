@@ -1,16 +1,26 @@
 ---
 import Button from "./Button.astro";
 
+type BannerTone = "info" | "warn";
+
 type Props = {
   message: string;
   ctaLabel?: string;
   ctaHref?: string;
+  tone?: BannerTone;
 };
 
-const { message, ctaLabel, ctaHref } = Astro.props;
+const {
+  message,
+  ctaLabel,
+  ctaHref,
+  tone = "info"
+} = Astro.props as Props;
+
+const toneClass = tone === "warn" ? "banner--warn" : "banner--info";
 ---
 
-<section class="banner" role="status">
+<section class={`banner ${toneClass}`} role="status">
   <div class="banner__inner">
     <div class="banner__msg">{message}</div>
     {ctaLabel && ctaHref ? (
@@ -25,6 +35,16 @@ const { message, ctaLabel, ctaHref } = Astro.props;
     border-radius: var(--radius-3);
     padding: var(--space-3) var(--space-4);
     background: var(--color-surface-2);
+  }
+
+  .banner--info {
+    background: var(--color-surface-2);
+    border-color: var(--color-border);
+  }
+
+  .banner--warn {
+    background: #fff4e3;
+    border-color: #f97316;
   }
 
   .banner__inner {

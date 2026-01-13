@@ -1,17 +1,24 @@
 ---
+type Variant = "primary" | "secondary" | "ghost";
+type Size = "sm" | "md" | "lg";
+
 type Props = {
   href?: string;
   external?: boolean;
-  variant?: "primary" | "secondary" | "ghost";
-  size?: "sm" | "md" | "lg";
+  variant?: Variant;
+  size?: Size;
+  disabled?: boolean;
+  autoFocus?: boolean;
 };
 
 const {
   href,
   external = false,
   variant = "primary",
-  size = "md"
-} = Astro.props;
+  size = "md",
+  disabled = false,
+  autoFocus = false,
+} = Astro.props as Props;
 
 const className = `btn btn--${variant} btn--${size}`;
 ---
@@ -26,7 +33,7 @@ const className = `btn btn--${variant} btn--${size}`;
     <slot />
   </a>
 ) : (
-  <button class={className} type="button">
+  <button class={className} type="button" disabled={disabled} autofocus={autoFocus}>
     <slot />
   </button>
 )}
@@ -85,5 +92,10 @@ const className = `btn btn--${variant} btn--${size}`;
 
   .btn--ghost:hover {
     background: var(--color-gray-50);
+  }
+
+  .btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
   }
 </style>

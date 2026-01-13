@@ -2,3 +2,4 @@
 *.svg
 web/.lighthouseci
 web/.wrangler
+package/
