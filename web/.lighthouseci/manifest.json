@@ -1,1 +1,182 @@
-[]
+[
+  {
+    "url": "http://localhost:63579/404.html",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-404_html-2026_01_13_23_21_19.report.html",
+    "jsonPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-404_html-2026_01_13_23_21_19.report.json",
+    "summary": {
+      "performance": 1,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:63579/404.html",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-404_html-2026_01_13_23_21_30.report.html",
+    "jsonPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-404_html-2026_01_13_23_21_30.report.json",
+    "summary": {
+      "performance": 1,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:63579/index.html",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-index_html-2026_01_13_23_21_52.report.html",
+    "jsonPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-index_html-2026_01_13_23_21_52.report.json",
+    "summary": {
+      "performance": 0.99,
+      "accessibility": 0.98,
+      "best-practices": 1,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:63579/index.html",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-index_html-2026_01_13_23_22_03.report.html",
+    "jsonPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-index_html-2026_01_13_23_22_03.report.json",
+    "summary": {
+      "performance": 0.98,
+      "accessibility": 0.98,
+      "best-practices": 1,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:63579/components/index.html",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-components_index_html-2026_01_13_23_22_25.report.html",
+    "jsonPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-components_index_html-2026_01_13_23_22_25.report.json",
+    "summary": {
+      "performance": 1,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 0.92
+    }
+  },
+  {
+    "url": "http://localhost:63579/components/index.html",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-components_index_html-2026_01_13_23_22_35.report.html",
+    "jsonPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-components_index_html-2026_01_13_23_22_35.report.json",
+    "summary": {
+      "performance": 1,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 0.92
+    }
+  },
+  {
+    "url": "http://localhost:63579/connect/index.html",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-connect_index_html-2026_01_13_23_22_57.report.html",
+    "jsonPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-connect_index_html-2026_01_13_23_22_57.report.json",
+    "summary": {
+      "performance": 1,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:63579/connect/index.html",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-connect_index_html-2026_01_13_23_23_08.report.html",
+    "jsonPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-connect_index_html-2026_01_13_23_23_08.report.json",
+    "summary": {
+      "performance": 1,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:63579/connect/about/index.html",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-connect_about_index_html-2026_01_13_23_23_19.report.html",
+    "jsonPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-connect_about_index_html-2026_01_13_23_23_19.report.json",
+    "summary": {
+      "performance": 1,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:63579/connect/about/index.html",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-connect_about_index_html-2026_01_13_23_23_29.report.html",
+    "jsonPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-connect_about_index_html-2026_01_13_23_23_29.report.json",
+    "summary": {
+      "performance": 1,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:63579/404.html",
+    "isRepresentativeRun": true,
+    "htmlPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-404_html-2026_01_13_23_21_08.report.html",
+    "jsonPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-404_html-2026_01_13_23_21_08.report.json",
+    "summary": {
+      "performance": 1,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:63579/index.html",
+    "isRepresentativeRun": true,
+    "htmlPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-index_html-2026_01_13_23_21_41.report.html",
+    "jsonPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-index_html-2026_01_13_23_21_41.report.json",
+    "summary": {
+      "performance": 0.99,
+      "accessibility": 0.98,
+      "best-practices": 1,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:63579/components/index.html",
+    "isRepresentativeRun": true,
+    "htmlPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-components_index_html-2026_01_13_23_22_14.report.html",
+    "jsonPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-components_index_html-2026_01_13_23_22_14.report.json",
+    "summary": {
+      "performance": 1,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 0.92
+    }
+  },
+  {
+    "url": "http://localhost:63579/connect/index.html",
+    "isRepresentativeRun": true,
+    "htmlPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-connect_index_html-2026_01_13_23_22_46.report.html",
+    "jsonPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-connect_index_html-2026_01_13_23_22_46.report.json",
+    "summary": {
+      "performance": 1,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:63579/connect/about/index.html",
+    "isRepresentativeRun": true,
+    "htmlPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-connect_about_index_html-2026_01_13_23_23_40.report.html",
+    "jsonPath": "/Users/wholesway/Documents/Projects-and-Data/Dev/01-personal/church-website/web/.lighthouseci/localhost-connect_about_index_html-2026_01_13_23_23_40.report.json",
+    "summary": {
+      "performance": 1,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 1
+    }
+  }
+]

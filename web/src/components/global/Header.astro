@@ -70,7 +70,7 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
         </summary>
 
         <div class="menu__panel">
-          <nav class="menu__section" aria-label="Primary navigation">
+          <div class="menu__section" aria-label="Primary navigation" role="navigation">
             {site.nav.map((item) => (
               <a
                 class="menu__link"
@@ -81,7 +81,7 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
                 {item.label}
               </a>
             ))}
-          </nav>
+          </div>
 
           <div class="menu__divider" role="separator" aria-hidden="true"></div>
 
@@ -312,7 +312,6 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
   }
 
   @media (max-width: 860px) {
-    .nav--desktop,
     .cta--desktop {
       display: none;
     }

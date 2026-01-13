@@ -43,6 +43,8 @@ The content is organized as follows:
 .github/
   ISSUE_TEMPLATE/
     content-update.md
+  workflows/
+    ci.yml
   PULL_REQUEST_TEMPLATE.md
 cold-dawn-85a2/
   .vscode/
@@ -78,11 +80,10 @@ docs/
     sitemap.md
     source-of-truth.yml
     working-agreement.md
+  deploy.md
   ui-handoff.md
+  ui-reliability.md
 web/
-  .github/
-    workflows/
-      ci.yml
   .vscode/
     extensions.json
     launch.json
@@ -205,6 +206,7 @@ web/
       serve/
         index.astro
       404.astro
+      components.astro
       index.astro
       robots.txt.ts
     styles/
@@ -218,6 +220,7 @@ web/
   tests/
     e2e/
       content-collections.spec.ts
+      mobile.smoke.spec.ts
       phase-5-media-portals.spec.ts
       phase-6-search-and-analytics.spec.ts
       phase-7-a11y.spec.ts
@@ -240,8 +243,13 @@ web/
 .gitignore
 .nvmrc
 .repomixignore
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+LICENSE
+lighthouserc-ci.cjs
 package.json
 README.md
+SECURITY.md
 </directory_structure>
 
 <files>
@@ -261,6 +269,126 @@ about: Update copy, dates, service times, or links
 (Who confirmed this information?)
 
 ## Deadline
+</file>
+
+<file path=".github/workflows/ci.yml">
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: ["main", "master"]
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+
+    env:
+      # Ensures canonical URLs + sitemap/robots generation are deterministic in CI
+      PUBLIC_SITE_URL: http://127.0.0.1:4321
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: E2E tests
+        run: npm run test:e2e:ci
+
+      - name: Internal link check
+        run: npm run test:links:ci
+
+      - name: Lighthouse CI
+        id: lighthouse
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: ./lighthouserc-ci.cjs
+          temporaryPublicStorage: true
+          uploadArtifacts: false
+
+      - name: Build Lighthouse summary
+        if: github.event_name == "pull_request"
+        id: lhci-summary
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const core = require("@actions/core");
+            const manifest = JSON.parse(process.env.MANIFEST_JSON || "[]");
+            const entry = manifest[0] || {};
+            const summary = entry.summary || {};
+            const metricLabels = {
+              performance: "Performance",
+              accessibility: "Accessibility",
+              "best-practices": "Best Practices",
+              seo: "SEO",
+              pwa: "PWA",
+            };
+            const metrics = Object.keys(metricLabels)
+              .filter((key) => summary[key] !== undefined)
+              .map((key) => `| ${metricLabels[key]} | ${Math.round(summary[key] * 100)}% |`);
+            const table =
+              metrics.length > 0
+                ? ["| Metric | Score |", "| --- | --- |", ...metrics].join("\n")
+                : "No Lighthouse scores available.";
+            const links = JSON.parse(process.env.LINKS_JSON || "{}");
+            const reportLink = Object.values(links)[0];
+            const body = [
+              "## Lighthouse CI results",
+              table,
+              reportLink
+                ? `Temporary public report: [view it here](${reportLink})`
+                : "Temporary public report not available.",
+              "Artifacts remain in the `lighthouseci` artifact bundle for this run.",
+            ].join("\n\n");
+            core.setOutput("body", body);
+        env:
+          MANIFEST_JSON: ${{ steps.lighthouse.outputs.manifest }}
+          LINKS_JSON: ${{ steps.lighthouse.outputs.links || "{}" }}
+
+      - name: Comment Lighthouse results
+        if: github.event_name == "pull_request"
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.lhci-summary.outputs.body }}
+          tag: lighthouse-ci
+
+      - name: Upload Lighthouse artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouseci
+          path: web/.lighthouseci
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: web/playwright-report
 </file>
 
 <file path=".github/PULL_REQUEST_TEMPLATE.md">
@@ -939,6 +1067,35 @@ A task is ready when:
 - owner/approver is known
 </file>
 
+<file path="docs/deploy.md">
+# Deploy notes
+
+This repo builds with Astro + the Cloudflare Worker adapter, so the site ships as static files plus SSR routes that run inside Cloudflare Pages/Workers. The following steps keep deployments reproducible for preview and production when you need to demo or hand off to someone else.
+
+## Environment variables
+
+- `PUBLIC_SITE_URL` (set in CI + Pages) defines the canonical host for sitemap/robots/meta tags. CI exports it as `http://127.0.0.1:4321` to make `astro` render deterministic assets (robots, sitemap, canonical URLs). The same value should match the Pages preview/production domain so absolute URLs stay consistent.
+- Cloudflare secrets (Cloudflare Pages project settings or `wrangler publish`) typically include `CF_ACCOUNT_ID`, `CF_PROJECT_NAME`, and a `CF_API_TOKEN` scoped to publish `pages` & `workers`. Keep them in GitHub secrets or the Pages dashboard and never hardcode them in `web/`.
+
+## Preview workflow
+
+1. From the repo root run `cd web && npm install`.
+2. Build and preview with `npm run preview`; Astro uses the Cloudflare adapter and starts a local preview server—any absolute URLs honor `PUBLIC_SITE_URL` if you export it before running the command.
+3. For emulator parity you can run `npx wrangler dev --local --ip 127.0.0.1 --port 4321` to exercise the Cloudflare Worker runtime; combine this with `npm run build` so the server uses the exact SSR bundle that Pages would deploy.
+
+## Production deployments
+
+1. Cloudflare Pages automatically picks up `web/` (build command `npm run build`) and uses `wrangler publish` under the hood when you connect the GitHub repo.
+2. Ensure the Pages project’s production branch matches `main`/`master` and the `PUBLIC_SITE_URL` secret equals the published domain (e.g., `https://firstspringfieldma.adventistchurch.org`). This keeps canonical tags and sitemap URLs stable.
+3. When you push, the existing CI job runs `npm run test:e2e:ci`, `npm run test:links:ci`, and `lhci` assertions before handing the built `web/dist` folder off to Pages.
+
+## Verifying sitemap + robots + canonical output
+
+1. After `npm run build`, inspect `web/dist/sitemap.xml` and `web/dist/robots.txt` to confirm URLs point to `PUBLIC_SITE_URL`.
+2. The CI job already sets the same environment variable and runs `npm run build`, meaning the generated files in CI should match the deployed output. Re-run `npm run lighthouse` locally to surface canonical/robots warnings if they regress.
+3. Build artifacts (`web/.lighthouseci` and `web/dist`) and the smoke suite ensure canonical links do not regress—check the CI artifacts or rerun `npm run qa` locally when you need to audit metadata behavior before shipping.
+</file>
+
 <file path="docs/ui-handoff.md">
 # UI Handoff - First Springfield SDA Website
 
@@ -1045,6 +1202,35 @@ File: `web/src/components/global/Footer.astro`
 - Why Astro: content-first rendering with partial hydration keeps the site fast and lets us pull in Markdown/data without heavy bundling.
 - Why tokens: centralized spacing/color/typescale means any new component can reuse variables instead of uncoordinated values.
 - Why smoke tests: quick, cross-engine smoke tests give confidence that renders stay consistent without slowing down the full CI pipeline.
+</file>
+
+<file path="docs/ui-reliability.md">
+# UI reliability notes
+
+This page explains the known UI failure modes we monitor so we can triage common issues, keep the experience responsive, and communicate how the build/release pipeline proves behavior before every deploy.
+
+## Failure: YouTube embed blocked / slow network
+
+- **User impact:** The sermon/media player takes center stage on the media page, so a blocked iframe can freeze loading above-the-fold content and make the hero section feel inert.
+- **How the UI behaves:** The media section renders a retry-friendly CTA (watch live / try again) and drops the iframe in favor of a descriptive fallback tile with the video title and transcript preview so the rest of the page remains interactive.
+- **How we test it:** The Playwright smoke suite includes `/media` coverage (see `web/tests/e2e/smoke.spec.ts`) and the a11y sweep catches residual UI shifts; we manually simulate iframe route abortion when diagnosing regressions, and `npx playwright test --project=chromium --grep media` lets us run a blocked request locally. Lighthouse CI budgets highlight any layout shift that might come from repeated iframe retries.
+
+## Failure: Missing content collection item
+
+- **User impact:** The equal-width grids (cards, ministries, events) depend on CMS content collections; a missing item leaves a hole that feels like a broken card or outdated listing.
+- **How the UI behaves:** We render placeholder cards with the `Card` component plus muted copy, and the grid gracefully collapses while `Linkinator`/Playwright watchers flag the missing link. Content editors get a descriptive notification in the admin so they can republish.
+- **How we test it:** `astro check` validates generated types inside `web/src/content`, Playwright smoke checks the `CardGrid` (`/` page) for fallout, and `linkinator.config.json` ensures published links exist. During local debugging we stub the collection (commented fixture) so we can observe the placeholder state while keeping CI green.
+
+## Failure: Search index not ready
+
+- **User impact:** The Pagefind-powered search overlay is often the first thing visitors touch when they land on a new topic; if the index build is in progress the search input returns no results and may mislead the user.
+- **How the UI behaves:** We render a skeleton input and button with “Retry search” copy, show inline microcopy explaining the cold start, and keep the search modal open so the user can retry without navigating away.
+- **How we test it:** The `phase-7-a11y` Axe test (`web/tests/e2e/phase-7-a11y.spec.ts`) already spins up the search modal and verifies accessible labels; we extend that harness with the “Search index not ready” copy while manually blocking the `/pagefind-ui` endpoint during regression runs. Lighthouse budgets guard for the skeleton’s CLS/pause, and Playwright smoke tests executed during CI ensure the UI still renders with mock search results even when the service is offline.
+
+## Reliability signals
+
+- Automated tooling (Playwright smoke + axe, Linkinator, Lighthouse CI) runs on every push—see `web/test-results` and `web/playwright.config.ts` for CI entry points.
+- For quick triage, rerun `npm run qa` inside `web/` to reproduce a failure locally while hitting the same test matrix we rely on in CI.
 </file>
 
 <file path="web/.vscode/extensions.json">
@@ -1879,6 +2065,367 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 </BaseLayout>
 </file>
 
+<file path="web/src/pages/components.astro">
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/ui/Button.astro";
+import Banner from "../components/ui/Banner.astro";
+import Card from "../components/ui/Card.astro";
+
+const buttonVariants = [
+  { label: "Primary", variant: "primary" },
+  { label: "Secondary", variant: "secondary" },
+  { label: "Ghost", variant: "ghost" },
+];
+
+const buttonSizes = [
+  { label: "Small", size: "sm" },
+  { label: "Medium (default)", size: "md" },
+  { label: "Large", size: "lg" },
+];
+
+const linkSamples = [
+  { label: "Plan a visit", href: "/connect/plan-a-visit", helper: "Internal CTA", external: false },
+  {
+    label: "Design handoff notes",
+    href: "/docs/ui-handoff.md",
+    helper: "Documents align with design tokens",
+    external: false,
+  },
+  {
+    label: "Cross-device guide",
+    href: "https://playwright.dev/docs/test-configuration",
+    helper: "External resource (opens new tab)",
+    external: true,
+  },
+];
+
+const cards = [
+  {
+    title: "Service snapshot",
+    description: "Button-driven CTAs magnify the worship preview and giving link.",
+    href: "/connect/worship-with-us",
+  },
+  {
+    title: "Ministry stories",
+    description: "Cards frame the latest community updates without extra markup.",
+  },
+];
+
+const badges = [
+  { label: "New", className: "badge badge--primary" },
+  { label: "Draft", className: "badge badge--muted" },
+  { label: "Alert", className: "badge badge--warn" },
+];
+
+const tableRows = [
+  { component: "Button", usage: "Primary, secondary, ghost shapes", pattern: "Hero/CTA pattern" },
+  { component: "Banner", usage: "Info + warning alerts", pattern: "Announcements + policy changes" },
+  { component: "Card", usage: "Service/ministry highlights", pattern: "Grid + stack layouts" },
+];
+
+const listItems = [
+  "Spacing relies on `var(--space-*)` tokens that keep grids and stacks aligned.",
+  "Color, border, and focus tokens (*primary, border, focus*) stay consistent site wide.",
+  "Animations respect `stack` and `cluster` helpers so cards stay responsive.",
+];
+---
+
+<BaseLayout title="Components" description="Living component library for First Springfield’s web toolkit.">
+  <section class="component-hero">
+    <p class="eyebrow">Component library</p>
+    <h1>Components</h1>
+    <p>
+      A compact guide to the shared UI surface, so designers and engineers can see the token-powered elements
+      that ship across First Springfield’s site.
+    </p>
+  </section>
+
+  <section class="component-section">
+    <header>
+      <h2>Buttons</h2>
+      <p>Variants + sizes use the shared tokens so CTAs feel consistent anywhere they appear.</p>
+    </header>
+
+    <div class="component-grid component-grid--variants">
+      {buttonVariants.map(({ label, variant }) => (
+        <article>
+          <p class="component-label">{label}</p>
+          <Button variant={variant} size="md">{label}</Button>
+        </article>
+      ))}
+    </div>
+
+    <div class="component-grid component-grid--sizes">
+      {buttonSizes.map(({ label, size }) => (
+        <article>
+          <p class="component-label">{label}</p>
+          <Button variant="primary" size={size}>{label}</Button>
+        </article>
+      ))}
+    </div>
+
+    <div class="component-grid component-grid--states">
+      <article>
+        <p class="component-label">Disabled</p>
+        <Button variant="primary" size="md" disabled>Disabled</Button>
+      </article>
+      <article>
+        <p class="component-label">Focus-visible</p>
+        <Button variant="primary" size="md" autoFocus>Focus state</Button>
+      </article>
+    </div>
+    <p class="component-hint">Use Tab (or the demo focus button) to see the outline from the site-wide focus token.</p>
+  </section>
+
+  <section class="component-section">
+    <header>
+      <h2>Links + external icon behavior</h2>
+      <p>Shared link styles highlight internal links and signal external destinations.</p>
+    </header>
+    <div class="component-grid component-grid--links">
+      {linkSamples.map(({ label, href, helper, external }) => (
+        <a
+          class="component-link"
+          href={href}
+          target={external ? "_blank" : undefined}
+          rel={external ? "noreferrer noopener" : undefined}
+        >
+          <span>{label}</span>
+          <span class="component-link__hint">{helper}</span>
+          {external ? <span aria-hidden="true" class="component-link__icon">↗</span> : null}
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="component-section">
+    <header>
+      <h2>Banner states</h2>
+      <p>Alert banners sport info or warn tones to stay calm yet clear.</p>
+    </header>
+    <div class="component-grid component-grid--banners">
+      <Banner message="Service updates land here before they reach the hero." tone="info" ctaLabel="Learn more" ctaHref="/connect/about" />
+      <Banner message="Safety and campus policies use the warning tone." tone="warn" ctaLabel="Welcoming summary" ctaHref="/connect/worship-with-us" />
+    </div>
+  </section>
+
+  <section class="component-section">
+    <header>
+      <h2>Cards & badges</h2>
+      <p>Cards stretch into grids; badges keep metadata compact.</p>
+    </header>
+    <div class="component-grid component-grid--cards">
+      {cards.map((card) => (
+        <Card title={card.title} description={card.description} href={card.href} />
+      ))}
+    </div>
+    <div class="badge-row">
+      {badges.map((badge) => (
+        <span class={badge.className}>{badge.label}</span>
+      ))}
+    </div>
+  </section>
+
+  <section class="component-section">
+    <header>
+      <h2>Table & list styles</h2>
+      <p>Responsive tables and stacks keep content legible on every viewport.</p>
+    </header>
+    <div class="component-table-wrapper">
+      <table class="component-table">
+        <thead>
+          <tr>
+            <th scope="col">Component</th>
+            <th scope="col">Usage</th>
+            <th scope="col">Pattern</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tableRows.map((row) => (
+            <tr>
+              <td>{row.component}</td>
+              <td>{row.usage}</td>
+              <td>{row.pattern}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <ul class="component-list">
+      {listItems.map((item) => (
+        <li>{item}</li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: var(--font-size-0);
+    margin-bottom: var(--space-2);
+    color: var(--color-text-muted);
+  }
+
+  .component-hero {
+    margin-bottom: var(--space-8);
+  }
+
+  .component-section {
+    margin-bottom: var(--space-10);
+  }
+
+  .component-section header h2 {
+    margin: 0 0 var(--space-2);
+  }
+
+  .component-section header p {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .component-grid {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  }
+
+  .component-grid--variants,
+  .component-grid--sizes,
+  .component-grid--states {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .component-grid--links {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+
+  .component-grid--cards {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .component-grid--banners {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .component-label {
+    margin: 0;
+    font-size: var(--font-size-0);
+    color: var(--color-text-muted);
+  }
+
+  .component-hint {
+    margin-top: var(--space-3);
+    font-size: var(--font-size-0);
+    color: var(--color-text-muted);
+  }
+
+  .component-link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-3);
+    padding: var(--space-3);
+    text-decoration: none;
+    color: inherit;
+    background: var(--color-surface);
+  }
+
+  .component-link:hover,
+  .component-link:focus-visible {
+    border-color: var(--color-border-strong);
+    box-shadow: var(--shadow-1);
+  }
+
+  .component-link__hint {
+    font-size: var(--font-size-0);
+    color: var(--color-text-muted);
+  }
+
+  .component-link__icon {
+    font-size: 0.9rem;
+    color: var(--color-primary);
+  }
+
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-2);
+    font-weight: 600;
+    font-size: var(--font-size-0);
+  }
+
+  .badge--primary {
+    background: #fdecea;
+    color: #991b1b;
+  }
+
+  .badge--muted {
+    background: var(--color-gray-50);
+    color: var(--color-gray-600);
+  }
+
+  .badge--warn {
+    background: #fff4e5;
+    color: #b45309;
+  }
+
+  .component-table-wrapper {
+    overflow-x: auto;
+    margin-top: var(--space-4);
+  }
+
+  .component-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--color-border);
+  }
+
+  .component-table th,
+  .component-table td {
+    padding: var(--space-3);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .component-table th {
+    font-size: var(--font-size-0);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-text-muted);
+  }
+
+  .component-list {
+    margin-top: var(--space-4);
+    padding-left: 1.2rem;
+    color: var(--color-text);
+  }
+
+  .component-list li + li {
+    margin-top: var(--space-2);
+  }
+
+  @media (max-width: 640px) {
+    .component-grid--variants,
+    .component-grid--sizes,
+    .component-grid--states {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</file>
+
 <file path="web/src/pages/robots.txt.ts">
 import type { APIRoute } from "astro";
 
@@ -1921,6 +2468,26 @@ export const GET: APIRoute = ({ site: astroSite, url }) => {
   "status": "passed",
   "failedTests": []
 }
+</file>
+
+<file path="web/tests/e2e/mobile.smoke.spec.ts">
+import { test, expect } from '@playwright/test';
+
+test.describe('Smoke - mobile device', () => {
+  test('mobile header nav and primary CTA stay accessible on home', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('header nav')).toBeVisible();
+    await expect(page.getByRole('link', { name: /give/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /watch live/i })).toBeVisible();
+  });
+
+  test('visit page loads key content and CTA', async ({ page }) => {
+    await page.goto('/visit');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.locator('main')).toContainText(/parking|directions|address/i);
+    await expect(page.getByRole('link', { name: /give/i })).toBeVisible();
+  });
+});
 </file>
 
 <file path="web/tests/e2e/phase-7-sitefiles.spec.ts">
@@ -2121,6 +2688,105 @@ web/.astro/
 20
 </file>
 
+<file path="CODE_OF_CONDUCT.md">
+# Contributor Covenant Code of Conduct
+
+## Our Pledge
+
+We as members, contributors, and leaders pledge to make participation in this project and our community a harassment-free experience for everyone.
+
+## Our Standards
+
+Examples of behavior that contributes to a positive environment include:
+- Using welcoming and inclusive language.
+- Being respectful of differing viewpoints and experiences.
+- Gracefully accepting constructive criticism.
+- Focusing on what is best for the community.
+- Showing empathy toward other community members.
+
+Examples of unacceptable behavior include harassment, trolling, insulting/derogatory comments, or other conduct which might reasonably be considered inappropriate.
+
+## Enforcement
+
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting conduct@firstspringfieldma.adventistchurch.org. All complaints will be reviewed and investigated promptly and fairly.
+
+## Attribution
+
+This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org/), version 2.1, available at https://www.contributor-covenant.org/version/2/1/code_of_conduct/.
+</file>
+
+<file path="CONTRIBUTING.md">
+# Contributing
+
+Thanks for improving First Springfield Church Website! Follow the guidelines below so changes stay reliable and reviewers can move quickly.
+
+## Getting started
+
+1. `git checkout -b feature/description` (use prefixes like `feature/`, `fix/`, `docs/`, `chore/`, etc.).
+2. Always run the QA suite before opening a PR so CI has the same baseline:
+   ```sh
+   cd web
+   npm install
+   npm run qa
+   ```
+3. Keep commits focused and descriptive; squash/fixup as needed before merging.
+
+## Branch naming & PR expectations
+
+- Prefer active names like `feature/service-livestream` or `fix/banner-spacing`.
+- Title PRs with the change (e.g., “Improve Banner focus states”) and cite the main README section or issue if one exists.
+- Describe what was done, list any manual verifications (Lighthouse, Playwright, Linkinator), and attach screenshots when the UI changes.
+- Mention any missing coverage or follow-up work in the PR description so reviewers know what to expect.
+- Link to `CONTRIBUTING.md`, `SECURITY.md`, or `docs/ui-reliability.md` when relevant.
+
+## Tests & formatting
+
+- `npm run format` touches Astro/Svelte files; run it locally if you change markup or styles.
+- `npm run test:e2e:ci` (Playwright) plus `npm run test:links:ci` ensure cross-browser and link coverage.
+- `npm run lighthouse:ci` enforces performance + accessibility budgets before landing a change that touches layout.
+
+## Questions?
+
+Reach out on the repo or cross-post to the church tech/staff email before sending large updates. Thank you!
+</file>
+
+<file path="LICENSE">
+MIT License
+
+Copyright (c) 2024 First Springfield Church Website contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+</file>
+
+<file path="lighthouserc-ci.cjs">
+const baseConfig = require("./web/lighthouserc.cjs");
+
+const config = structuredClone(baseConfig);
+config.ci.collect.staticDistDir = "./web/dist";
+config.ci.upload = {
+  ...config.ci.upload,
+  outputDir: "./web/.lighthouseci",
+};
+
+module.exports = config;
+</file>
+
 <file path="package.json">
 {
   "dependencies": {
@@ -2129,70 +2795,29 @@ web/.astro/
 }
 </file>
 
-<file path="web/.github/workflows/ci.yml">
-name: CI
+<file path="SECURITY.md">
+# Security Policy
 
-on:
-  pull_request:
-  push:
-    branches: ["main", "master"]
+## Reporting a Vulnerability
 
-jobs:
-  web:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
+If you discover a security issue, please notify us at `security@firstspringfieldma.adventistchurch.org` with:
 
-    env:
-      # Ensures canonical URLs + sitemap/robots generation are deterministic in CI
-      PUBLIC_SITE_URL: http://127.0.0.1:4321
+- A short description of the issue.
+- The affected component (e.g., frontend embed, deployment).
+- Steps to reproduce or a proof of concept.
+- Any mitigations you’ve already tried.
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+We aim to respond within 48 hours, keep the report confidential, and coordinate a fix before public disclosure.
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: web/package-lock.json
+## Supported Versions
 
-      - name: Install dependencies
-        run: npm ci
+This repo runs on the latest dependencies pinned in `web/package-lock.json`. Security updates are applied through CI before merging.
 
-      - name: Typecheck
-        run: npm run check
+## Guidance for Contributors
 
-      - name: Build
-        run: npm run build
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: E2E tests
-        run: npm run test:e2e:ci
-
-      - name: Internal link check
-        run: npm run test:links:ci
-
-      - name: Lighthouse CI
-        run: npm run lighthouse:ci
-
-      - name: Upload Lighthouse artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lighthouseci
-          path: web/.lighthouseci
-
-      - name: Upload Playwright report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: web/playwright-report
+- Keep dependencies up to date (`npm update` inside `web/` and rerun `npm run qa`).
+- Avoid committing secrets or tokens; use the GitHub secrets store for private configuration.
+- Document security implications of large changes in both the PR body and `docs/ui-reliability.md` when relevant.
 </file>
 
 <file path="web/src/components/content/ContentCard.astro">
@@ -2928,142 +3553,6 @@ const youtubeHref = hasYouTube ? site.portals.youtubeChannelUrl : "/media/videos
     </div>
   )}
 </section>
-</file>
-
-<file path="web/src/components/ui/Banner.astro">
----
-import Button from "./Button.astro";
-
-type Props = {
-  message: string;
-  ctaLabel?: string;
-  ctaHref?: string;
-};
-
-const { message, ctaLabel, ctaHref } = Astro.props;
----
-
-<section class="banner" role="status">
-  <div class="banner__inner">
-    <div class="banner__msg">{message}</div>
-    {ctaLabel && ctaHref ? (
-      <Button href={ctaHref} variant="ghost" size="sm">{ctaLabel}</Button>
-    ) : null}
-  </div>
-</section>
-
-<style>
-  .banner {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-3);
-    padding: var(--space-3) var(--space-4);
-    background: var(--color-surface-2);
-  }
-
-  .banner__inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    flex-wrap: wrap;
-  }
-
-  .banner__msg {
-    font-weight: 700;
-  }
-</style>
-</file>
-
-<file path="web/src/components/ui/Button.astro">
----
-type Props = {
-  href?: string;
-  external?: boolean;
-  variant?: "primary" | "secondary" | "ghost";
-  size?: "sm" | "md" | "lg";
-};
-
-const {
-  href,
-  external = false,
-  variant = "primary",
-  size = "md"
-} = Astro.props;
-
-const className = `btn btn--${variant} btn--${size}`;
----
-
-{href ? (
-  <a
-    class={className}
-    href={href}
-    target={external ? "_blank" : undefined}
-    rel={external ? "noopener noreferrer" : undefined}
-  >
-    <slot />
-  </a>
-) : (
-  <button class={className} type="button">
-    <slot />
-  </button>
-)}
-
-<style>
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    border-radius: var(--radius-2);
-    text-decoration: none;
-    font-weight: 700;
-    border: 1px solid transparent;
-    cursor: pointer;
-    min-height: var(--target-min);
-  }
-
-  .btn--sm {
-    font-size: var(--font-size-0);
-    padding: var(--space-2) var(--space-3);
-  }
-
-  .btn--md {
-    font-size: var(--font-size-1);
-    padding: var(--space-2) var(--space-4);
-  }
-
-  .btn--lg {
-    font-size: var(--font-size-2);
-    padding: var(--space-3) var(--space-6);
-  }
-
-  .btn--primary {
-    background: var(--color-primary);
-    color: var(--color-white);
-  }
-
-  .btn--primary:hover {
-    background: var(--color-primary-hover);
-  }
-
-  .btn--secondary {
-    background: var(--color-gray-50);
-    border-color: var(--color-border);
-  }
-
-  .btn--secondary:hover {
-    background: var(--color-gray-100);
-  }
-
-  .btn--ghost {
-    background: transparent;
-    border-color: var(--color-border);
-  }
-
-  .btn--ghost:hover {
-    background: var(--color-gray-50);
-  }
-</style>
 </file>
 
 <file path="web/src/components/ui/CardGrid.astro">
@@ -3823,53 +4312,6 @@ test("Search returns results for a common term", async ({ page }) => {
 });
 </file>
 
-<file path="web/tests/e2e/phase-7-a11y.spec.ts">
-import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
-
-const PAGES = [
-  "/",
-  "/connect/plan-a-visit",
-  "/connect/team",
-  "/events",
-  "/resources",
-  "/media",
-  "/search",
-];
-
-for (const path of PAGES) {
-  test(`a11y (axe) - ${path}`, async ({ page }) => {
-    await page.goto(path);
-
-    if (path === "/search") {
-      await page.locator("#site-search input.pagefind-ui__search-input").waitFor();
-
-      // Ensure the Pagefind input has a real label (axe: label-title-only)
-      await page.evaluate(() => {
-        const root = document.getElementById("site-search");
-        const input = root?.querySelector("input.pagefind-ui__search-input") as HTMLInputElement | null;
-        const label = document.getElementById("site-search-label") as HTMLLabelElement | null;
-
-        if (!input || !label) return;
-
-        input.id = "site-search-input";
-        input.setAttribute("aria-labelledby", "site-search-label");
-        input.setAttribute("aria-label", "Search the site");
-        input.removeAttribute("title");
-      });
-    }
-
-    const results = await new AxeBuilder({ page }).analyze();
-
-    const highImpact = results.violations.filter((v) =>
-      ["serious", "critical"].includes(v.impact ?? "")
-    );
-
-    expect(highImpact).toEqual([]);
-  });
-}
-</file>
-
 <file path="web/tests/e2e/phase-7-seo.spec.ts">
 import { expect, test } from "@playwright/test";
 
@@ -3921,14 +4363,6 @@ PUBLIC_CF_ANALYTICS_TOKEN=
   "include": [".astro/types.d.ts", "**/*"],
   "exclude": ["dist"]
 }
-</file>
-
-<file path=".repomixignore">
-*.d.ts
-*.svg
-web/.lighthouseci
-web/.wrangler
-package/
 </file>
 
 <file path="docs/phase-0/source-of-truth.yml">
@@ -4201,6 +4635,174 @@ const secondaryActions = site.quickActions.filter((item) => !primaryActionLabels
     .col {
       min-width: 100%;
     }
+  }
+</style>
+</file>
+
+<file path="web/src/components/ui/Banner.astro">
+---
+import Button from "./Button.astro";
+
+type BannerTone = "info" | "warn";
+
+type Props = {
+  message: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  tone?: BannerTone;
+};
+
+const {
+  message,
+  ctaLabel,
+  ctaHref,
+  tone = "info"
+} = Astro.props as Props;
+
+const toneClass = tone === "warn" ? "banner--warn" : "banner--info";
+---
+
+<section class={`banner ${toneClass}`} role="status">
+  <div class="banner__inner">
+    <div class="banner__msg">{message}</div>
+    {ctaLabel && ctaHref ? (
+      <Button href={ctaHref} variant="ghost" size="sm">{ctaLabel}</Button>
+    ) : null}
+  </div>
+</section>
+
+<style>
+  .banner {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface-2);
+  }
+
+  .banner--info {
+    background: var(--color-surface-2);
+    border-color: var(--color-border);
+  }
+
+  .banner--warn {
+    background: #fff4e3;
+    border-color: #f97316;
+  }
+
+  .banner__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .banner__msg {
+    font-weight: 700;
+  }
+</style>
+</file>
+
+<file path="web/src/components/ui/Button.astro">
+---
+type Variant = "primary" | "secondary" | "ghost";
+type Size = "sm" | "md" | "lg";
+
+type Props = {
+  href?: string;
+  external?: boolean;
+  variant?: Variant;
+  size?: Size;
+  disabled?: boolean;
+  autoFocus?: boolean;
+};
+
+const {
+  href,
+  external = false,
+  variant = "primary",
+  size = "md",
+  disabled = false,
+  autoFocus = false,
+} = Astro.props as Props;
+
+const className = `btn btn--${variant} btn--${size}`;
+---
+
+{href ? (
+  <a
+    class={className}
+    href={href}
+    target={external ? "_blank" : undefined}
+    rel={external ? "noopener noreferrer" : undefined}
+  >
+    <slot />
+  </a>
+) : (
+  <button class={className} type="button" disabled={disabled} autofocus={autoFocus}>
+    <slot />
+  </button>
+)}
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    border-radius: var(--radius-2);
+    text-decoration: none;
+    font-weight: 700;
+    border: 1px solid transparent;
+    cursor: pointer;
+    min-height: var(--target-min);
+  }
+
+  .btn--sm {
+    font-size: var(--font-size-0);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .btn--md {
+    font-size: var(--font-size-1);
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .btn--lg {
+    font-size: var(--font-size-2);
+    padding: var(--space-3) var(--space-6);
+  }
+
+  .btn--primary {
+    background: var(--color-primary);
+    color: var(--color-white);
+  }
+
+  .btn--primary:hover {
+    background: var(--color-primary-hover);
+  }
+
+  .btn--secondary {
+    background: var(--color-gray-50);
+    border-color: var(--color-border);
+  }
+
+  .btn--secondary:hover {
+    background: var(--color-gray-100);
+  }
+
+  .btn--ghost {
+    background: transparent;
+    border-color: var(--color-border);
+  }
+
+  .btn--ghost:hover {
+    background: var(--color-gray-50);
+  }
+
+  .btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
   }
 </style>
 </file>
@@ -5282,67 +5884,60 @@ const bulletins = defineCollection({
 export const collections = { events, ministries, resources, bulletins };
 </file>
 
-<file path="README.md">
-# First Springfield Church Website
+<file path="web/tests/e2e/phase-7-a11y.spec.ts">
+import AxeBuilder from "@axe-core/playwright";
+import { expect, test } from "@playwright/test";
 
-![CI](https://github.com/josuejero/church-website/actions/workflows/web/.github/workflows/ci.yml/badge.svg) ![Lighthouse CI budget enforced](https://img.shields.io/badge/Lighthouse%20CI-budget%20enforced-brightgreen)
+const PAGES = [
+  "/",
+  "/components",
+  "/connect/plan-a-visit",
+  "/connect/team",
+  "/events",
+  "/resources",
+  "/media",
+  "/search",
+];
 
-This repo hosts the new First Springfield SDA site built with Astro and Cloudflare Workers. The focus is on a fast, accessible experience for worshipers, visitors, and church staff who need schedules, ministries, giving links, and helpful content in a heartbeat.
+for (const path of PAGES) {
+  test(`a11y (axe) - ${path}`, async ({ page }) => {
+    await page.goto(path);
 
-**Live demo:** https://firstspringfieldma.adventistchurch.org/
+    if (path === "/search") {
+      await page.locator("#site-search input.pagefind-ui__search-input").waitFor();
 
-## Getting started
+      // Ensure the Pagefind input has a real label (axe: label-title-only)
+      await page.evaluate(() => {
+        const root = document.getElementById("site-search");
+        const input = root?.querySelector("input.pagefind-ui__search-input") as HTMLInputElement | null;
+        const label = document.getElementById("site-search-label") as HTMLLabelElement | null;
 
-1. `cd web`
-2. `npm install`
-3. `npm run dev`
+        if (!input || !label) return;
 
-The remaining scripts live inside `web/package.json`. `npm run build` produces a static output in `web/dist`, and `npm run preview` lets you inspect the production bundle locally before deployment.
+        input.id = "site-search-input";
+        input.setAttribute("aria-labelledby", "site-search-label");
+        input.setAttribute("aria-label", "Search the site");
+        input.removeAttribute("title");
+      });
+    }
 
-## Local development
+    const results = await new AxeBuilder({ page }).analyze();
 
-| Command | Purpose |
-| --- | --- |
-| `cd web && npm install` | Install dependencies and make the Astro scripts available. |
-| `cd web && npm run dev` | Start the Astro dev server at `localhost:4321`. |
-| `cd web && npm run qa` | Run `astro check`, Playwright E2E, Linkinator, and Lighthouse locally. |
-| `cd web && npm run format` | Format Astro/Svelte files with Prettier + plugins. |
+    const highImpact = results.violations.filter((v) =>
+      ["serious", "critical"].includes(v.impact ?? "")
+    );
 
-## Tech highlights
+    expect(highImpact).toEqual([]);
+  });
+}
+</file>
 
-- Astro + Cloudflare Workers deliver content-first rendering with partial hydration where it makes the most sense.
-- Tokens govern spacing, typography, color, and elevation so the component library stays cohesive.
-- Accessibility-first surface rules (focus-visible, skip link, 44px tap targets, semantic headings) keep the site welcoming to everyone.
-- A smoke suite (Playwright E2E, Linkinator links, Lighthouse CI) keeps regressions off the branch.
-- Performance, accessibility, best practices, and SEO budgets run inside CI so builds never slip below the target thresholds.
-
-## Engineering highlights
-
-- Design tokens and the shared component library keep layout rhythm consistent as new stories land.
-- The cross-engine smoke suite stitches together Playwright, link checking, and Lighthouse to prove the experience in multiple browsers.
-- CI enforces the lightweight Lighthouse budget plus Playwright/linkinator updates on every push.
-
-## Performance budget (Lighthouse CI)
-
-![Latest Lighthouse CI run](docs/assets/lighthouse-latest.png)
-
-We enforce a small Lighthouse CI budget in order to catch “death by a thousand cuts” (unoptimized images, heavy scripts, accidental layout shifts) before it reaches production:
-- Performance score must stay at or above 0.90.
-- Accessibility score must stay at or above 0.95.
-- Best Practices score must stay at or above 0.95.
-- SEO score must stay at or above 0.95.
-
-Lighthouse category assertions operate on a 0–1 scale in CI configs, so 0.90 corresponds to “90/100 style” expectations. Config: `web/lighthouserc.cjs`. Run locally from the `web/` folder via `npm run lighthouse`.
-
-## Supporting docs
-
-- [Design handoff](docs/ui-handoff.md)
-- [Web developer README](web/README.md)
-
-## Troubleshooting
-
-- If Playwright fails locally, run `npx playwright install --with-deps` and consult Playwright’s docs on CI workflows/setup patterns.
-- If Lighthouse CI fails, inspect large images or heavyweight scripts, optimize them, and rerun `npm run lighthouse`; budgets guard performance, accessibility, best practices, and SEO.
+<file path=".repomixignore">
+*.d.ts
+*.svg
+web/.lighthouseci
+web/.wrangler
+package/
 </file>
 
 <file path="web/src/components/Header.astro">
@@ -5820,43 +6415,79 @@ export default defineConfig({
 });
 </file>
 
-<file path="web/playwright.config.ts">
-import { defineConfig, devices } from '@playwright/test';
+<file path="README.md">
+# First Springfield Church Website
 
-const HOST = '127.0.0.1';
-const PORT = 4321;
-const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://${HOST}:${PORT}/`;
+![CI](https://github.com/josuejero/church-website/actions/workflows/web/.github/workflows/ci.yml/badge.svg) ![Lighthouse CI budget enforced](https://img.shields.io/badge/Lighthouse%20CI-budget%20enforced-brightgreen)
 
-export default defineConfig({
-  testDir: './tests/e2e',
-  fullyParallel: true,
-  use: {
-    baseURL: BASE_URL,
-    trace: 'retain-on-failure',
-  },
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox-smoke',
-      use: { ...devices['Desktop Firefox'] },
-      testMatch: /.*smoke\.spec\.ts/,
-    },
-    {
-      name: 'webkit-smoke',
-      use: { ...devices['Desktop Safari'] },
-      testMatch: /.*smoke\.spec\.ts/,
-    },
-  ],
-  webServer: {
-    command: `npm run build && npx wrangler dev --local --ip ${HOST} --port ${PORT} --log-level error`,
-    url: BASE_URL,
-    timeout: 120 * 1000,
-    reuseExistingServer: !process.env.CI,
-  },
-});
+This repo hosts the new First Springfield SDA site built with Astro and Cloudflare Workers. The focus is on a fast, accessible experience for worshipers, visitors, and church staff who need schedules, ministries, giving links, and helpful content in a heartbeat.
+
+**Live demo:** https://firstspringfieldma.adventistchurch.org/
+
+## Why this project is a UI-intern-quality repo
+
+- **UI from spec:** the designer handoff lives in [docs/ui-handoff.md](docs/ui-handoff.md), showing how colors, spacing, and layout principles translate into code.
+- **Cross-browser smoke:** Playwright runs the Chromium full suite plus Firefox/WebKit smoke tests to prove it works everywhere.
+- **Accessibility:** axe scans are part of the CI workflow so every push guards against regressions.
+- **Performance:** Lighthouse CI budgets are enforced to keep the experience fast.
+- **Cross-device:** Playwright `mobile-smoke` project plus device emulation validate the UI at representative mobile viewports.
+
+## Getting started
+
+1. `cd web`
+2. `npm install`
+3. `npm run dev`
+
+The remaining scripts live inside `web/package.json`. `npm run build` produces a static output in `web/dist`, and `npm run preview` lets you inspect the production bundle locally before deployment.
+
+## Local development
+
+| Command | Purpose |
+| --- | --- |
+| `cd web && npm install` | Install dependencies and make the Astro scripts available. |
+| `cd web && npm run dev` | Start the Astro dev server at `localhost:4321`. |
+| `cd web && npm run qa` | Run `astro check`, Playwright E2E, Linkinator, and Lighthouse locally. |
+| `cd web && npm run format` | Format Astro/Svelte files with Prettier + plugins. |
+
+## Tech highlights
+
+- Astro + Cloudflare Workers deliver content-first rendering with partial hydration where it makes the most sense.
+- Tokens govern spacing, typography, color, and elevation so the component library stays cohesive.
+- Accessibility-first surface rules (focus-visible, skip link, 44px tap targets, semantic headings) keep the site welcoming to everyone.
+- Accessibility commitment: We follow WCAG 2.2 intent—44px tap targets, strong focus indicators, meaningful heading hierarchy, and keyboard navigation via the skip link so the UI feels reliable on every device (`web/src/styles/a11y.css`, `web/tests/e2e/phase-7-a11y.spec.ts`).
+- A smoke suite (Playwright E2E, Linkinator links, Lighthouse CI) keeps regressions off the branch.
+- Performance, accessibility, best practices, and SEO budgets run inside CI so builds never slip below the target thresholds.
+
+## Engineering highlights
+
+- Design tokens and the shared component library keep layout rhythm consistent as new stories land.
+- The cross-engine smoke suite stitches together Playwright, link checking, and Lighthouse to prove the experience in multiple browsers.
+- CI enforces the lightweight Lighthouse budget plus Playwright/linkinator updates on every push.
+
+## Performance budget (Lighthouse CI)
+
+![Latest Lighthouse CI run](docs/assets/lighthouse-latest.png)
+
+We enforce a small Lighthouse CI budget in order to catch “death by a thousand cuts” (unoptimized images, heavy scripts, accidental layout shifts) before it reaches production:
+- The CI workflow now runs `treosh/lighthouse-ci-action`, uploads `web/.lighthouseci` as the `lighthouseci` artifact, and posts a PR comment (`tag: lighthouse-ci`) that links to the temporary HTML report so reviewers see the latest scores without rerunning locally.
+- Performance score must stay at or above 0.90.
+- Accessibility score must stay at or above 0.95.
+- Best Practices score must stay at or above 0.95.
+- SEO score must stay at or above 0.95.
+
+Lighthouse category assertions operate on a 0–1 scale in CI configs, so 0.90 corresponds to “90/100 style” expectations. Config: `web/lighthouserc.cjs`. Run locally from the `web/` folder via `npm run lighthouse`.
+
+## Supporting docs
+
+- [Design handoff](docs/ui-handoff.md)
+- [Web developer README](web/README.md)
+- [Component guide (living style guide)](/components)
+- [Community health docs](CONTRIBUTING.md) _(includes CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, LICENSE)_
+
+## Troubleshooting
+
+- If Playwright fails locally, run `npx playwright install --with-deps` and consult Playwright’s docs on CI workflows/setup patterns.
+- If Lighthouse CI fails, inspect large images or heavyweight scripts, optimize them, and rerun `npm run lighthouse`; budgets guard performance, accessibility, best practices, and SEO.
 </file>
 
 <file path="web/src/components/Footer.astro">
@@ -6114,6 +6745,50 @@ const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAd
     </section>
   </div>
 </BaseLayout>
+</file>
+
+<file path="web/playwright.config.ts">
+import { defineConfig, devices } from '@playwright/test';
+
+const HOST = '127.0.0.1';
+const PORT = 4321;
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://${HOST}:${PORT}/`;
+
+export default defineConfig({
+  testDir: './tests/e2e',
+  fullyParallel: true,
+  use: {
+    baseURL: BASE_URL,
+    trace: 'retain-on-failure',
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox-smoke',
+      use: { ...devices['Desktop Firefox'] },
+      testMatch: /.*smoke\.spec\.ts/,
+    },
+    {
+      name: 'webkit-smoke',
+      use: { ...devices['Desktop Safari'] },
+      testMatch: /.*smoke\.spec\.ts/,
+    },
+    {
+      name: 'mobile-smoke',
+      use: { ...devices['iPhone 13'] },
+      testMatch: /.*smoke\.spec\.ts/,
+    },
+  ],
+  webServer: {
+    command: `npm run build && npx wrangler dev --local --ip ${HOST} --port ${PORT} --log-level error`,
+    url: BASE_URL,
+    timeout: 120 * 1000,
+    reuseExistingServer: !process.env.CI,
+  },
+});
 </file>
 
 <file path="web/package.json">

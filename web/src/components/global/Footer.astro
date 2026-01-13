@@ -21,13 +21,9 @@ const primaryActionLabels = ["Watch Live", "Give"];
 const isDefined = <T,>(value: T | undefined | null): value is T => Boolean(value);
 
 const findNav = (label: string) => site.nav.find((item) => item.label === label);
-const findAction = (label: string) => site.quickActions.find((item) => item.label === label);
-
 const primaryLinks = [
   findNav("Visit"),
-  findNav("Contact"),
-  findAction("Watch Live"),
-  findAction("Give")
+  findNav("Contact")
 ].filter(isDefined);
 
 const secondaryNav = site.nav.filter((item) => !primaryNavLabels.includes(item.label));

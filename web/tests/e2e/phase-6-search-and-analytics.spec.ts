@@ -2,7 +2,9 @@ import { expect, test } from "playwright/test";
 
 test("Search page loads", async ({ page }) => {
   await page.goto("/search");
-  await expect(page.getByRole("heading", { name: "Search", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Search", exact: true }),
+  ).toBeVisible();
 
   // Astro Pagefind <Search id="site-search" ... /> should render an input inside this container.
   const input = page.locator("#site-search input");

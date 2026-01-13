@@ -1,16 +1,16 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Button from "../components/ui/Button.astro";
+import Button, { type Size, type Variant } from "../components/ui/Button.astro";
 import Banner from "../components/ui/Banner.astro";
 import Card from "../components/ui/Card.astro";
 
-const buttonVariants = [
+const buttonVariants: { label: string; variant: Variant }[] = [
   { label: "Primary", variant: "primary" },
   { label: "Secondary", variant: "secondary" },
   { label: "Ghost", variant: "ghost" },
 ];
 
-const buttonSizes = [
+const buttonSizes: { label: string; size: Size }[] = [
   { label: "Small", size: "sm" },
   { label: "Medium (default)", size: "md" },
   { label: "Large", size: "lg" },

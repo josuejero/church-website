@@ -4,6 +4,7 @@ node_modules/
 # Astro
 web/dist/
 web/.astro/
+web/.wrangler/tmp/
 
 # OS
 .DS_Store

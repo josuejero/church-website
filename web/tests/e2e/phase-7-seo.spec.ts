@@ -7,7 +7,7 @@ const PAGES: Array<{ path: string; robots: string }> = [
   { path: "/events", robots: "index,follow" },
   { path: "/resources", robots: "index,follow" },
   { path: "/media", robots: "index,follow" },
-  { path: "/search", robots: "noindex,follow" }
+  { path: "/search", robots: "noindex,follow" },
 ];
 
 for (const { path, robots } of PAGES) {
@@ -16,18 +16,24 @@ for (const { path, robots } of PAGES) {
 
     await expect(page).toHaveTitle(/.+/);
 
-    await expect(page.locator('meta[name="description"]'))
-      .toHaveAttribute("content", /.+/);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      "content",
+      /.+/,
+    );
 
     const canonical = page.locator('link[rel="canonical"]');
     const canonicalHref = await canonical.getAttribute("href");
     expect(canonicalHref).toBeTruthy();
     expect(canonicalHref!).toContain(path);
 
-    await expect(page.locator('meta[property="og:title"]'))
-      .toHaveAttribute("content", /.+/);
+    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+      "content",
+      /.+/,
+    );
 
-    await expect(page.locator('meta[name="robots"]'))
-      .toHaveAttribute("content", robots);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      robots,
+    );
   });
 }

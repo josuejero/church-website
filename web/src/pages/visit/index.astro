@@ -1,0 +1,12 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PlanVisitContent from "../../components/PlanVisitContent.astro";
+import { site } from "../../data/site";
+---
+
+<BaseLayout
+  title="Plan a Visit"
+  description={`Service times, directions, parking, and what to expect when visiting ${site.name}.`}
+>
+  <PlanVisitContent />
+</BaseLayout>

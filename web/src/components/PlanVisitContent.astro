@@ -1,0 +1,33 @@
+---
+import Schedule from "./ui/Schedule.astro";
+import { site } from "../data/site";
+---
+
+<div class="stack">
+  <h1>Plan a Visit</h1>
+
+  <Schedule title="Service Times" items={site.schedule} />
+
+  <section class="card stack">
+    <h2>Directions</h2>
+    <p class="muted">
+      Address:
+      <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">
+        {site.contact.address}
+      </a>
+    </p>
+
+    <ul class="muted">
+      {site.visit.directions.map((direction) => (
+        <li>{direction}</li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="card stack">
+    <h2>What to expect</h2>
+    <p class="muted">{site.visit.languageNote}</p>
+    <p class="muted">{site.visit.parkingNote}</p>
+    <p class="muted">{site.visit.accessibilityNote}</p>
+  </section>
+</div>

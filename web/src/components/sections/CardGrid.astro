@@ -21,10 +21,10 @@ const { title, subtitle, cards, columns, columnsMin = 240 } = Astro.props;
 
 <section class="stack">
   {(title || subtitle) && (
-    <header class="stack--tight">
+    <div class="stack--tight">
       {title && <h2>{title}</h2>}
       {subtitle && <p class="muted">{subtitle}</p>}
-    </header>
+    </div>
   )}
 
   <Grid columns={columns} columnsMin={columnsMin}>

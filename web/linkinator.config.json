@@ -4,9 +4,5 @@
   "checkFragments": true,
   "timeout": 30000,
   "concurrency": 50,
-  "skip": [
-    "^mailto:",
-    "^tel:",
-    "^https?://"
-  ]
+  "skip": ["^mailto:", "^tel:", "^https?://"]
 }

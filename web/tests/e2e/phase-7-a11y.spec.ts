@@ -17,13 +17,19 @@ for (const path of PAGES) {
     await page.goto(path);
 
     if (path === "/search") {
-      await page.locator("#site-search input.pagefind-ui__search-input").waitFor();
+      await page
+        .locator("#site-search input.pagefind-ui__search-input")
+        .waitFor();
 
       // Ensure the Pagefind input has a real label (axe: label-title-only)
       await page.evaluate(() => {
         const root = document.getElementById("site-search");
-        const input = root?.querySelector("input.pagefind-ui__search-input") as HTMLInputElement | null;
-        const label = document.getElementById("site-search-label") as HTMLLabelElement | null;
+        const input = root?.querySelector(
+          "input.pagefind-ui__search-input",
+        ) as HTMLInputElement | null;
+        const label = document.getElementById(
+          "site-search-label",
+        ) as HTMLLabelElement | null;
 
         if (!input || !label) return;
 
@@ -37,7 +43,7 @@ for (const path of PAGES) {
     const results = await new AxeBuilder({ page }).analyze();
 
     const highImpact = results.violations.filter((v) =>
-      ["serious", "critical"].includes(v.impact ?? "")
+      ["serious", "critical"].includes(v.impact ?? ""),
     );
 
     expect(highImpact).toEqual([]);

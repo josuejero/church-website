@@ -46,19 +46,20 @@ const TIME_ZONE = "America/New_York";
 
 const ADDRESS_LINE = "1118 Sumner Ave, Springfield, MA 01118-2154";
 const MAPS_URL =
-  "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(ADDRESS_LINE);
+  "https://www.google.com/maps/dir/?api=1&destination=" +
+  encodeURIComponent(ADDRESS_LINE);
 
 const VISIT_NOTES = {
   directions: [
     "From I-91: take Exit 6 toward Springfield, then follow signs toward Sumner Ave.",
-    "From I-90: take Exit 5, follow signs toward Springfield and take Exit 5, then follow local signs to Sumner Ave."
+    "From I-90: take Exit 5, follow signs toward Springfield and take Exit 5, then follow local signs to Sumner Ave.",
   ],
   languageNote:
     "Services are primarily in English. If you need Spanish support, please contact us and we will help.",
   parkingNote:
     "Street parking is available near the church. Please arrive a few minutes early to find a spot.",
   accessibilityNote:
-    "If you need accessibility accommodations, please contact us ahead of time so we can assist."
+    "If you need accessibility accommodations, please contact us ahead of time so we can assist.",
 };
 
 const MISSION = {
@@ -67,7 +68,7 @@ const MISSION = {
   method:
     "Guided by the Bible and the Holy Spirit, Seventh-day Adventists pursue the mission of making disciples through Christ-like living, healing, serving, proclaiming, teaching, and training.",
   vision:
-    "In harmony with Bible revelation, Seventh-day Adventists see as the climax of God's plan the restoration of all His creation to full harmony with His perfect will and righteousness."
+    "In harmony with Bible revelation, Seventh-day Adventists see as the climax of God's plan the restoration of all His creation to full harmony with His perfect will and righteousness.",
 };
 
 // Single source of truth for public links + service times
@@ -85,13 +86,13 @@ const portals: PortalLinks = {
   contactFormUrl: "",
   volunteerFormUrl: "",
   // Official AdventistChurchConnect site (currently under construction)
-  oldWebsiteUrl: "https://firstspringfieldma.adventistchurch.org/"
+  oldWebsiteUrl: "https://firstspringfieldma.adventistchurch.org/",
 };
 
 const weekSchedule: ScheduleItem[] = [
   { label: "Sabbath School", day: "Saturday", time: "10:00 AM" },
   { label: "Worship", day: "Saturday", time: "11:15 AM" },
-  { label: "Prayer Meeting", day: "Wednesday", time: "7:00 PM" }
+  { label: "Prayer Meeting", day: "Wednesday", time: "7:00 PM" },
 ];
 
 const leadershipTeam: TeamMember[] = [
@@ -99,18 +100,27 @@ const leadershipTeam: TeamMember[] = [
   { role: "Head Elder", name: "Church Office", email: PUBLIC_EMAIL },
   { role: "Head Deacon", name: "Church Office", email: PUBLIC_EMAIL },
   { role: "Church Clerk", name: "Church Office", email: PUBLIC_EMAIL },
-  { role: "Treasurer", name: "Church Office", email: PUBLIC_EMAIL }
+  { role: "Treasurer", name: "Church Office", email: PUBLIC_EMAIL },
 ];
 
 const ministryLeads: TeamMember[] = [
-  { role: "Children’s Ministry", name: "Children’s Ministry Team", email: PUBLIC_EMAIL },
+  {
+    role: "Children’s Ministry",
+    name: "Children’s Ministry Team",
+    email: PUBLIC_EMAIL,
+  },
   { role: "Youth Ministry", name: "Youth Ministry Team", email: PUBLIC_EMAIL },
-  { role: "Women’s Ministry", name: "Women’s Ministry Team", email: PUBLIC_EMAIL },
+  {
+    role: "Women’s Ministry",
+    name: "Women’s Ministry Team",
+    email: PUBLIC_EMAIL,
+  },
   { role: "Men’s Ministry", name: "Men’s Ministry Team", email: PUBLIC_EMAIL },
-  { role: "Communications / Media", name: "Media Team", email: PUBLIC_EMAIL }
+  { role: "Communications / Media", name: "Media Team", email: PUBLIC_EMAIL },
 ];
 
-const hasVolunteerForm = portals.volunteerFormUrl && portals.volunteerFormUrl !== "TBD";
+const hasVolunteerForm =
+  portals.volunteerFormUrl && portals.volunteerFormUrl !== "TBD";
 const hasPrayerForm = portals.prayerFormUrl && portals.prayerFormUrl !== "TBD";
 
 const contactTopics: ContactTopic[] = [
@@ -118,13 +128,13 @@ const contactTopics: ContactTopic[] = [
     topic: "First-time visit questions",
     contactRole: "Greeter / Hospitality",
     email: PUBLIC_EMAIL,
-    note: "Happy to answer questions about parking, what to expect, and children’s programs."
+    note: "Happy to answer questions about parking, what to expect, and children’s programs.",
   },
   {
     topic: "Bible study",
     contactRole: "Pastor",
     email: PUBLIC_EMAIL,
-    note: "We can connect you with a study group or set up a visit."
+    note: "We can connect you with a study group or set up a visit.",
   },
   {
     topic: "Prayer Request",
@@ -132,13 +142,13 @@ const contactTopics: ContactTopic[] = [
     email: PUBLIC_EMAIL,
     href: hasPrayerForm ? portals.prayerFormUrl : "/connect/contact",
     hrefLabel: hasPrayerForm ? "Open prayer form" : "Contact us",
-    external: hasPrayerForm ? true : false
+    external: hasPrayerForm ? true : false,
   },
   {
     topic: "Need help choosing a ministry",
     contactRole: "Pastor",
     email: PUBLIC_EMAIL,
-    note: "If you are unsure who to contact, start here."
+    note: "If you are unsure who to contact, start here.",
   },
   {
     topic: "Volunteering",
@@ -146,15 +156,15 @@ const contactTopics: ContactTopic[] = [
     email: PUBLIC_EMAIL,
     href: hasVolunteerForm ? portals.volunteerFormUrl : "/connect/contact",
     hrefLabel: hasVolunteerForm ? "Open volunteer form" : "Contact us",
-    external: hasVolunteerForm ? true : false
+    external: hasVolunteerForm ? true : false,
   },
   {
     topic: "Giving questions",
     contactRole: "Treasurer",
     email: PUBLIC_EMAIL,
     href: "/give",
-    hrefLabel: "Go to giving page"
-  }
+    hrefLabel: "Go to giving page",
+  },
 ];
 
 // Visitor-facing nav (matches real routes and keeps the header feeling “finished”)
@@ -165,7 +175,7 @@ const nav: NavItem[] = [
   { label: "Our Team", href: "/connect/team" },
   { label: "Ministries", href: "/ministries" },
   { label: "Events", href: "/events" },
-  { label: "Privacy", href: "/privacy" }
+  { label: "Privacy", href: "/privacy" },
 ];
 
 // “Always available” actions (show as buttons in the header)
@@ -174,13 +184,17 @@ const quickActions: NavItem[] = [
   { label: "Give", href: "/give" },
   { label: "Prayer Request", href: "/connect/prayer" },
   { label: "Bulletins", href: "/resources/bulletins" },
-  { label: "Volunteer", href: "/serve" }
+  { label: "Volunteer", href: "/serve" },
 ];
 
 // Social links used in the legacy footer component
 const social: NavItem[] = [];
 if (portals.youtubeChannelUrl && portals.youtubeChannelUrl !== "TBD") {
-  social.push({ label: "YouTube", href: portals.youtubeChannelUrl, external: true });
+  social.push({
+    label: "YouTube",
+    href: portals.youtubeChannelUrl,
+    external: true,
+  });
 }
 if (portals.facebookUrl && portals.facebookUrl !== "TBD") {
   social.push({ label: "Facebook", href: portals.facebookUrl, external: true });
@@ -197,7 +211,7 @@ export const site = {
     street: "1118 Sumner Ave",
     city: "Springfield",
     state: "MA",
-    zip: "01118-2154"
+    zip: "01118-2154",
   },
   contact: {
     email: PUBLIC_EMAIL,
@@ -207,13 +221,13 @@ export const site = {
     address: ADDRESS_LINE,
     mapsUrl: MAPS_URL,
     // Leave blank unless the church asks for a distinct mailing address.
-    mailingAddress: ""
+    mailingAddress: "",
   },
 
   map: {
     embedSrc:
       "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2961.4635291201326!2d-72.5766111!3d42.1059871!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x3c9b7d2fd5f3b6f2!2sFirst%20Springfield%20Seventh-day%20Adventist%20Church!5e0!3m2!1sen!2sus!4v0000000000000",
-    directions: VISIT_NOTES.directions
+    directions: VISIT_NOTES.directions,
   },
 
   visit: VISIT_NOTES,
@@ -223,8 +237,8 @@ export const site = {
     leadership: [
       { name: PASTOR_NAME, role: "Pastor", email: PUBLIC_EMAIL },
       { name: "Head Elder", role: "Elder", email: PUBLIC_EMAIL },
-      { name: "Church Clerk", role: "Clerk", email: PUBLIC_EMAIL }
-    ]
+      { name: "Church Clerk", role: "Clerk", email: PUBLIC_EMAIL },
+    ],
   },
 
   schedule: weekSchedule,
@@ -241,5 +255,5 @@ export const site = {
   ministryLeads,
 
   // Contact page topics
-  contactTopics
+  contactTopics,
 };

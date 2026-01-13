@@ -15,7 +15,14 @@ body {
 }
 
 body {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
   font-size: var(--font-size-1);
   line-height: 1.6;
   color: var(--color-text);
@@ -60,7 +67,9 @@ summary {
   text-underline-offset: 0.2em;
   text-decoration-skip-ink: auto;
   font-weight: 600;
-  transition: color 120ms ease, text-decoration-thickness 120ms ease;
+  transition:
+    color 120ms ease,
+    text-decoration-thickness 120ms ease;
 }
 
 .link:hover {
@@ -108,7 +117,10 @@ summary:focus-visible {
   border-radius: var(--radius-4);
   padding: var(--space-6);
   box-shadow: var(--shadow-1);
-  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
 }
 
 .card--link {
