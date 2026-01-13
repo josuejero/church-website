@@ -84,6 +84,7 @@ web/
     bulletins/
       2025-12-13.pdf
       2025-12-20.pdf
+      2026-01-03.pdf
     _headers
     .assetsignore
   src/
@@ -124,6 +125,7 @@ web/
       bulletins/
         2025-12-13.md
         2025-12-20.md
+        2026-01-03.md
       events/
         sabbath-service.md
       ministries/
@@ -205,6 +207,7 @@ web/
       tokens.css
     content.config.ts
   test-results/
+    .last-run 2.json
     .last-run.json
   tests/
     e2e/
@@ -217,6 +220,8 @@ web/
   .env.example
   .gitignore
   astro.config.mjs
+  hast-util-to-html-8.0.4.tgz
+  hast-util-to-html-9.0.5.tgz
   lighthouserc.cjs
   linkinator.config.json
   package.json
@@ -233,6 +238,13 @@ package.json
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="web/test-results/.last-run 2.json">
+{
+  "status": "passed",
+  "failedTests": []
+}
+</file>
 
 <file path=".github/ISSUE_TEMPLATE/content-update.md">
 ---
@@ -1411,6 +1423,15 @@ title: "Sabbath Bulletin"
 date: "2025-12-20"
 summary: "Order of service, announcements, and weekly schedule."
 pdfUrl: "/bulletins/2025-12-20.pdf"
+---
+</file>
+
+<file path="web/src/content/bulletins/2026-01-03.md">
+---
+title: "Sabbath Bulletin"
+date: "2026-01-03"
+summary: "Order of service, announcements, and weekly schedule."
+pdfUrl: "/bulletins/2026-01-03.pdf"
 ---
 </file>
 
