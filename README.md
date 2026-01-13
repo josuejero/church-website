@@ -2,34 +2,59 @@
 
 ![CI](https://github.com/josuejero/church-website/actions/workflows/web/.github/workflows/ci.yml/badge.svg) ![Lighthouse CI budget enforced](https://img.shields.io/badge/Lighthouse%20CI-budget%20enforced-brightgreen)
 
-First Springfield SDA’s public site rebuilt with Astro + Cloudflare Workers, focused on worshipers, visitors, and church staff who need a fast, accessible experience to find ministries, schedules, and giving info.
+This repo hosts the new First Springfield SDA site built with Astro and Cloudflare Workers. The focus is on a fast, accessible experience for worshipers, visitors, and church staff who need schedules, ministries, giving links, and helpful content in a heartbeat.
 
 **Live demo:** https://firstspringfieldma.adventistchurch.org/
 
-### Tech highlights
-- Astro + Cloudflare Workers deliver content-first rendering with partial hydration where it matters.
-- Tokens power spacing, typography, color, and elevation so the component library stays cohesive.
-- Accessibility-first surface rules (focus-visible, skip link, 44px tap targets, semantic headings) keep the site welcoming to everyone.
-- Smoke suite (Playwright E2E, Linkinator links, Lighthouse CI) keeps regressions off the branch.
-- Performance, accessibility, best practices, and SEO budgets live inside CI so builds never slip below 0.90/0.95 thresholds.
+## Getting started
 
-### Engineering highlights
-- Design tokens and the shared component library keep layout rhythm consistent as new stories land.
-- Cross-engine smoke suite stitches together Playwright, link checking, and Lighthouse to prove the experience in multiple browsers.
-- CI enforces the lightweight Lighthouse budget plus Playwright/linkinator checks on every push.
+1. `cd web`
+2. `npm install`
+3. `npm run dev`
 
-### Local development
+The remaining scripts live inside `web/package.json`. `npm run build` produces a static output in `web/dist`, and `npm run preview` lets you inspect the production bundle locally before deployment.
+
+## Local development
+
 | Command | Purpose |
 | --- | --- |
-| `cd web && npm install` | Install dependencies and make scripts available. |
+| `cd web && npm install` | Install dependencies and make the Astro scripts available. |
 | `cd web && npm run dev` | Start the Astro dev server at `localhost:4321`. |
 | `cd web && npm run qa` | Run `astro check`, Playwright E2E, Linkinator, and Lighthouse locally. |
 | `cd web && npm run format` | Format Astro/Svelte files with Prettier + plugins. |
 
-### Supporting docs
+## Tech highlights
+
+- Astro + Cloudflare Workers deliver content-first rendering with partial hydration where it makes the most sense.
+- Tokens govern spacing, typography, color, and elevation so the component library stays cohesive.
+- Accessibility-first surface rules (focus-visible, skip link, 44px tap targets, semantic headings) keep the site welcoming to everyone.
+- A smoke suite (Playwright E2E, Linkinator links, Lighthouse CI) keeps regressions off the branch.
+- Performance, accessibility, best practices, and SEO budgets run inside CI so builds never slip below the target thresholds.
+
+## Engineering highlights
+
+- Design tokens and the shared component library keep layout rhythm consistent as new stories land.
+- The cross-engine smoke suite stitches together Playwright, link checking, and Lighthouse to prove the experience in multiple browsers.
+- CI enforces the lightweight Lighthouse budget plus Playwright/linkinator updates on every push.
+
+## Performance budget (Lighthouse CI)
+
+![Latest Lighthouse CI run](docs/assets/lighthouse-latest.png)
+
+We enforce a small Lighthouse CI budget in order to catch “death by a thousand cuts” (unoptimized images, heavy scripts, accidental layout shifts) before it reaches production:
+- Performance score must stay at or above 0.90.
+- Accessibility score must stay at or above 0.95.
+- Best Practices score must stay at or above 0.95.
+- SEO score must stay at or above 0.95.
+
+Lighthouse category assertions operate on a 0–1 scale in CI configs, so 0.90 corresponds to “90/100 style” expectations. Config: `web/lighthouserc.cjs`. Run locally from the `web/` folder via `npm run lighthouse`.
+
+## Supporting docs
+
 - [Design handoff](docs/ui-handoff.md)
 - [Web developer README](web/README.md)
 
-### Troubleshooting
+## Troubleshooting
+
 - If Playwright fails locally, run `npx playwright install --with-deps` and consult Playwright’s docs on CI workflows/setup patterns.
 - If Lighthouse CI fails, inspect large images or heavyweight scripts, optimize them, and rerun `npm run lighthouse`; budgets guard performance, accessibility, best practices, and SEO.
