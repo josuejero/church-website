@@ -1,6 +1,6 @@
 # First Springfield Church Website
 
-![CI](https://github.com/josuejero/church-website/actions/workflows/web/.github/workflows/ci.yml/badge.svg) ![Lighthouse CI budget enforced](https://img.shields.io/badge/Lighthouse%20CI-budget%20enforced-brightgreen)
+![CI](https://github.com/josuejero/church-website/actions/workflows/ci.yml/badge.svg) ![Lighthouse CI budget enforced](https://img.shields.io/badge/Lighthouse%20CI-budget%20enforced-brightgreen) [![Live App](https://img.shields.io/badge/app-live-brightgreen.svg)](https://church-website.josuejero.workers.dev/)
 
 This repo hosts the new First Springfield SDA site built with Astro and Cloudflare Workers. The focus is on a fast, accessible experience for worshipers, visitors, and church staff who need schedules, ministries, giving links, and helpful content in a heartbeat.
 
