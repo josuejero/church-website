@@ -4,7 +4,7 @@
 
 This repo hosts the new First Springfield SDA site built with Astro and Cloudflare Workers. The focus is on a fast, accessible experience for worshipers, visitors, and church staff who need schedules, ministries, giving links, and helpful content in a heartbeat.
 
-**Live demo:** https://firstspringfieldma.adventistchurch.org/
+**Live demo:** https://church-website.josuejero.workers.dev/
 
 ## Why this project is a UI-intern-quality repo
 

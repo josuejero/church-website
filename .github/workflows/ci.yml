@@ -91,7 +91,7 @@ jobs:
             core.setOutput("body", body);
         env:
           MANIFEST_JSON: ${{ steps.lighthouse.outputs.manifest }}
-          LINKS_JSON: ${{ steps.lighthouse.outputs.links || "{}" }}
+          LINKS_JSON: ${{ steps.lighthouse.outputs.links }}
 
       - name: Comment Lighthouse results
         if: github.event_name == "pull_request"
