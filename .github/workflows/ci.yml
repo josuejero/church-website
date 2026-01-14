@@ -54,7 +54,7 @@ jobs:
           uploadArtifacts: false
 
       - name: Build Lighthouse summary
-        if: github.event_name == "pull_request"
+        if: github.event_name == 'pull_request'
         id: lhci-summary
         uses: actions/github-script@v8
         with:
@@ -94,7 +94,7 @@ jobs:
           LINKS_JSON: ${{ steps.lighthouse.outputs.links }}
 
       - name: Comment Lighthouse results
-        if: github.event_name == "pull_request"
+        if: github.event_name == 'pull_request'
         uses: peter-evans/create-or-update-comment@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
