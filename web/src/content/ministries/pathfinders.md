@@ -1,31 +1,31 @@
 ---
 title: "Pathfinders & Adventurers"
-summary: "Children, families, and teens grow in faith and service through the Adventurers and Pathfinders clubs."
+summary: "The Seventh-day Adventist Church’s Adventurers and Pathfinders Clubs are Christ-centered programs designed to nurture children and youth in their spiritual, mental, physical, and social development."
 leaderName: "Daunette Lemard-Reid"
 leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "First and Third Sabbath of each month, 3:00 PM – 5:00 PM"
+meetingTime: "First and Third Sabbath of each month, from 3:00 PM – 5:00 PM."
 category: "Children & Youth"
 tags: ["children", "teens", "family", "discipleship", "adventure"]
 ---
 
 ## Overview
 
-Pathfinders and Adventurers form one ministry that centers on Christlike discipleship, fun, and service. Adventurers gives younger children and their families a chance to learn Bible stories, character development, and community service, while Pathfinders challenges older youth to grow as leaders, serve the campus, and step confidently into mission opportunities.
+“The Seventh-day Adventist Church’s Adventurers and Pathfinders Clubs are Christ-centered programs designed to nurture children and youth in their spiritual, mental, physical, and social development.”
+
+Pathfinders & Adventurers Club Director: Daunette Lemard-Reid
+
+Meeting Time: First and Third Sabbath of each month, from 3:00 PM – 5:00 PM.
 
 ## Adventurers
 
-Adventurers helps kids grow in faith, friendships, and family involvement through hands-on activities, badges, and shared worship. Parents and guardians join the journey so the whole family can celebrate small wins and practice faith at home.
+“The Adventurer Club is a fun, Christ-centered program for children ages 4–9 that helps them grow spiritually, socially, mentally, and physically. Through hands-on activities, Bible learning, games, and service projects, children build faith, character, confidence, friendships, and life skills in a supportive, family-focused environment while preparing for the Pathfinder journey ahead.”
 
 ## Pathfinders
 
-Pathfinders keeps teens engaged with outdoor adventures, outreach, and intentional leadership training so they can model what it means to follow Jesus in every season of life.
+“Pathfinders are a worldwide organization of young people sponsored by the Seventh-day Adventist Church, with nearly 2 million members around the globe. Young people of any religious persuasion, or none at all, are welcome and encouraged to join the organization.”
 
-## Director & meetings
-
-Director: Daunette Lemard-Reid
-
-Meetings are held on the first and third Sabbath of each month from 3:00 PM to 5:00 PM.
+• Pathfinders (ages 10–15) provides opportunities for youth to grow in leadership, teamwork, and personal responsibility through outdoor activities, community service, spiritual growth, and practical life skills.
 
 ## Contact
 
-For more info, [click here](mailto:firstspringfieldsda@gmail.com).
+To learn more about our Pathfinders and Adventurers Clubs or to get involved, please click here for more information: [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) (link to contact us)
