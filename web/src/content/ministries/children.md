@@ -10,30 +10,25 @@ ctaHref: "/connect/contact"
 tags: ["kids", "families"]
 ---
 
-## Overview
+## Children’s Ministry
 
-Children’s Ministry exists to partner with families in discipling ages 3–9. We bring the Bible to life through storytelling, music, crafts, and service so little ones can discover God’s love, grow in faith, and see how they fit into God’s family.
+Coordinator: Giselle Davey
 
-We provide a safe, welcoming space where children can ask questions, worship, and practice kindness while church volunteers model Christlike character.
+The mission of the Children’s Ministries Department is to nurture children into a loving, serving relationship with Jesus. We are committed to creating a safe, joyful, and faith-filled environment where children can grow spiritually, emotionally, socially, and mentally while learning how deeply they are loved by God.
 
-## Coordinator
+We seek to fulfill this mission by providing age-appropriate programs that encourage Bible learning, worship, service, and fellowship, while partnering closely with families to support children’s spiritual growth.
 
-Giselle Davey oversees weekly programs, recruits volunteers, and keeps families informed about upcoming special events. Reach out through the main contact page or the ministry email to connect.
+### Our Programs & Meeting Times
 
-## Our Programs & Meeting Times
+- • Sabbath School begins every Sabbath at 10:00 AM, offering engaging Bible-based lessons for children.
+- • Children’s Choir Practice takes place every Sabbath from 10:55–11:10 AM, helping children worship God through music.
+- • Children’s Church is held on the first and third Sabbath of each month, immediately following the Children’s Story, starting June 2026. Children’s Church is designed for children ages 3–9 and includes Bible stories, crafts, singing, a short sermonette, and snacks. For the safety of all children, parents are required to sign children in and out each Sabbath.
+- • Vacation Bible School (VBS): July 28 to July 30 from 6 pm to 7:15 pm.
 
-- Sabbath School: every Sabbath at 10:00 AM in age-appropriate rooms with Bible stories, activities, and opportunities to pray together.
-- Children’s Choir Practice: every Sabbath from 10:55–11:10 AM; kids rehearse simple worship songs so they can bless the congregation with joyful voices.
-- Children’s Church: first and third Sabbath each month, immediately after the Children’s Story (ages 3–9; sign-in/sign-out required). The session includes Bible stories, crafts, singing, a short sermonette, and snacks to keep hearts and tummies nourished.
-- Vacation Bible School (VBS): July 28–July 30, 6:00–7:15 PM; a high-energy evening series packed with teaching, games, and mission-focused fun.
+Through these ministries, we aim to help children grow in faith, build friendships, and develop a strong foundation that will guide them throughout their lives.
 
-Ages 3–9 are invited to all of the above activities, and we ask every family to sign children in at drop-off and sign them out at pickup so we can ensure consistent safety.
+### Resources
 
-## PRAYER MEETING
-
-All are welcome to meet in person on Wednesdays at 7:00 p.m. in the church annex or on Zoom using the login information below:
-
-- Zoom link: https://us02web.zoom.us/j/87430121210?pwd=QVNCRUlXcDdtU2dUSUdrbFdVdDlMUT09
-- Dial: (646) 558-8656
-- Meeting ID: 874 3012 1210
-- Passcode: 487844
+- https://www.youtube.com/c/adventistchildrensministries
+- https://www.faithfinders.com/god-sent-his-son-to-be-my-friend-bible-study-guides
+- https://www.gracelink.net/podcast
