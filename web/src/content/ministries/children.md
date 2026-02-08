@@ -28,3 +28,12 @@ Giselle Davey oversees weekly programs, recruits volunteers, and keeps families 
 - Vacation Bible School (VBS): July 28–July 30, 6:00–7:15 PM; a high-energy evening series packed with teaching, games, and mission-focused fun.
 
 Ages 3–9 are invited to all of the above activities, and we ask every family to sign children in at drop-off and sign them out at pickup so we can ensure consistent safety.
+
+## PRAYER MEETING
+
+All are welcome to meet in person on Wednesdays at 7:00 p.m. in the church annex or on Zoom using the login information below:
+
+- Zoom link: https://us02web.zoom.us/j/87430121210?pwd=QVNCRUlXcDdtU2dUSUdrbFdVdDlMUT09
+- Dial: (646) 558-8656
+- Meeting ID: 874 3012 1210
+- Passcode: 487844
