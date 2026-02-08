@@ -1,0 +1,62 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Button from "../../../components/ui/Button.astro";
+import Card from "../../../components/ui/Card.astro";
+import { site } from "../../../data/site";
+import { getCollection } from "astro:content";
+
+const bulletins = await getCollection("bulletins", ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+const sorted = bulletins.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const current = sorted[0];
+const fmt = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "full",
+  timeZone: site.timeZone,
+});
+---
+
+<BaseLayout
+  title="Weekly Announcements"
+  description="See what the communications team is sharing with the church each week."
+>
+  <div class="stack">
+    <h1>Weekly Announcements</h1>
+    <p class="muted">
+      The communications team gathers updates from every ministry so you can stay informed about worship plans,
+      volunteer needs, prayer requests, and upcoming outreach opportunities.
+    </p>
+
+    <section class="card stack--tight">
+      <h2>Share an announcement</h2>
+      <p>
+        Send bulletin-ready announcements and event highlights to the communications team by Wednesday evenings to
+        ensure they make the next Sabbath format.
+      </p>
+      <ul>
+        <li>Include a clear event title, date, time, and any registration/RSVP info.</li>
+        <li>Mention who your announcement should contact for follow-up questions.</li>
+        <li>Keep messages concise; our announcement time is limited.</li>
+      </ul>
+      <p class="muted">Email updates to {site.contact.email} or call {site.contact.phone}.</p>
+      <div class="cluster">
+        <Button href="/connect/contact" variant="secondary">Contact communications</Button>
+        <Button href="/resources/bulletins" variant="ghost">Browse bulletins</Button>
+      </div>
+    </section>
+
+    <section class="stack--tight">
+      <h2>Current announcements</h2>
+      {current ? (
+        <Card
+          title={current.data.title}
+          description={`${fmt.format(current.data.date)}${current.data.summary ? ` • ${current.data.summary}` : ""}`.trim()}
+          href={current.data.pdfUrl}
+        />
+      ) : (
+        <p class="muted">Announcements will appear here once a bulletin is published.</p>
+      )}
+    </section>
+  </div>
+</BaseLayout>
