@@ -2811,14 +2811,6 @@ export const oneOffEvents: OneOffEvent[] = [];
 ]
 </file>
 
-<file path="web/src/data/week-schedule.json">
-[
-  { "label": "Sabbath School", "day": "Saturday", "time": "10:00 AM" },
-  { "label": "Worship Service", "day": "Saturday", "time": "11:15 AM" },
-  { "label": "Prayer Meeting", "day": "Wednesday", "time": "7:00 PM" }
-]
-</file>
-
 <file path="web/src/lib/links.ts">
 export function mailto(email: string, subject?: string) {
   const e = (email ?? "").trim();
@@ -2833,175 +2825,6 @@ export function tel(phone: string) {
   const digits = p.replace(/[^0-9+]/g, "");
   return digits ? `tel:${digits}` : "";
 }
-</file>
-
-<file path="web/src/pages/connect/team/index.astro">
----
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import { site } from "../../../data/site";
-import { mailto } from "../../../lib/links";
-export const prerender = false;
-
-const isFilled = (value?: string) => Boolean(value && value.trim() && value !== "TBD");
-const fallbackName = "Contact us";
-const fallbackHref = "/connect/contact";
-const fallbackLabel = "Contact us for current details.";
----
-
-<BaseLayout title="Our Team" description={`Meet the leadership and ministry contacts at ${site.name}.`}>
-  <div class="stack">
-    <h1>Our Team</h1>
-
-    <section class="card stack">
-      <h2>Leadership</h2>
-      <p class="muted">
-        For most questions, starting with the Pastor or Head Elder is a great first step.
-      </p>
-
-      <div class="table">
-        <div class="row head">
-          <div>Role</div>
-          <div>Name</div>
-          <div>Contact</div>
-        </div>
-
-        {(site.leadershipTeam ?? []).map((m) => {
-          const name = isFilled(m.name) ? m.name : fallbackName;
-          const email = isFilled(m.email) ? m.email : "";
-
-          return (
-            <div class="row">
-              <div>{m.role}</div>
-              <div>{name}</div>
-              <div>
-                {email ? (
-                  <a href={mailto(email, `${m.role} - ${site.shortName}`)}>{email}</a>
-                ) : (
-                  <a class="link" href={fallbackHref}>{fallbackLabel}</a>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-
-    <section class="card stack">
-      <h2>Ministry Leads</h2>
-      <p class="muted">
-        Reach out to the ministry lead closest to your question, or use the general email if you’re not sure.
-      </p>
-
-      <div class="table">
-        <div class="row head">
-          <div>Ministry</div>
-          <div>Name</div>
-          <div>Contact</div>
-        </div>
-
-        {(site.ministryLeads ?? []).map((m) => {
-          const name = isFilled(m.name) ? m.name : fallbackName;
-          const email = isFilled(m.email) ? m.email : "";
-
-          return (
-            <div class="row">
-              <div>{m.role}</div>
-              <div>{name}</div>
-              <div>
-                {email ? (
-                  <a href={mailto(email, `${m.role} - ${site.shortName}`)}>{email}</a>
-                ) : (
-                  <a class="link" href={fallbackHref}>{fallbackLabel}</a>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-
-    <section class="card stack">
-      <h2>Who to contact for what</h2>
-      <p class="muted">
-        Not sure who to reach? Start with one of these.
-      </p>
-
-      <div class="table">
-        <div class="row head">
-          <div>Topic</div>
-          <div>Contact</div>
-          <div>How</div>
-        </div>
-
-        {(site.contactTopics ?? []).map((t) => {
-          const topicHref = isFilled(t.href) ? t.href : "";
-          const topicEmail = isFilled(t.email) ? t.email : "";
-
-          return (
-            <div class="row">
-              <div>{t.topic}</div>
-              <div>{t.contactRole}</div>
-              <div class="stack--tight">
-                {topicHref ? (
-                  <a
-                    href={topicHref}
-                    target={t.external ? "_blank" : undefined}
-                    rel={t.external ? "noopener noreferrer" : undefined}
-                  >
-                    {t.hrefLabel ?? "Open"}
-                  </a>
-                ) : topicEmail ? (
-                  <a href={mailto(topicEmail, `${t.topic} - ${site.shortName}`)}>{topicEmail}</a>
-                ) : (
-                  <a class="link" href={fallbackHref}>{fallbackLabel}</a>
-                )}
-                {t.note ? <div class="small muted">{t.note}</div> : null}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  </div>
-</BaseLayout>
-
-<style>
-  .table {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-2);
-    overflow: hidden;
-  }
-
-  .row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: var(--space-4);
-    padding: var(--space-3) var(--space-4);
-    border-top: 1px solid var(--color-border);
-    background: var(--color-white);
-  }
-
-  .row.head {
-    border-top: none;
-    background: var(--color-bg);
-    font-weight: 800;
-  }
-
-  .muted {
-    color: var(--color-text-muted);
-  }
-
-  .small {
-    font-size: 0.95rem;
-  }
-
-  @media (max-width: 720px) {
-    .row {
-      grid-template-columns: 1fr;
-      gap: var(--space-2);
-    }
-  }
-</style>
 </file>
 
 <file path="web/src/pages/events/[id].astro">
@@ -3975,132 +3798,6 @@ const { title, subtitle, cards, columns, columnsMin = 240 } = Astro.props;
 </section>
 </file>
 
-<file path="web/src/components/sections/HeroBanner.astro">
----
-import type { ImageMetadata } from "astro";
-import { Image } from "astro:assets";
-import HeroUI from "../ui/Hero.astro";
-
-export type Props = {
-  title: string;
-  subtitle?: string;
-  primaryCtaLabel?: string;
-  primaryCtaHref?: string;
-  secondaryCtaLabel?: string;
-  secondaryCtaHref?: string;
-
-  background: ImageMetadata;
-
-  /**
-   * Keep the bridge centered-ish.
-   * Example: "50% 55%" (x y)
-   */
-  objectPosition?: string;
-};
-
-const {
-  background,
-  objectPosition = "50% 55%",
-  ...heroProps
-} = Astro.props as Props;
----
-
-<section class="heroBanner fullbleed" style={`--hero-object-position:${objectPosition};`}>
-  <div class="heroBanner__media" aria-hidden="true">
-    <Image
-      src={background}
-      alt=""
-      widths={[640, 960, 1280, 1600, 1920]}
-      sizes="100vw"
-      loading="eager"
-      decoding="async"
-      fetchpriority="high"
-      class="heroBanner__img"
-    />
-    <div class="heroBanner__scrim" aria-hidden="true"></div>
-  </div>
-
-  <div class="heroBanner__content">
-    <div class="heroBanner__container">
-      <HeroUI {...heroProps} />
-    </div>
-  </div>
-</section>
-
-<style>
-  .heroBanner {
-    position: relative;
-    padding: var(--space-12) 0;
-    border-bottom: 1px solid var(--color-border);
-    overflow: hidden;
-  }
-
-  .heroBanner__media {
-    position: absolute;
-    inset: 0;
-  }
-
-  .heroBanner__img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: var(--hero-object-position);
-    transform: scale(1.02);
-  }
-
-  .heroBanner__scrim {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      180deg,
-      rgba(11, 15, 23, 0.45) 0%,
-      rgba(11, 15, 23, 0.18) 45%,
-      rgba(11, 15, 23, 0.55) 100%
-    );
-  }
-
-  .heroBanner__content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    justify-content: flex-start;
-  }
-
-  /* Match BaseLayout container sizing without nesting issues */
-  .heroBanner__container {
-    width: min(var(--container-max), calc(100% - var(--container-pad)));
-    margin: 0;
-    padding-left: var(--container-pad);
-  }
-
-  /* Keep the existing “card” look, but make it sit nicely on the photo */
-  :global(.heroBanner .hero.card) {
-    background: rgba(255, 255, 255, 0.90);
-    backdrop-filter: blur(10px);
-    border-color: rgba(255, 255, 255, 0.35);
-  }
-
-  @media (max-width: 720px) {
-    .heroBanner {
-      padding: var(--space-8) 0;
-    }
-    /* Slightly higher crop on mobile so the bridge line stays visible */
-    .heroBanner {
-      --hero-object-position: 50% 50%;
-    }
-  }
-
-  @media (prefers-reduced-data: reduce) {
-    .heroBanner__media {
-      display: none;
-    }
-    .heroBanner {
-      background: var(--color-surface-2);
-    }
-  }
-</style>
-</file>
-
 <file path="web/src/components/ui/Banner.astro">
 ---
 import Button from "./Button.astro";
@@ -4261,17 +3958,12 @@ Meeting Time: First and Third Sabbath of each month, from 3:00 PM – 5:00 PM.
 To learn more about our Pathfinders and Adventurers Clubs or to get involved, please click here for more information: [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) (link to contact us)
 </file>
 
-<file path="web/src/data/site-links.json">
-{
-  "givingUrl": "https://adventistgiving.org/",
-  "youtubeChannelUrl": "https://www.youtube.com/@1stspringfieldsdama74",
-  "youtubeLiveEmbedUrl": "https://www.youtube.com/embed/live_stream?channel=UCkmryvqlHb3JIwVLc07FZwA",
-  "facebookUrl": "TBD",
-  "prayerFormUrl": "TBD",
-  "contactFormUrl": "TBD",
-  "volunteerFormUrl": "TBD",
-  "oldWebsiteUrl": "https://firstspringfieldma.adventistchurch.org/"
-}
+<file path="web/src/data/week-schedule.json">
+[
+  { "label": "Sabbath School", "day": "Saturday", "time": "10:00 AM" },
+  { "label": "Worship", "day": "Saturday", "time": "11:15 AM" },
+  { "label": "Prayer Meeting", "day": "Wednesday", "time": "7:00 PM" }
+]
 </file>
 
 <file path="web/src/pages/connect/about/index.astro">
@@ -4388,6 +4080,174 @@ const { mission } = site;
 </BaseLayout>
 </file>
 
+<file path="web/src/pages/connect/team/index.astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { site } from "../../../data/site";
+import { mailto } from "../../../lib/links";
+
+const isFilled = (value?: string) => Boolean(value && value.trim() && value !== "TBD");
+const fallbackName = "Contact us";
+const fallbackHref = "/connect/contact";
+const fallbackLabel = "Contact us for current details.";
+---
+
+<BaseLayout title="Our Team" description={`Meet the leadership and ministry contacts at ${site.name}.`}>
+  <div class="stack">
+    <h1>Our Team</h1>
+
+    <section class="card stack">
+      <h2>Leadership</h2>
+      <p class="muted">
+        For most questions, starting with the Pastor or Head Elder is a great first step.
+      </p>
+
+      <div class="table">
+        <div class="row head">
+          <div>Role</div>
+          <div>Name</div>
+          <div>Contact</div>
+        </div>
+
+        {(site.leadershipTeam ?? []).map((m) => {
+          const name = isFilled(m.name) ? m.name : fallbackName;
+          const email = isFilled(m.email) ? m.email : "";
+
+          return (
+            <div class="row">
+              <div>{m.role}</div>
+              <div>{name}</div>
+              <div>
+                {email ? (
+                  <a href={mailto(email, `${m.role} - ${site.shortName}`)}>{email}</a>
+                ) : (
+                  <a class="link" href={fallbackHref}>{fallbackLabel}</a>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+
+    <section class="card stack">
+      <h2>Ministry Leads</h2>
+      <p class="muted">
+        Reach out to the ministry lead closest to your question, or use the general email if you’re not sure.
+      </p>
+
+      <div class="table">
+        <div class="row head">
+          <div>Ministry</div>
+          <div>Name</div>
+          <div>Contact</div>
+        </div>
+
+        {(site.ministryLeads ?? []).map((m) => {
+          const name = isFilled(m.name) ? m.name : fallbackName;
+          const email = isFilled(m.email) ? m.email : "";
+
+          return (
+            <div class="row">
+              <div>{m.role}</div>
+              <div>{name}</div>
+              <div>
+                {email ? (
+                  <a href={mailto(email, `${m.role} - ${site.shortName}`)}>{email}</a>
+                ) : (
+                  <a class="link" href={fallbackHref}>{fallbackLabel}</a>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+
+    <section class="card stack">
+      <h2>Who to contact for what</h2>
+      <p class="muted">
+        Not sure who to reach? Start with one of these.
+      </p>
+
+      <div class="table">
+        <div class="row head">
+          <div>Topic</div>
+          <div>Contact</div>
+          <div>How</div>
+        </div>
+
+        {(site.contactTopics ?? []).map((t) => {
+          const topicHref = isFilled(t.href) ? t.href : "";
+          const topicEmail = isFilled(t.email) ? t.email : "";
+
+          return (
+            <div class="row">
+              <div>{t.topic}</div>
+              <div>{t.contactRole}</div>
+              <div class="stack--tight">
+                {topicHref ? (
+                  <a
+                    href={topicHref}
+                    target={t.external ? "_blank" : undefined}
+                    rel={t.external ? "noopener noreferrer" : undefined}
+                  >
+                    {t.hrefLabel ?? "Open"}
+                  </a>
+                ) : topicEmail ? (
+                  <a href={mailto(topicEmail, `${t.topic} - ${site.shortName}`)}>{topicEmail}</a>
+                ) : (
+                  <a class="link" href={fallbackHref}>{fallbackLabel}</a>
+                )}
+                {t.note ? <div class="small muted">{t.note}</div> : null}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .table {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    overflow: hidden;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-white);
+  }
+
+  .row.head {
+    border-top: none;
+    background: var(--color-bg);
+    font-weight: 800;
+  }
+
+  .muted {
+    color: var(--color-text-muted);
+  }
+
+  .small {
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 720px) {
+    .row {
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+    }
+  }
+</style>
+</file>
+
 <file path="web/src/pages/join/index.astro">
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
@@ -4419,97 +4279,6 @@ import { site } from "../../data/site";
         }
       ]}
     />
-  </div>
-</BaseLayout>
-</file>
-
-<file path="web/src/pages/ministries/[id].astro">
----
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getCollection, getEntry } from "astro:content";
-import { mailto } from "../../lib/links";
-
-export async function getStaticPaths() {
-  const ministries = await getCollection("ministries", ({ data }) =>
-    import.meta.env.PROD ? data.draft !== true : true
-  );
-  return ministries.map((m) => ({ params: { id: m.id } }));
-}
-
-const { id } = Astro.params;
-
-const ministry = await getEntry("ministries", id!);
-if (!ministry) throw new Error(`Ministry not found: ${id}`);
-
-const data: any = (ministry as any).data ?? {};
-const isFilled = (value?: string) => Boolean(value && value.trim() && value !== "TBD");
-const meetingTime = isFilled(data.meetingTime) ? data.meetingTime : "";
-const leaderName = isFilled(data.leaderName) ? data.leaderName : "";
-const leaderEmail = isFilled(data.leaderEmail)
-  ? data.leaderEmail
-  : isFilled(data.contactEmail)
-    ? data.contactEmail
-    : "";
-const fallbackMessage = "Contact us for current meeting details.";
-
-let Content: any = null;
-// Only Markdown/MDX entries have entry.render()
-if (typeof (ministry as any).render === "function") {
-  const rendered = await (ministry as any).render();
-  Content = rendered?.Content ?? null;
-}
-
-const title =
-  data.title ??
-  (typeof id === "string"
-    ? id.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
-    : "Ministry");
-
-const description =
-  data.description ?? data.summary ?? `Learn more about ${title}.`;
----
-
-<BaseLayout title={title} description={description}>
-  <div class="stack">
-    <h1>{title}</h1>
-
-    <section class="card">
-      <div class="stack--tight">
-        <div class="stack--tight">
-          <h2>When we meet</h2>
-          {meetingTime ? (
-            <p class="muted">{meetingTime}</p>
-          ) : (
-            <p class="muted">
-              <a class="link" href="/connect/contact">{fallbackMessage}</a>
-            </p>
-          )}
-        </div>
-        <div class="stack--tight">
-          <h2>Contact</h2>
-          <div class="muted stack--tight">
-            {leaderName ? <div>{leaderName}</div> : null}
-            {leaderEmail ? (
-              <a href={mailto(leaderEmail, `${title} ministry`)}>{leaderEmail}</a>
-            ) : (
-              <a class="link" href="/connect/contact">{fallbackMessage}</a>
-            )}
-          </div>
-        </div>
-      </div>
-    </section>
-
-    {Content ? (
-      <section class="card">
-        <div class="prose">
-          <Content />
-        </div>
-      </section>
-    ) : (
-      <section class="card stack--tight">
-        <p class="muted">{description}</p>
-      </section>
-    )}
   </div>
 </BaseLayout>
 </file>
@@ -5587,6 +5356,131 @@ jobs:
           path: web/playwright-report
 </file>
 
+<file path="web/src/components/sections/HeroBanner.astro">
+---
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import HeroUI from "../ui/Hero.astro";
+
+export type Props = {
+  title: string;
+  subtitle?: string;
+  primaryCtaLabel?: string;
+  primaryCtaHref?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+
+  background: ImageMetadata;
+
+  /**
+   * Keep the bridge centered-ish.
+   * Example: "50% 55%" (x y)
+   */
+  objectPosition?: string;
+};
+
+const {
+  background,
+  objectPosition = "50% 55%",
+  ...heroProps
+} = Astro.props as Props;
+---
+
+<section class="heroBanner fullbleed" style={`--hero-object-position:${objectPosition};`}>
+  <div class="heroBanner__media" aria-hidden="true">
+    <Image
+      src={background}
+      alt=""
+      widths={[640, 960, 1280, 1600, 1920]}
+      sizes="100vw"
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
+      class="heroBanner__img"
+    />
+    <div class="heroBanner__scrim" aria-hidden="true"></div>
+  </div>
+
+  <div class="heroBanner__content">
+    <div class="heroBanner__container">
+      <HeroUI {...heroProps} />
+    </div>
+  </div>
+</section>
+
+<style>
+  .heroBanner {
+    position: relative;
+    padding: var(--space-12) 0;
+    border-bottom: 1px solid var(--color-border);
+    overflow: hidden;
+    --hero-content-offset: clamp(var(--space-4), 3vw, var(--space-6));
+  }
+
+  .heroBanner__media {
+    position: absolute;
+    inset: 0;
+  }
+
+  .heroBanner__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--hero-object-position);
+    transform: scale(1.02);
+  }
+
+  .heroBanner__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(11, 15, 23, 0.45) 0%,
+      rgba(11, 15, 23, 0.18) 45%,
+      rgba(11, 15, 23, 0.55) 100%
+    );
+  }
+
+  .heroBanner__content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  /* Match BaseLayout container sizing without nesting issues */
+  .heroBanner__container {
+    width: min(var(--container-max), calc(100% - var(--hero-content-offset)));
+    margin: 0;
+    padding-left: var(--hero-content-offset);
+  }
+
+  /* Keep the existing “card” look, but make it sit nicely on the photo */
+  :global(.heroBanner .hero.card) {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-color: rgba(255, 255, 255, 0.35);
+  }
+
+  @media (max-width: 720px) {
+    .heroBanner {
+      padding: var(--space-8) 0;
+      --hero-content-offset: var(--space-4);
+      --hero-object-position: 50% 50%;
+    }
+  }
+
+  @media (prefers-reduced-data: reduce) {
+    .heroBanner__media {
+      display: none;
+    }
+    .heroBanner {
+      background: var(--color-surface-2);
+    }
+  }
+</style>
+</file>
+
 <file path="web/src/components/ui/Button.astro">
 ---
 export type Variant = "primary" | "secondary" | "ghost";
@@ -5687,87 +5581,6 @@ const className = `btn btn--${variant} btn--${size}`;
   .btn:disabled {
     opacity: 0.65;
     cursor: not-allowed;
-  }
-</style>
-</file>
-
-<file path="web/src/components/ui/Hero.astro">
----
-import Button from "./Button.astro";
-
-type Props = {
-  title: string;
-  subtitle?: string;
-  primaryCtaLabel?: string;
-  primaryCtaHref?: string;
-  secondaryCtaLabel?: string;
-  secondaryCtaHref?: string;
-};
-
-const {
-  title,
-  subtitle,
-  primaryCtaLabel,
-  primaryCtaHref,
-  secondaryCtaLabel,
-  secondaryCtaHref
-} = Astro.props;
----
-
-<section class="hero card">
-  <div class="hero__inner">
-    <div>
-      <h1 class="hero__title">{title}</h1>
-      {subtitle && <p class="hero__subtitle muted">{subtitle}</p>}
-    </div>
-
-    {(primaryCtaLabel && primaryCtaHref) || (secondaryCtaLabel && secondaryCtaHref) ? (
-      <div class="hero__actions">
-        {primaryCtaLabel && primaryCtaHref && (
-          <Button href={primaryCtaHref} variant="primary">{primaryCtaLabel}</Button>
-        )}
-        {secondaryCtaLabel && secondaryCtaHref && (
-          <Button href={secondaryCtaHref} variant="secondary">{secondaryCtaLabel}</Button>
-        )}
-      </div>
-    ) : null}
-  </div>
-</section>
-
-<style>
-  .hero__inner {
-    display: grid;
-    gap: var(--space-4);
-  }
-
-  .hero__title {
-    margin: 0;
-    font-size: clamp(2.4rem, 1.8rem + 2.8vw, 3.5rem);
-    line-height: 1.15;
-  }
-
-  .hero__subtitle {
-    margin: var(--space-2) 0 0;
-    font-size: clamp(1.05rem, 0.95rem + 0.7vw, 1.4rem);
-  }
-
-  .hero__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-  }
-
-  .hero {
-    max-width: min(560px, 100%);
-    margin: 0;
-    padding: clamp(1.25rem, 1rem + 0.5vw, 1.75rem);
-    align-self: flex-start;
-  }
-
-  @media (max-width: 720px) {
-    .hero {
-      padding: var(--space-5);
-    }
   }
 </style>
 </file>
@@ -5875,6 +5688,19 @@ function linkAttrs(item: { href: string; external?: boolean }) {
     if (link && details) details.removeAttribute("open");
   });
 </script>
+</file>
+
+<file path="web/src/data/site-links.json">
+{
+  "givingUrl": "https://adventistgiving.org/",
+  "youtubeChannelUrl": "https://www.youtube.com/@1stspringfieldsdama74",
+  "youtubeLiveEmbedUrl": "https://www.youtube.com/embed/live_stream?channel=UCkmryvqlHb3JIwVLc07FZwA",
+  "facebookUrl": "",
+  "prayerFormUrl": "",
+  "contactFormUrl": "",
+  "volunteerFormUrl": "",
+  "oldWebsiteUrl": "https://firstspringfieldma.adventistchurch.org/"
+}
 </file>
 
 <file path="web/src/pages/connect/prayer/index.astro">
@@ -6155,69 +5981,99 @@ import { site } from "../../data/site";
 </BaseLayout>
 </file>
 
-<file path="web/src/pages/resources/index.astro">
+<file path="web/src/pages/ministries/[id].astro">
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Hero from '../../components/ui/Hero.astro';
-import ContentCard from '../../components/content/ContentCard.astro';
-import { getCollection } from 'astro:content';
-import { site } from '../../data/site';
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import HeroSection from "../../components/sections/Hero.astro";
+import { getCollection, getEntry } from "astro:content";
+import { mailto } from "../../lib/links";
 
-const resources = await getCollection('resources', ({ data }) => {
-  return import.meta.env.PROD ? data.draft !== true : true;
-});
+export async function getStaticPaths() {
+  const ministries = await getCollection("ministries", ({ data }) =>
+    import.meta.env.PROD ? data.draft !== true : true
+  );
+  return ministries.map((m) => ({ params: { id: m.id } }));
+}
 
-const latest = resources
-  .sort((a, b) => b.data.published.valueOf() - a.data.published.valueOf())
-  .slice(0, 15);
+const { id } = Astro.params;
 
-const fmt = new Intl.DateTimeFormat(site.locale, {
-  dateStyle: 'medium',
-  timeZone: site.timeZone
-});
+const ministry = await getEntry("ministries", id!);
+if (!ministry) throw new Error(`Ministry not found: ${id}`);
+
+const data: any = (ministry as any).data ?? {};
+const isFilled = (value?: string) => Boolean(value && value.trim() && value !== "TBD");
+const meetingTime = isFilled(data.meetingTime) ? data.meetingTime : "";
+const leaderName = isFilled(data.leaderName) ? data.leaderName : "";
+const leaderEmail = isFilled(data.leaderEmail)
+  ? data.leaderEmail
+  : isFilled(data.contactEmail)
+    ? data.contactEmail
+    : "";
+const fallbackMessage = "Contact us for current meeting details.";
+
+let Content: any = null;
+// Only Markdown/MDX entries have entry.render()
+if (typeof (ministry as any).render === "function") {
+  const rendered = await (ministry as any).render();
+  Content = rendered?.Content ?? null;
+}
+
+const title =
+  data.title ??
+  (typeof id === "string"
+    ? id.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    : "Ministry");
+
+const description =
+  data.description ?? data.summary ?? `Learn more about ${title}.`;
+const heroSubtitle = data.summary ?? description;
 ---
 
-<BaseLayout title="Resources" description="Helpful links, forms, bulletins, and downloads.">
-  <Hero title="Resources" subtitle="Downloads, forms, and helpful info." />
-
-  <section class="stack--loose">
-    <div class="grid--cards">
-      <article class="card stack--tight">
-        <h3>
-          <a class="link" href="/search">Search</a>
-        </h3>
-        <p class="muted">Find resources, bulletins, and more.</p>
-      </article>
-      <article class="card stack--tight">
-        <h3><a class="link" href="/resources/bulletins">Bulletins</a></h3>
-        <p class="muted">Weekly PDFs and archives.</p>
-      </article>
-      <article class="card stack--tight">
-        <h3><a class="link" href="/resources/forms">Forms</a></h3>
-        <p class="muted">Requests, sign-ups, and contact info.</p>
-      </article>
-    </div>
-
-    <div class="stack">
-      <h2>Latest resources</h2>
-
-      {latest.length === 0 ? (
-        <p class="muted">No resources are published yet.</p>
+<BaseLayout title={title} description={description}>
+  <div class="stack">
+    <HeroSection title={title} subtitle={heroSubtitle}>
+      {meetingTime ? (
+        <article slot="meta" class="hero__meta-item">
+          <p class="hero__meta-label">Meeting time</p>
+          <p class="hero__meta-value">{meetingTime}</p>
+        </article>
       ) : (
-        <div class="grid--cards">
-          {latest.map((r) => (
-            <ContentCard
-              href={`/resources/${r.id}`}
-              title={r.data.title}
-              summary={r.data.summary}
-              meta={fmt.format(r.data.published)}
-              tags={r.data.tags}
-            />
-          ))}
-        </div>
+        <article slot="meta" class="hero__meta-item">
+          <p class="hero__meta-label">Meeting time</p>
+          <p class="hero__meta-value">
+            <a class="hero__meta-link" href="/connect/contact">{fallbackMessage}</a>
+          </p>
+        </article>
       )}
-    </div>
-  </section>
+
+      <article slot="meta" class="hero__meta-item">
+        <p class="hero__meta-label">Contact</p>
+        {leaderName && <p class="hero__meta-leader">{leaderName}</p>}
+        {leaderEmail ? (
+          <a
+            class="hero__meta-link hero__meta-email"
+            href={mailto(leaderEmail, `${title} ministry`)}
+          >
+            {leaderEmail}
+          </a>
+        ) : (
+          <a class="hero__meta-link" href="/connect/contact">{fallbackMessage}</a>
+        )}
+      </article>
+    </HeroSection>
+
+    {Content ? (
+      <section class="card">
+        <div class="prose">
+          <Content />
+        </div>
+      </section>
+    ) : (
+      <section class="card stack--tight">
+        <p class="muted">{description}</p>
+      </section>
+    )}
+  </div>
 </BaseLayout>
 </file>
 
@@ -6790,6 +6646,138 @@ const secondaryActions = site.quickActions.filter((item) => !primaryActionLabels
 </style>
 </file>
 
+<file path="web/src/components/ui/Hero.astro">
+---
+import Button from "./Button.astro";
+
+type Props = {
+  title: string;
+  subtitle?: string;
+  primaryCtaLabel?: string;
+  primaryCtaHref?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+};
+
+const {
+  title,
+  subtitle,
+  primaryCtaLabel,
+  primaryCtaHref,
+  secondaryCtaLabel,
+  secondaryCtaHref
+} = Astro.props;
+const hasMeta = Boolean(Astro.slots?.meta);
+---
+
+<section class="hero card">
+  <div class="hero__inner">
+    <div>
+      <h1 class="hero__title">{title}</h1>
+      {subtitle && <p class="hero__subtitle muted">{subtitle}</p>}
+    </div>
+
+    {hasMeta ? (
+      <div class="hero__meta">
+        <slot name="meta" />
+      </div>
+    ) : null}
+
+    {(primaryCtaLabel && primaryCtaHref) || (secondaryCtaLabel && secondaryCtaHref) ? (
+      <div class="hero__actions">
+        {primaryCtaLabel && primaryCtaHref && (
+          <Button href={primaryCtaHref} variant="primary">{primaryCtaLabel}</Button>
+        )}
+        {secondaryCtaLabel && secondaryCtaHref && (
+          <Button href={secondaryCtaHref} variant="secondary">{secondaryCtaLabel}</Button>
+        )}
+      </div>
+    ) : null}
+  </div>
+</section>
+
+<style>
+  .hero__inner {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .hero__title {
+    margin: 0;
+    font-size: clamp(2.4rem, 1.8rem + 2.8vw, 3.5rem);
+    line-height: 1.15;
+  }
+
+  .hero__subtitle {
+    margin: var(--space-2) 0 0;
+    font-size: clamp(1.05rem, 0.95rem + 0.7vw, 1.4rem);
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .hero__meta {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  }
+
+  .hero__meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .hero__meta-label {
+    margin: 0;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .hero__meta-value {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .hero__meta-link {
+    font-weight: 600;
+  }
+
+  .hero__meta-leader {
+    font-weight: 500;
+  }
+
+  .hero__meta-email {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+  }
+
+  @media (min-width: 720px) {
+    .hero__meta {
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+  }
+
+  .hero {
+    max-width: min(560px, 100%);
+    margin: 0;
+    padding: clamp(1.25rem, 1rem + 0.5vw, 1.75rem);
+    align-self: flex-start;
+  }
+
+  @media (max-width: 720px) {
+    .hero {
+      padding: var(--space-5);
+    }
+  }
+</style>
+</file>
+
 <file path="web/src/components/Footer.astro">
 ---
 import { site } from "../data/site";
@@ -6848,6 +6836,128 @@ const year = new Date().getFullYear();
 </footer>
 </file>
 
+<file path="web/src/pages/connect/plan-a-visit/index.astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import PlanVisitContent from "../../../components/PlanVisitContent.astro";
+import { site } from "../../../data/site";
+---
+
+<BaseLayout
+  title="Plan a Visit"
+  description={`Service times, directions, parking, and what to expect when visiting ${site.name}.`}
+>
+  <PlanVisitContent />
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/resources/index.astro">
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/ui/Hero.astro';
+import ContentCard from '../../components/content/ContentCard.astro';
+import { getCollection } from 'astro:content';
+import { site } from '../../data/site';
+
+const resources = await getCollection('resources', ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+const latest = resources
+  .sort((a, b) => b.data.published.valueOf() - a.data.published.valueOf())
+  .slice(0, 15);
+
+const fmt = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: 'medium',
+  timeZone: site.timeZone
+});
+---
+
+<BaseLayout title="Resources" description="Helpful links, forms, bulletins, and downloads.">
+  <Hero title="Resources" subtitle="Downloads, forms, and helpful info." />
+
+  <section class="stack--loose">
+    <div class="grid--cards">
+      <article class="card stack--tight">
+        <h3>
+          <a class="link" href="/search">Search</a>
+        </h3>
+        <p class="muted">Find resources, bulletins, and more.</p>
+      </article>
+      <article class="card stack--tight">
+        <h3><a class="link" href="/resources/bulletins">Bulletins</a></h3>
+        <p class="muted">Weekly PDFs and archives.</p>
+      </article>
+      <article class="card stack--tight">
+        <h3><a class="link" href="/resources/announcements">Announcements</a></h3>
+        <p class="muted">Quick weekly notices for church life and community updates.</p>
+      </article>
+      <article class="card stack--tight">
+        <h3><a class="link" href="/resources/forms">Forms</a></h3>
+        <p class="muted">Requests, sign-ups, and contact info.</p>
+      </article>
+    </div>
+
+    <div class="stack">
+      <h2>Latest resources</h2>
+
+      {latest.length === 0 ? (
+        <p class="muted">No resources are published yet.</p>
+      ) : (
+        <div class="grid--cards">
+          {latest.map((r) => (
+            <ContentCard
+              href={`/resources/${r.id}`}
+              title={r.data.title}
+              summary={r.data.summary}
+              meta={fmt.format(r.data.published)}
+              tags={r.data.tags}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>
+</file>
+
+<file path="web/src/content/ministries/children.md">
+---
+title: "Children’s Ministry"
+summary: "Nurturing 3–9-year-olds to know Jesus through story, song, and safe, joyful community."
+leaderName: "Giselle Davey"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "Sabbath mornings (see programs below)"
+category: "Children & Youth"
+ctaLabel: "Contact us"
+ctaHref: "/connect/contact"
+tags: ["kids", "families"]
+---
+
+## Children’s Ministry
+
+Coordinator: Giselle Davey
+
+The mission of the Children’s Ministries Department is to nurture children into a loving, serving relationship with Jesus. We are committed to creating a safe, joyful, and faith-filled environment where children can grow spiritually, emotionally, socially, and mentally while learning how deeply they are loved by God.
+
+We seek to fulfill this mission by providing age-appropriate programs that encourage Bible learning, worship, service, and fellowship, while partnering closely with families to support children’s spiritual growth.
+
+### Our Programs & Meeting Times
+
+- • Sabbath School begins every Sabbath at 10:00 AM, offering engaging Bible-based lessons for children.
+- • Children’s Choir Practice takes place every Sabbath from 10:55–11:10 AM, helping children worship God through music.
+- • Children’s Church is held on the first and third Sabbath of each month, immediately following the Children’s Story, starting June 2026. Children’s Church is designed for children ages 3–9 and includes Bible stories, crafts, singing, a short sermonette, and snacks. For the safety of all children, parents are required to sign children in and out each Sabbath.
+- • Vacation Bible School (VBS): July 28 to July 30 from 6 pm to 7:15 pm.
+
+Through these ministries, we aim to help children grow in faith, build friendships, and develop a strong foundation that will guide them throughout their lives.
+
+### Resources
+
+- https://www.youtube.com/c/adventistchildrensministries
+- https://www.faithfinders.com/god-sent-his-son-to-be-my-friend-bible-study-guides
+- https://www.gracelink.net/podcast
+</file>
+
 <file path="web/src/layouts/BaseLayout.astro">
 ---
 import "../styles/global.css";
@@ -6881,6 +6991,8 @@ const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
 const ogImageUrl = new URL(ogImagePath, baseUrl).href;
 const locale = site.locale ?? "en-US";
 const ogLocale = locale.replace("-", "_");
+const cfAnalyticsToken = import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN;
+const analyticsEnabled = Astro.env?.PROD && Boolean(cfAnalyticsToken);
 ---
 
 <!doctype html>
@@ -6922,60 +7034,15 @@ const ogLocale = locale.replace("-", "_");
       </div>
     </main>
     <Footer />
+    {analyticsEnabled ? (
+      <script
+        defer
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon={`{"token": "${cfAnalyticsToken}"}`}
+      ></script>
+    ) : null}
   </body>
 </html>
-</file>
-
-<file path="web/src/pages/connect/plan-a-visit/index.astro">
----
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import PlanVisitContent from "../../../components/PlanVisitContent.astro";
-import { site } from "../../../data/site";
----
-
-<BaseLayout
-  title="Plan a Visit"
-  description={`Service times, directions, parking, and what to expect when visiting ${site.name}.`}
->
-  <PlanVisitContent />
-</BaseLayout>
-</file>
-
-<file path="web/src/content/ministries/children.md">
----
-title: "Children’s Ministry"
-summary: "Nurturing 3–9-year-olds to know Jesus through story, song, and safe, joyful community."
-leaderName: "Giselle Davey"
-leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "Sabbath mornings (see programs below)"
-category: "Children & Youth"
-ctaLabel: "Contact us"
-ctaHref: "/connect/contact"
-tags: ["kids", "families"]
----
-
-## Children’s Ministry
-
-Coordinator: Giselle Davey
-
-The mission of the Children’s Ministries Department is to nurture children into a loving, serving relationship with Jesus. We are committed to creating a safe, joyful, and faith-filled environment where children can grow spiritually, emotionally, socially, and mentally while learning how deeply they are loved by God.
-
-We seek to fulfill this mission by providing age-appropriate programs that encourage Bible learning, worship, service, and fellowship, while partnering closely with families to support children’s spiritual growth.
-
-### Our Programs & Meeting Times
-
-- • Sabbath School begins every Sabbath at 10:00 AM, offering engaging Bible-based lessons for children.
-- • Children’s Choir Practice takes place every Sabbath from 10:55–11:10 AM, helping children worship God through music.
-- • Children’s Church is held on the first and third Sabbath of each month, immediately following the Children’s Story, starting June 2026. Children’s Church is designed for children ages 3–9 and includes Bible stories, crafts, singing, a short sermonette, and snacks. For the safety of all children, parents are required to sign children in and out each Sabbath.
-- • Vacation Bible School (VBS): July 28 to July 30 from 6 pm to 7:15 pm.
-
-Through these ministries, we aim to help children grow in faith, build friendships, and develop a strong foundation that will guide them throughout their lives.
-
-### Resources
-
-- https://www.youtube.com/c/adventistchildrensministries
-- https://www.faithfinders.com/god-sent-his-son-to-be-my-friend-bible-study-guides
-- https://www.gracelink.net/podcast
 </file>
 
 <file path="web/src/pages/connect/contact/index.astro">
@@ -7459,6 +7526,9 @@ import churchLogo from "../assets/photos/church-logo-primary.jpg";
 </file>
 
 <file path="web/src/data/site.ts">
+import siteLinks from "./site-links.json";
+import weekScheduleData from "./week-schedule.json";
+
 export type NavItem = {
   label: string;
   href: string;
@@ -7532,29 +7602,11 @@ const MISSION = {
     "In harmony with Bible revelation, Seventh-day Adventists see as the climax of God's plan the restoration of all His creation to full harmony with His perfect will and righteousness.",
 };
 
-// Single source of truth for public links + service times
-const portals: PortalLinks = {
-  // If you have a church-specific AdventistGiving link, replace this.
-  givingUrl: "https://adventistgiving.org/",
-  youtubeChannelUrl: "https://www.youtube.com/@1stspringfieldsdama74",
-  // YouTube live embed: replace with a playlist/embed if the church prefers.
-  youtubeLiveEmbedUrl:
-    "https://www.youtube.com/embed/live_stream?channel=UCkmryvqlHb3JIwVLc07FZwA",
-  // Add the official Facebook page when confirmed.
-  facebookUrl: "",
-  // Optional forms (set to real URLs when ready)
-  prayerFormUrl: "",
-  contactFormUrl: "",
-  volunteerFormUrl: "",
-  // Official AdventistChurchConnect site (currently under construction)
-  oldWebsiteUrl: "https://firstspringfieldma.adventistchurch.org/",
-};
+// Official portal links live in `site-links.json` so teams have a single editable file.
+const portals: PortalLinks = siteLinks as PortalLinks;
 
-const weekSchedule: ScheduleItem[] = [
-  { label: "Sabbath School", day: "Saturday", time: "10:00 AM" },
-  { label: "Worship", day: "Saturday", time: "11:15 AM" },
-  { label: "Prayer Meeting", day: "Wednesday", time: "7:00 PM" },
-];
+// Weekly service times are defined in `week-schedule.json`.
+const weekSchedule: ScheduleItem[] = weekScheduleData as ScheduleItem[];
 
 const leadershipTeam: TeamMember[] = [
   { role: "Pastor", name: PASTOR_NAME, email: PUBLIC_EMAIL },
@@ -7645,6 +7697,7 @@ const quickActions: NavItem[] = [
   { label: "Give", href: "/give" },
   { label: "Prayer Request", href: "/connect/prayer" },
   { label: "Bulletins", href: "/resources/bulletins" },
+  { label: "Announcements", href: "/resources/announcements" },
   { label: "Volunteer", href: "/serve" },
 ];
 

@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import HeroSection from "../../components/sections/Hero.astro";
-import { getCollection, getEntry } from "astro:content";
+import { getCollection, getEntry, render } from "astro:content";
 import { mailto } from "../../lib/links";
 
 export async function getStaticPaths() {
@@ -27,12 +27,7 @@ const leaderEmail = isFilled(data.leaderEmail)
     : "";
 const fallbackMessage = "Contact us for current meeting details.";
 
-let Content: any = null;
-// Only Markdown/MDX entries have entry.render()
-if (typeof (ministry as any).render === "function") {
-  const rendered = await (ministry as any).render();
-  Content = rendered?.Content ?? null;
-}
+const { Content } = await render(ministry);
 
 const title =
   data.title ??
@@ -78,16 +73,10 @@ const heroSubtitle = data.summary ?? description;
       </article>
     </HeroSection>
 
-    {Content ? (
-      <section class="card">
-        <div class="prose">
-          <Content />
-        </div>
-      </section>
-    ) : (
-      <section class="card stack--tight">
-        <p class="muted">{description}</p>
-      </section>
-    )}
+    <section class="card">
+      <div class="prose">
+        <Content />
+      </div>
+    </section>
   </div>
 </BaseLayout>

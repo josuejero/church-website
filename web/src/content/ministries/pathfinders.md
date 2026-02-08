@@ -28,4 +28,4 @@ Meeting Time: First and Third Sabbath of each month, from 3:00 PM – 5:00 PM.
 
 ## Contact
 
-To learn more about our Pathfinders and Adventurers Clubs or to get involved, please click here for more information: [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) (link to contact us)
+To learn more about our Pathfinders and Adventurers Clubs or to get involved, email [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) or visit our [Contact page](/connect/contact).
