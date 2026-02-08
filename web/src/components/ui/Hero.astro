@@ -62,4 +62,16 @@ const {
     flex-wrap: wrap;
     gap: var(--space-3);
   }
+
+  .hero {
+    max-width: min(560px, 100%);
+    margin: 0 auto;
+    padding: clamp(1.25rem, 1rem + 0.5vw, 1.75rem);
+  }
+
+  @media (max-width: 720px) {
+    .hero {
+      padding: var(--space-5);
+    }
+  }
 </style>
