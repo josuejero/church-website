@@ -2,7 +2,6 @@
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import { site } from "../../../data/site";
 import { mailto } from "../../../lib/links";
-export const prerender = false;
 
 const isFilled = (value?: string) => Boolean(value && value.trim() && value !== "TBD");
 const fallbackName = "Contact us";

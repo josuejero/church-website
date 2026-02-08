@@ -84,6 +84,9 @@ docs/
   ui-handoff.md
   ui-reliability.md
 web/
+  .github/
+    workflows/
+      ci.yml
   .vscode/
     extensions.json
     launch.json
@@ -98,7 +101,14 @@ web/
     assets/
       photos/
         bridge-dusk.jpg
+        church-logo-primary.jpg
+        club-adventurers-logo.png
+        club-pathfinders-logo.png
         first-springfield-exterior.png
+        ministries-adventist-community-services-logo.png
+        ministries-childrens-ministry-banner.png
+        ministries-womens-ministry-logo.png
+        ministries-youth-young-adults-ay-logo.png
     components/
       content/
         ContentCard.astro
@@ -127,6 +137,7 @@ web/
       Footer.astro
       Header.astro
       PlaceholderPage.astro
+      PlanVisitContent.astro
       Welcome.astro
     content/
       bulletins/
@@ -137,14 +148,18 @@ web/
         sabbath-service.md
       ministries/
         adult-sabbath-school.md
-        adventurers.md
+        adventist-community-services.md
         bible-study.md
         board-meeting.md
         children.md
         community-meal-spaghetti.md
+        media-audio-visual.md
         mens-ministry.md
         pathfinders.md
+        sabbath-school.md
+        secretary-communications.md
         womens-ministry.md
+        youth-young-adults.md
       resources/
         2025/
           12/
@@ -195,6 +210,8 @@ web/
       privacy/
         index.astro
       resources/
+        announcements/
+          index.astro
         bulletins/
           index.astro
         forms/
@@ -204,6 +221,8 @@ web/
       search/
         index.astro
       serve/
+        index.astro
+      visit/
         index.astro
       404.astro
       components.astro
@@ -241,6 +260,7 @@ web/
   wrangler.jsonc
 .editorconfig
 .gitignore
+.npmrc
 .nvmrc
 .repomixignore
 CODE_OF_CONDUCT.md
@@ -269,126 +289,6 @@ about: Update copy, dates, service times, or links
 (Who confirmed this information?)
 
 ## Deadline
-</file>
-
-<file path=".github/workflows/ci.yml">
-name: CI
-
-on:
-  pull_request:
-  push:
-    branches: ["main", "master"]
-
-jobs:
-  web:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
-
-    env:
-      # Ensures canonical URLs + sitemap/robots generation are deterministic in CI
-      PUBLIC_SITE_URL: http://127.0.0.1:4321
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Typecheck
-        run: npm run check
-
-      - name: Build
-        run: npm run build
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: E2E tests
-        run: npm run test:e2e:ci
-
-      - name: Internal link check
-        run: npm run test:links:ci
-
-      - name: Lighthouse CI
-        id: lighthouse
-        uses: treosh/lighthouse-ci-action@v12
-        with:
-          configPath: ./lighthouserc-ci.cjs
-          temporaryPublicStorage: true
-          uploadArtifacts: false
-
-      - name: Build Lighthouse summary
-        if: github.event_name == "pull_request"
-        id: lhci-summary
-        uses: actions/github-script@v8
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const core = require("@actions/core");
-            const manifest = JSON.parse(process.env.MANIFEST_JSON || "[]");
-            const entry = manifest[0] || {};
-            const summary = entry.summary || {};
-            const metricLabels = {
-              performance: "Performance",
-              accessibility: "Accessibility",
-              "best-practices": "Best Practices",
-              seo: "SEO",
-              pwa: "PWA",
-            };
-            const metrics = Object.keys(metricLabels)
-              .filter((key) => summary[key] !== undefined)
-              .map((key) => `| ${metricLabels[key]} | ${Math.round(summary[key] * 100)}% |`);
-            const table =
-              metrics.length > 0
-                ? ["| Metric | Score |", "| --- | --- |", ...metrics].join("\n")
-                : "No Lighthouse scores available.";
-            const links = JSON.parse(process.env.LINKS_JSON || "{}");
-            const reportLink = Object.values(links)[0];
-            const body = [
-              "## Lighthouse CI results",
-              table,
-              reportLink
-                ? `Temporary public report: [view it here](${reportLink})`
-                : "Temporary public report not available.",
-              "Artifacts remain in the `lighthouseci` artifact bundle for this run.",
-            ].join("\n\n");
-            core.setOutput("body", body);
-        env:
-          MANIFEST_JSON: ${{ steps.lighthouse.outputs.manifest }}
-          LINKS_JSON: ${{ steps.lighthouse.outputs.links || "{}" }}
-
-      - name: Comment Lighthouse results
-        if: github.event_name == "pull_request"
-        uses: peter-evans/create-or-update-comment@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: ${{ steps.lhci-summary.outputs.body }}
-          tag: lighthouse-ci
-
-      - name: Upload Lighthouse artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lighthouseci
-          path: web/.lighthouseci
-
-      - name: Upload Playwright report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: web/playwright-report
 </file>
 
 <file path=".github/PULL_REQUEST_TEMPLATE.md">
@@ -1286,138 +1186,6 @@ const props = Astro.props as Props;
 <HeroUI {...props} />
 </file>
 
-<file path="web/src/components/sections/RecurringActivities.astro">
----
-import { oneOffEvents, recurringActivities } from "../../data/activities";
-import { site } from "../../data/site";
-
-type Props = {
-  title?: string;
-  subtitle?: string;
-  showNotes?: boolean;
-};
-
-const { title = "Activities", subtitle, showNotes = true } = Astro.props;
-
-const now = new Date();
-const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-const fmtDate = new Intl.DateTimeFormat(site.locale, {
-  dateStyle: "medium",
-  timeZone: site.timeZone
-});
-const fmtDateTime = new Intl.DateTimeFormat(site.locale, {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: site.timeZone
-});
-
-const isFilled = (value?: string) => Boolean(value && value.trim() && value !== "TBD");
-const cleanedRecurring = recurringActivities.filter((activity) => {
-  const title = activity.title?.trim();
-  if (!title || title.toLowerCase().startsWith("etc")) {
-    return false;
-  }
-  return isFilled(activity.cadence) || isFilled(activity.time);
-});
-
-const oneOffUpcoming = oneOffEvents
-  .map((event) => {
-    const startAt = new Date(event.start);
-    return {
-      ...event,
-      startAt,
-      hasTime: event.start.includes("T")
-    };
-  })
-  .filter((event) => {
-    if (Number.isNaN(event.startAt.valueOf())) {
-      return false;
-    }
-    return event.hasTime ? event.startAt >= now : event.startAt >= startOfToday;
-  })
-  .sort((a, b) => a.startAt.valueOf() - b.startAt.valueOf());
----
-
-<section class="stack">
-  <header class="stack--tight">
-    <h2>{title}</h2>
-    {subtitle && <p class="muted">{subtitle}</p>}
-  </header>
-
-  {oneOffUpcoming.length > 0 && (
-    <div class="stack--tight">
-      <h3>One-off events</h3>
-      <ul class="recurring-list">
-        {oneOffUpcoming.map((event) => (
-          <li class="recurring-item">
-            <p class="recurring-text">
-              {event.link ? <a href={event.link}>{event.title}</a> : <span>{event.title}</span>}
-              {` on ${
-                event.hasTime ? fmtDateTime.format(event.startAt) : fmtDate.format(event.startAt)
-              }`}
-            </p>
-            {showNotes && event.note && <span class="recurring-note">{event.note}</span>}
-          </li>
-        ))}
-      </ul>
-    </div>
-  )}
-
-  {oneOffUpcoming.length > 0 && <h3>Recurring activities</h3>}
-  <ul class="recurring-list">
-    {cleanedRecurring.map((activity) => (
-      <li class="recurring-item">
-        <p class="recurring-text">
-          {activity.link ? (
-            <a href={activity.link}>{activity.title}</a>
-          ) : (
-            <span>{activity.title}</span>
-          )}
-          {activity.cadence && ` ${activity.cadence}`}
-          {activity.time && ` at ${activity.time}`}
-          {(activity.cadence || activity.time) && "."}
-        </p>
-        {showNotes && activity.note && <span class="recurring-note">{activity.note}</span>}
-      </li>
-    ))}
-  </ul>
-</section>
-
-<style>
-  .recurring-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: var(--space-3);
-  }
-
-  .recurring-item {
-    display: grid;
-    gap: var(--space-1);
-  }
-
-  .recurring-text {
-    margin: 0;
-    font-size: 1rem;
-  }
-
-  .recurring-text a {
-    font-weight: 600;
-    text-decoration: none;
-  }
-
-  .recurring-text a:hover {
-    text-decoration: underline;
-  }
-
-  .recurring-note {
-    font-size: 0.85rem;
-    color: var(--color-text-muted);
-  }
-</style>
-</file>
-
 <file path="web/src/components/ui/ButtonLink.astro">
 ---
 import Button from "./Button.astro";
@@ -1488,6 +1256,42 @@ const props = Astro.props as Props;
 ---
 
 <YouTubeEmbedMedia {...props} />
+</file>
+
+<file path="web/src/components/PlanVisitContent.astro">
+---
+import Schedule from "./ui/Schedule.astro";
+import { site } from "../data/site";
+---
+
+<div class="stack">
+  <h1>Plan a Visit</h1>
+
+  <Schedule title="Service Times" items={site.schedule} />
+
+  <section class="card stack">
+    <h2>Directions</h2>
+    <p class="muted">
+      Address:
+      <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">
+        {site.contact.address}
+      </a>
+    </p>
+
+    <ul class="muted">
+      {site.visit.directions.map((direction) => (
+        <li>{direction}</li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="card stack">
+    <h2>What to expect</h2>
+    <p class="muted">{site.visit.languageNote}</p>
+    <p class="muted">{site.visit.parkingNote}</p>
+    <p class="muted">{site.visit.accessibilityNote}</p>
+  </section>
+</div>
 </file>
 
 <file path="web/src/components/Welcome.astro">
@@ -1712,15 +1516,6 @@ pdfUrl: "/bulletins/2025-12-13.pdf"
 ---
 </file>
 
-<file path="web/src/content/bulletins/2025-12-20.md">
----
-title: "Sabbath Bulletin"
-date: "2025-12-20"
-summary: "Order of service, announcements, and weekly schedule."
-pdfUrl: "/bulletins/2025-12-20.pdf"
----
-</file>
-
 <file path="web/src/content/bulletins/2026-01-03.md">
 ---
 title: "Sabbath Bulletin"
@@ -1794,24 +1589,38 @@ The Mission of the Adult Sabbath School Department of the First Springfield Seve
 </div>
 </file>
 
-<file path="web/src/content/ministries/adventurers.md">
+<file path="web/src/content/ministries/adventist-community-services.md">
 ---
-title: "Adventurers"
-summary: "A fun, faith-based club for children and their families."
-leaderName: "Adventurers Leaders"
+title: "Adventist Community Services (ACS)"
+summary: "Holistic ministry serving the Pioneer Valley and Springfield through compassion and practical care."
+leaderName: "Adventist Community Services Team"
 leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "1st and 3rd Sabbath"
-category: "Children & Youth"
-tags: ["kids", "families", "faith"]
+meetingTime: "Monthly programs (see details below)."
+category: "Outreach"
+tags: ["community", "outreach", "service", "holistic ministry"]
 ---
 
-## Overview
+## Adventist Community Services (ACS)
 
-Adventurers helps kids grow in faith, friendships, and family involvement.
+“Team: Brenda St George, Belinda Behnava, Donald Moore, Gabriele Moore, Carolyn Mutcherson, Pastor Abankwa Amoakohene”
 
-## How to get involved
+“At First Springfield Seventh-day Adventist Church, our mission is to humbly and lovingly serve the residents of the Pioneer Valley, the City of Springfield, and surrounding cities and towns. We seek to share the message of Jesus in tangible and meaningful ways by serving the whole person, a Christ-centered approach known as holistic ministry.”
 
-Come to a meeting or contact the leaders to learn more.
+“Throughout Jesus’ earthly ministry, He consistently modeled a holistic approach to caring for humanity, especially those who were marginalized, disadvantaged, and disenfranchised. He met people where they were, addressed their physical, emotional, and spiritual needs, and offered hope, dignity, and restoration.”
+
+“As Ellen G. White beautifully wrote: “Christ’s method alone will give true success in reaching the people. The Savior mingled with men as one who desired their good. He showed His sympathy for them, ministered to their needs, and won their confidence. Then He bade them, ‘Follow Me.’””
+
+“Through our Community Services ministry, we strive to follow Christ’s example, serving with humility, compassion, and love, and reflecting God’s grace to all.”
+
+“Monthly Activities: Our community service programs are open to the public, and volunteers are always welcome to join us in serving others.”
+
+“• Adventist Community Services (ACS) Meeting – Held on the second Wednesday of each month from 5:30–6:45 PM. All are welcome to participate and learn how to serve the community.”
+
+“• Homeless Outreach Lunch – Prepared and delivered on the first Tuesday of each month in coordination with South Congregational Church in Springfield, MA.”
+
+“• Taylor Street Men’s Shelter Dinner – Prepared and delivered on the second Tuesday of each month, providing warm meals and fellowship to those in need.”
+
+“• Community Spaghetti Dinner – Held on the last Wednesday of each month from 5:00–6:00 PM, offering a free, welcoming meal to our neighbors.”
 </file>
 
 <file path="web/src/content/ministries/bible-study.md">
@@ -1875,6 +1684,24 @@ Neighbors are welcome to a warm meal and friendly conversation.
 Volunteer or invite a friend to join us.
 </file>
 
+<file path="web/src/content/ministries/media-audio-visual.md">
+---
+title: "Media & Audio Visual"
+summary: "Supports worship and campus events with livestream, sound, and visual storytelling."
+category: "Other"
+tags: ["media", "audio", "visual", "communications"]
+---
+
+## Media & Audio Visual
+
+The Media & Audio Visual team keeps the gospel in focus with live streaming, sermon capture, and event production support. We blend sound, lighting, and visual elements so every voice can be heard warmly both in the sanctuary and online.
+
+### Online presence
+
+- https://www.youtube.com/@1stspringfieldsdama74
+- “Facebook: First Springfield SDA Church”
+</file>
+
 <file path="web/src/content/ministries/mens-ministry.md">
 ---
 title: "Men's Ministry"
@@ -1895,131 +1722,103 @@ We gather for encouragement, prayer, and practical ways to serve families and th
 Reach out to the leader or show up on a Friday night.
 </file>
 
-<file path="web/src/content/ministries/pathfinders.md">
+<file path="web/src/content/ministries/sabbath-school.md">
 ---
-title: "Pathfinders"
-summary: "A Christ-centered club for teens focused on leadership, service, and adventure."
-leaderName: "Pathfinders Leadership"
+title: "Sabbath School"
+summary: "Sabbath School equips Seventh-day Adventists to know Christ and share Him through Bible study, fellowship, mission, and discipleship."
+leaderName: "Elder Paul Moulema"
 leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "1st and 3rd Sabbath"
+meetingTime: "Sabbath 10 am"
+category: "Bible Study"
+tags: ["sabbath school", "fellowship", "discipleship", "mission"]
+---
+
+## Sabbath School
+
+Superintendent: Elder Paul Moulema
+
+Sabbath School Secretary: Carol Elliott
+
+“Time: Sabbath 10 am”
+
+“For Seventh-day Adventists, the goal of Sabbath School is much more than studying a lesson, it’s about making disciples. At its core, Sabbath School exists to help people grow in a saving relationship with Jesus Christ through the study of the Bible, fellowship, mission, and outreach. It is designed to nurture spiritual growth, strengthen faith, and equip members to live out the gospel in practical ways.”
+
+“The key goals of Sabbath School in the Seventh-day Adventist Church are to:”
+
+“• Study the Word of God – Deepening understanding of the Bible and its application to daily life.”
+
+“• Build Fellowship – Creating a caring, supportive community where members connect, encourage one another, and grow together.”
+
+“• Promote Mission – Inspiring participants to share the gospel locally and globally through service, outreach, and giving.”
+
+“• Nurture Discipleship – Helping members develop Christlike character and actively follow Jesus in their personal and public lives.”
+
+“In essence, Sabbath School supports the church’s mission by preparing believers to know Christ, grow in Christ, and share Christ with others—beginning each Sabbath morning in worship, study, and community.”
+
+### Resources
+
+- https://michigansspm.org/talking_points/
+- https://3abnsabbathschoolpanel.com/
+</file>
+
+<file path="web/src/content/ministries/secretary-communications.md">
+---
+title: "Secretary/Communications"
+summary: "Keeps the church informed through weekly publications, office records, and member communication."
+leaderName: "Secretary/Communications Team"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "Produce weekly bulletin and announcements"
+category: "Leadership"
+tags: ["communications", "administration", "office"]
+---
+
+## Secretary/Communications
+
+Church Clerk: Myrna L Leiper
+
+Assistance Bulletin Secretary: Loreli Gaetki
+
+This team keeps office records straight, shepherds member communication, and stewards the weekly bulletin that links congregants to worship plans, volunteer needs, and outreach invites. We coordinate with pastors, ministry leads, and volunteers so every voice is represented in print and online.
+
+### Weekly updates
+
+- [Add weekly bulletin (link)](/resources/bulletins)
+- [Add weekly announcements (link)](/resources/announcements)
+
+Need to send an announcement, update attendance, or ask a question about the bulletin? Reach out at the church office email above and we will walk you through the submission window for the coming Sabbath.
+</file>
+
+<file path="web/src/content/ministries/youth-young-adults.md">
+---
+title: "Youth & Young Adults Ministry"
+summary: "Supporting young people with Christ-centered friendship, learning, and service."
+leaderName: "Youth & Young Adults Ministry Team"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "See programs & events for the latest schedule."
 category: "Children & Youth"
-tags: ["youth", "teens", "discipleship"]
+tags: ["youth", "young adults", "discipleship", "community"]
 ---
 
-## Overview
+## Youth & Young adults ministry
 
-We help teens build friendships, skills, and a deeper walk with Jesus.
+“Our Youth and Young Adult Ministries are dedicated to helping young people grow in faith, purpose, and community as they navigate the important seasons of life. We strive to create a Christ-centered environment where youth and young adults can build meaningful relationships, deepen their walk with God, and discover their role in the church and the world.”
 
-## How to get involved
+“Through worship, fellowship, service, and meaningful conversations, our Youth and Young Adult Ministries seek to support, empower, and inspire young people to live out their faith with confidence and purpose.”
 
-Join a meeting or contact the leaders for details.
-</file>
+AY Director: Anthia Elliott
 
-<file path="web/src/content/ministries/womens-ministry.md">
----
-title: "Women's Ministry"
-summary: "Connection, encouragement, and discipleship for women of all ages."
-leaderName: "Women's Ministry Team"
-leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "1st Tuesday of each month"
-category: "Women"
-tags: ["women", "discipleship", "community"]
----
+AY Assistance Director: Yolann Guirand
 
-## Overview
+### Programs & Events
 
-We meet to grow in faith, share life, and support one another.
+- “Table Talk: youth-focused program taking place the second Sabbath of the month. Each month, a new presenter will share practical guidance on life skills, workplace expectations, career insights, and personal development to help equip our youth for success. All youth are encouraged to attend and bring a friend, take part in these meaningful discussions in a relaxed, supportive setting. Come ready to learn, ask questions, and grow together!”
+- “GYC: December 30 to January 3, 2027- location and details will be shared soon.”
 
-## How to get involved
+### Resources
 
-Contact the ministry team to get the latest details.
-</file>
-
-<file path="web/src/data/activities.ts">
-export type RecurringActivity = {
-  title: string;
-  cadence: string;
-  time: string;
-  link: string;
-  note: string;
-};
-
-export type OneOffEvent = {
-  title: string;
-  start: string;
-  link?: string;
-  note?: string;
-};
-
-export const recurringActivities: RecurringActivity[] = [
-  {
-    title: "Pathfinders and Adventurers",
-    cadence: "meet on the first and third Sabbath",
-    time: "",
-    link: "/ministries/pathfinders",
-    note: "Public"
-  },
-  {
-    title: "Board meeting",
-    cadence: "is on the second Tuesday of every month",
-    time: "",
-    link: "/ministries/board-meeting",
-    note: "Members only"
-  },
-  {
-    title: "Men's ministry",
-    cadence: "is every Friday",
-    time: "7:00 PM",
-    link: "/ministries/mens-ministry",
-    note: "Public"
-  },
-  {
-    title: "Women's ministry",
-    cadence: "is on the first Tuesday of every month",
-    time: "",
-    link: "/ministries/womens-ministry",
-    note: "Public"
-  },
-  {
-    title: "Free spaghetti dinner",
-    cadence: "the 4th Wednesday of every month",
-    time: "",
-    link: "/ministries/community-meal-spaghetti",
-    note: "Public"
-  },
-  {
-    title: "Bible study",
-    cadence: "the 4th Sabbath",
-    time: "",
-    link: "/ministries/bible-study",
-    note: "Public"
-  }
-];
-
-export const oneOffEvents: OneOffEvent[] = [];
-</file>
-
-<file path="web/src/data/videos.json">
-[
-  {
-    "title": "Sabbath Worship Service",
-    "date": "2025-12-13",
-    "youtubeId": "TBD",
-    "summary": "Weekly worship service."
-  },
-  {
-    "title": "Bible Study / Message",
-    "date": "2025-12-06",
-    "youtubeId": "TBD",
-    "summary": "Sermon and reflection."
-  },
-  {
-    "title": "Special Program",
-    "date": "2025-11-29",
-    "youtubeId": "TBD",
-    "summary": "Guest speaker or special event."
-  }
-]
+- Instagram Page: @firstspringfieldday
+- https://nadyouthyoungadults.org/young-adult-ministry/
+- https://growingyoungadventists.com/
 </file>
 
 <file path="web/src/layouts/Layout.astro">
@@ -2047,6 +1846,86 @@ export const oneOffEvents: OneOffEvent[] = [];
 </style>
 </file>
 
+<file path="web/src/pages/resources/announcements/index.astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Button from "../../../components/ui/Button.astro";
+import Card from "../../../components/ui/Card.astro";
+import { site } from "../../../data/site";
+import { getCollection } from "astro:content";
+
+const bulletins = await getCollection("bulletins", ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+const sorted = bulletins.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const current = sorted[0];
+const fmt = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "full",
+  timeZone: site.timeZone,
+});
+---
+
+<BaseLayout
+  title="Weekly Announcements"
+  description="See what the communications team is sharing with the church each week."
+>
+  <div class="stack">
+    <h1>Weekly Announcements</h1>
+    <p class="muted">
+      The communications team gathers updates from every ministry so you can stay informed about worship plans,
+      volunteer needs, prayer requests, and upcoming outreach opportunities.
+    </p>
+
+    <section class="card stack--tight">
+      <h2>Share an announcement</h2>
+      <p>
+        Send bulletin-ready announcements and event highlights to the communications team by Wednesday evenings to
+        ensure they make the next Sabbath format.
+      </p>
+      <ul>
+        <li>Include a clear event title, date, time, and any registration/RSVP info.</li>
+        <li>Mention who your announcement should contact for follow-up questions.</li>
+        <li>Keep messages concise; our announcement time is limited.</li>
+      </ul>
+      <p class="muted">Email updates to {site.contact.email} or call {site.contact.phone}.</p>
+      <div class="cluster">
+        <Button href="/connect/contact" variant="secondary">Contact communications</Button>
+        <Button href="/resources/bulletins" variant="ghost">Browse bulletins</Button>
+      </div>
+    </section>
+
+    <section class="stack--tight">
+      <h2>Current announcements</h2>
+      {current ? (
+        <Card
+          title={current.data.title}
+          description={`${fmt.format(current.data.date)}${current.data.summary ? ` • ${current.data.summary}` : ""}`.trim()}
+          href={current.data.pdfUrl}
+        />
+      ) : (
+        <p class="muted">Announcements will appear here once a bulletin is published.</p>
+      )}
+    </section>
+  </div>
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/visit/index.astro">
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PlanVisitContent from "../../components/PlanVisitContent.astro";
+import { site } from "../../data/site";
+---
+
+<BaseLayout
+  title="Plan a Visit"
+  description={`Service times, directions, parking, and what to expect when visiting ${site.name}.`}
+>
+  <PlanVisitContent />
+</BaseLayout>
+</file>
+
 <file path="web/src/pages/404.astro">
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
@@ -2063,367 +1942,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     <li><a href="/connect">Connect</a></li>
   </ul>
 </BaseLayout>
-</file>
-
-<file path="web/src/pages/components.astro">
----
-import BaseLayout from "../layouts/BaseLayout.astro";
-import Button from "../components/ui/Button.astro";
-import Banner from "../components/ui/Banner.astro";
-import Card from "../components/ui/Card.astro";
-
-const buttonVariants = [
-  { label: "Primary", variant: "primary" },
-  { label: "Secondary", variant: "secondary" },
-  { label: "Ghost", variant: "ghost" },
-];
-
-const buttonSizes = [
-  { label: "Small", size: "sm" },
-  { label: "Medium (default)", size: "md" },
-  { label: "Large", size: "lg" },
-];
-
-const linkSamples = [
-  { label: "Plan a visit", href: "/connect/plan-a-visit", helper: "Internal CTA", external: false },
-  {
-    label: "Design handoff notes",
-    href: "/docs/ui-handoff.md",
-    helper: "Documents align with design tokens",
-    external: false,
-  },
-  {
-    label: "Cross-device guide",
-    href: "https://playwright.dev/docs/test-configuration",
-    helper: "External resource (opens new tab)",
-    external: true,
-  },
-];
-
-const cards = [
-  {
-    title: "Service snapshot",
-    description: "Button-driven CTAs magnify the worship preview and giving link.",
-    href: "/connect/worship-with-us",
-  },
-  {
-    title: "Ministry stories",
-    description: "Cards frame the latest community updates without extra markup.",
-  },
-];
-
-const badges = [
-  { label: "New", className: "badge badge--primary" },
-  { label: "Draft", className: "badge badge--muted" },
-  { label: "Alert", className: "badge badge--warn" },
-];
-
-const tableRows = [
-  { component: "Button", usage: "Primary, secondary, ghost shapes", pattern: "Hero/CTA pattern" },
-  { component: "Banner", usage: "Info + warning alerts", pattern: "Announcements + policy changes" },
-  { component: "Card", usage: "Service/ministry highlights", pattern: "Grid + stack layouts" },
-];
-
-const listItems = [
-  "Spacing relies on `var(--space-*)` tokens that keep grids and stacks aligned.",
-  "Color, border, and focus tokens (*primary, border, focus*) stay consistent site wide.",
-  "Animations respect `stack` and `cluster` helpers so cards stay responsive.",
-];
----
-
-<BaseLayout title="Components" description="Living component library for First Springfield’s web toolkit.">
-  <section class="component-hero">
-    <p class="eyebrow">Component library</p>
-    <h1>Components</h1>
-    <p>
-      A compact guide to the shared UI surface, so designers and engineers can see the token-powered elements
-      that ship across First Springfield’s site.
-    </p>
-  </section>
-
-  <section class="component-section">
-    <header>
-      <h2>Buttons</h2>
-      <p>Variants + sizes use the shared tokens so CTAs feel consistent anywhere they appear.</p>
-    </header>
-
-    <div class="component-grid component-grid--variants">
-      {buttonVariants.map(({ label, variant }) => (
-        <article>
-          <p class="component-label">{label}</p>
-          <Button variant={variant} size="md">{label}</Button>
-        </article>
-      ))}
-    </div>
-
-    <div class="component-grid component-grid--sizes">
-      {buttonSizes.map(({ label, size }) => (
-        <article>
-          <p class="component-label">{label}</p>
-          <Button variant="primary" size={size}>{label}</Button>
-        </article>
-      ))}
-    </div>
-
-    <div class="component-grid component-grid--states">
-      <article>
-        <p class="component-label">Disabled</p>
-        <Button variant="primary" size="md" disabled>Disabled</Button>
-      </article>
-      <article>
-        <p class="component-label">Focus-visible</p>
-        <Button variant="primary" size="md" autoFocus>Focus state</Button>
-      </article>
-    </div>
-    <p class="component-hint">Use Tab (or the demo focus button) to see the outline from the site-wide focus token.</p>
-  </section>
-
-  <section class="component-section">
-    <header>
-      <h2>Links + external icon behavior</h2>
-      <p>Shared link styles highlight internal links and signal external destinations.</p>
-    </header>
-    <div class="component-grid component-grid--links">
-      {linkSamples.map(({ label, href, helper, external }) => (
-        <a
-          class="component-link"
-          href={href}
-          target={external ? "_blank" : undefined}
-          rel={external ? "noreferrer noopener" : undefined}
-        >
-          <span>{label}</span>
-          <span class="component-link__hint">{helper}</span>
-          {external ? <span aria-hidden="true" class="component-link__icon">↗</span> : null}
-        </a>
-      ))}
-    </div>
-  </section>
-
-  <section class="component-section">
-    <header>
-      <h2>Banner states</h2>
-      <p>Alert banners sport info or warn tones to stay calm yet clear.</p>
-    </header>
-    <div class="component-grid component-grid--banners">
-      <Banner message="Service updates land here before they reach the hero." tone="info" ctaLabel="Learn more" ctaHref="/connect/about" />
-      <Banner message="Safety and campus policies use the warning tone." tone="warn" ctaLabel="Welcoming summary" ctaHref="/connect/worship-with-us" />
-    </div>
-  </section>
-
-  <section class="component-section">
-    <header>
-      <h2>Cards & badges</h2>
-      <p>Cards stretch into grids; badges keep metadata compact.</p>
-    </header>
-    <div class="component-grid component-grid--cards">
-      {cards.map((card) => (
-        <Card title={card.title} description={card.description} href={card.href} />
-      ))}
-    </div>
-    <div class="badge-row">
-      {badges.map((badge) => (
-        <span class={badge.className}>{badge.label}</span>
-      ))}
-    </div>
-  </section>
-
-  <section class="component-section">
-    <header>
-      <h2>Table & list styles</h2>
-      <p>Responsive tables and stacks keep content legible on every viewport.</p>
-    </header>
-    <div class="component-table-wrapper">
-      <table class="component-table">
-        <thead>
-          <tr>
-            <th scope="col">Component</th>
-            <th scope="col">Usage</th>
-            <th scope="col">Pattern</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tableRows.map((row) => (
-            <tr>
-              <td>{row.component}</td>
-              <td>{row.usage}</td>
-              <td>{row.pattern}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    <ul class="component-list">
-      {listItems.map((item) => (
-        <li>{item}</li>
-      ))}
-    </ul>
-  </section>
-</BaseLayout>
-
-<style>
-  .eyebrow {
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    font-size: var(--font-size-0);
-    margin-bottom: var(--space-2);
-    color: var(--color-text-muted);
-  }
-
-  .component-hero {
-    margin-bottom: var(--space-8);
-  }
-
-  .component-section {
-    margin-bottom: var(--space-10);
-  }
-
-  .component-section header h2 {
-    margin: 0 0 var(--space-2);
-  }
-
-  .component-section header p {
-    margin: 0;
-    color: var(--color-text-muted);
-  }
-
-  .component-grid {
-    display: grid;
-    gap: var(--space-4);
-    margin-top: var(--space-4);
-  }
-
-  .component-grid--variants,
-  .component-grid--sizes,
-  .component-grid--states {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
-
-  .component-grid--links {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  }
-
-  .component-grid--cards {
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  }
-
-  .component-grid--banners {
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  }
-
-  .component-label {
-    margin: 0;
-    font-size: var(--font-size-0);
-    color: var(--color-text-muted);
-  }
-
-  .component-hint {
-    margin-top: var(--space-3);
-    font-size: var(--font-size-0);
-    color: var(--color-text-muted);
-  }
-
-  .component-link {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-3);
-    padding: var(--space-3);
-    text-decoration: none;
-    color: inherit;
-    background: var(--color-surface);
-  }
-
-  .component-link:hover,
-  .component-link:focus-visible {
-    border-color: var(--color-border-strong);
-    box-shadow: var(--shadow-1);
-  }
-
-  .component-link__hint {
-    font-size: var(--font-size-0);
-    color: var(--color-text-muted);
-  }
-
-  .component-link__icon {
-    font-size: 0.9rem;
-    color: var(--color-primary);
-  }
-
-  .badge-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-    margin-top: var(--space-4);
-  }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    padding: var(--space-1) var(--space-3);
-    border-radius: var(--radius-2);
-    font-weight: 600;
-    font-size: var(--font-size-0);
-  }
-
-  .badge--primary {
-    background: #fdecea;
-    color: #991b1b;
-  }
-
-  .badge--muted {
-    background: var(--color-gray-50);
-    color: var(--color-gray-600);
-  }
-
-  .badge--warn {
-    background: #fff4e5;
-    color: #b45309;
-  }
-
-  .component-table-wrapper {
-    overflow-x: auto;
-    margin-top: var(--space-4);
-  }
-
-  .component-table {
-    width: 100%;
-    border-collapse: collapse;
-    border: 1px solid var(--color-border);
-  }
-
-  .component-table th,
-  .component-table td {
-    padding: var(--space-3);
-    text-align: left;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .component-table th {
-    font-size: var(--font-size-0);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--color-text-muted);
-  }
-
-  .component-list {
-    margin-top: var(--space-4);
-    padding-left: 1.2rem;
-    color: var(--color-text);
-  }
-
-  .component-list li + li {
-    margin-top: var(--space-2);
-  }
-
-  @media (max-width: 640px) {
-    .component-grid--variants,
-    .component-grid--sizes,
-    .component-grid--states {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>
 </file>
 
 <file path="web/src/pages/robots.txt.ts">
@@ -2456,76 +1974,6 @@ export const GET: APIRoute = ({ site: astroSite, url }) => {
 };
 </file>
 
-<file path="web/test-results/.last-run 2.json">
-{
-  "status": "passed",
-  "failedTests": []
-}
-</file>
-
-<file path="web/test-results/.last-run.json">
-{
-  "status": "passed",
-  "failedTests": []
-}
-</file>
-
-<file path="web/tests/e2e/mobile.smoke.spec.ts">
-import { test, expect } from '@playwright/test';
-
-test.describe('Smoke - mobile device', () => {
-  test('mobile header nav and primary CTA stay accessible on home', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('header nav')).toBeVisible();
-    await expect(page.getByRole('link', { name: /give/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /watch live/i })).toBeVisible();
-  });
-
-  test('visit page loads key content and CTA', async ({ page }) => {
-    await page.goto('/visit');
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await expect(page.locator('main')).toContainText(/parking|directions|address/i);
-    await expect(page.getByRole('link', { name: /give/i })).toBeVisible();
-  });
-});
-</file>
-
-<file path="web/tests/e2e/phase-7-sitefiles.spec.ts">
-import { expect, test } from "@playwright/test";
-
-test("robots.txt exists and references sitemap", async ({ page }) => {
-  await page.goto("/robots.txt");
-  const body = await page.textContent("body");
-  expect(body).toContain("User-agent:");
-  expect(body).toContain("Sitemap:");
-});
-
-test("sitemap index exists", async ({ page }) => {
-  await page.goto("/sitemap-index.xml");
-  const body = await page.textContent("body");
-  expect(body).toContain("<sitemapindex");
-});
-</file>
-
-<file path="web/tests/e2e/smoke.spec.ts">
-import { test, expect } from '@playwright/test';
-
-test.describe('Smoke - cross browser', () => {
-  test('home renders primary navigation and CTA', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('header')).toBeVisible();
-    await expect(page.getByRole('link', { name: /watch live/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /give/i })).toBeVisible();
-  });
-
-  test('plan a visit page loads key content', async ({ page }) => {
-    await page.goto('/visit');
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await expect(page.locator('main')).toContainText(/parking|directions|address/i);
-  });
-});
-</file>
-
 <file path="web/.gitignore">
 # build output
 dist/
@@ -2551,44 +1999,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
-</file>
-
-<file path="web/lighthouserc.cjs">
-module.exports = {
-  ci: {
-    collect: {
-      staticDistDir: "./dist",
-      numberOfRuns: 3
-    },
-    assert: {
-      assertions: {
-        "categories:performance": ["error", { "minScore": 0.9 }],
-        "categories:accessibility": ["error", { "minScore": 0.95 }],
-        "categories:seo": ["error", { "minScore": 0.95 }],
-        "categories:best-practices": ["error", { "minScore": 0.95 }]
-      }
-    },
-    upload: {
-      target: "filesystem",
-      outputDir: "./.lighthouseci"
-    }
-  }
-};
-</file>
-
-<file path="web/linkinator.config.json">
-{
-  "recurse": true,
-  "cleanUrls": true,
-  "checkFragments": true,
-  "timeout": 30000,
-  "concurrency": 50,
-  "skip": [
-    "^mailto:",
-    "^tel:",
-    "^https?://"
-  ]
-}
 </file>
 
 <file path="web/README.md">
@@ -2640,25 +2050,6 @@ All commands are run from the root of the project, from a terminal:
 Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
 </file>
 
-<file path="web/wrangler.jsonc">
-{
-	"main": "dist/_worker.js/index.js",
-	"name": "web",
-  "compatibility_date": "2025-12-19",
-  "compatibility_flags": [
-    "nodejs_compat",
-    "global_fetch_strictly_public"
-  ],
-	"assets": {
-		"binding": "ASSETS",
-		"directory": "./dist"
-	},
-	"observability": {
-    "enabled": true
-  }
-}
-</file>
-
 <file path=".editorconfig">
 root = true
 
@@ -2672,16 +2063,9 @@ trim_trailing_whitespace = true
 trim_trailing_whitespace = false
 </file>
 
-<file path=".gitignore">
-# Node
-node_modules/
-
-# Astro
-web/dist/
-web/.astro/
-
-# OS
-.DS_Store
+<file path=".npmrc">
+# Use the Python installation that still exposes distutils for node-gyp builds.
+python=/opt/homebrew/bin/python3.11
 </file>
 
 <file path=".nvmrc">
@@ -2869,351 +2253,6 @@ const safeTags = tags ?? [];
 </style>
 </file>
 
-<file path="web/src/components/global/Header.astro">
----
-import Button from "../ui/Button.astro";
-import { site } from "../../data/site";
-
-const pathname = Astro.url?.pathname ?? "/";
-
-function isActive(href: string) {
-  if (href === "/") return pathname === "/";
-  return pathname === href || pathname.startsWith(href + "/");
-}
-
-function linkAttrs(item: { href: string; external?: boolean }) {
-  return item.external ? { target: "_blank", rel: "noopener noreferrer" } : {};
-}
-
-const watchLive = site.quickActions.find((i) => i.label === "Watch Live") ?? site.quickActions[0];
-const give = site.quickActions.find((i) => i.label === "Give") ?? site.quickActions[1];
-const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label && i.label !== give?.label);
----
-
-<header class="site-header">
-  <div class="inner">
-    <a class="brand" href="/" aria-label={site.name}>
-      <span class="brand__title">{site.shortName}</span>
-    </a>
-
-    <nav class="nav nav--desktop" aria-label="Primary navigation">
-      {site.nav.map((item) => (
-        <a
-          href={item.href}
-          aria-current={isActive(item.href) ? "page" : undefined}
-          {...linkAttrs(item)}
-        >
-          {item.label}
-        </a>
-      ))}
-    </nav>
-
-    <div class="right">
-      <div class="cta cta--desktop" aria-label="Primary actions">
-        {watchLive && (
-          <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
-            {watchLive.label}
-          </Button>
-        )}
-        {give && (
-          <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
-            {give.label}
-          </Button>
-        )}
-      </div>
-
-      <div class="cta cta--mobile" aria-label="Primary actions">
-        {watchLive && (
-          <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
-            {watchLive.label}
-          </Button>
-        )}
-        {give && (
-          <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
-            {give.label}
-          </Button>
-        )}
-      </div>
-
-      <details class="menu" aria-label="Mobile menu">
-        <summary class="menu__summary" aria-label="Open menu">
-          <span class="menu__icon" aria-hidden="true">☰</span>
-          <span class="menu__label">Menu</span>
-        </summary>
-
-        <div class="menu__panel">
-          <nav class="menu__section" aria-label="Primary navigation">
-            {site.nav.map((item) => (
-              <a
-                class="menu__link"
-                href={item.href}
-                aria-current={isActive(item.href) ? "page" : undefined}
-                {...linkAttrs(item)}
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
-
-          <div class="menu__divider" role="separator" aria-hidden="true"></div>
-
-          <div class="menu__section" aria-label="Quick actions">
-            <div class="menu__actions">
-              {watchLive && (
-                <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
-                  {watchLive.label}
-                </Button>
-              )}
-              {give && (
-                <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
-                  {give.label}
-                </Button>
-              )}
-            </div>
-
-            {otherQuick.length > 0 && (
-              <div class="menu__quicklinks" aria-label="More quick links">
-                {otherQuick.map((item) => (
-                  <a class="menu__sublink" href={item.href} {...linkAttrs(item)}>
-                    {item.label}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </details>
-    </div>
-  </div>
-</header>
-
-<script>
-  // Close the mobile menu when a link is clicked.
-  document.addEventListener("click", (e) => {
-    const target = e.target;
-    if (!(target instanceof HTMLElement)) return;
-
-    const link = target.closest("a");
-    const details = target.closest("details.menu");
-    if (link && details) details.removeAttribute("open");
-  });
-</script>
-
-<style>
-  .site-header {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: var(--color-white);
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .inner {
-    max-width: var(--container-max);
-    margin: 0 auto;
-    padding: var(--space-3) var(--container-pad);
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: var(--space-4);
-  }
-
-  .brand {
-    text-decoration: none;
-    color: inherit;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-width: max-content;
-  }
-
-  .brand__title {
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    font-size: var(--font-size-2);
-  }
-
-  .nav {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .nav a {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--target-min);
-    text-decoration: none;
-    color: inherit;
-    font-weight: 700;
-    opacity: 0.9;
-    padding: 0.55rem 0.7rem;
-    border-radius: 999px;
-  }
-
-  .nav a:hover {
-    background: var(--color-gray-50);
-    opacity: 1;
-  }
-
-  .nav a[aria-current="page"] {
-    background: var(--color-gray-100);
-    opacity: 1;
-  }
-
-  .cta {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    justify-content: flex-end;
-    min-width: max-content;
-  }
-
-  .right {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: var(--space-2);
-    min-width: max-content;
-  }
-
-  .cta--mobile {
-    display: none;
-  }
-
-  /* Mobile menu */
-  .menu {
-    display: none;
-    position: relative;
-  }
-
-  .menu__summary {
-    list-style: none;
-    cursor: pointer;
-    user-select: none;
-    padding: 0.55rem 0.7rem;
-    border-radius: 999px;
-    border: 1px solid var(--color-border);
-    background: var(--color-white);
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-weight: 700;
-    min-height: var(--target-min);
-  }
-
-  .menu__summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .menu[open] .menu__summary {
-    background: var(--color-gray-50);
-  }
-
-  .menu__panel {
-    position: absolute;
-    right: 0;
-    top: calc(100% + 0.6rem);
-    width: min(92vw, 22rem);
-    background: var(--color-white);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-3);
-    box-shadow: var(--shadow-2);
-    padding: var(--space-3);
-    z-index: 60;
-  }
-
-  .menu__section {
-    display: grid;
-    gap: 0.35rem;
-  }
-
-  .menu__link {
-    display: flex;
-    align-items: center;
-    min-height: var(--target-min);
-    text-decoration: none;
-    color: inherit;
-    font-weight: 700;
-    padding: 0.6rem 0.7rem;
-    border-radius: var(--radius-2);
-  }
-
-  .menu__link:hover {
-    background: var(--color-gray-50);
-  }
-
-  .menu__link[aria-current="page"] {
-    background: var(--color-gray-100);
-  }
-
-  .menu__divider {
-    height: 1px;
-    background: var(--color-border);
-    margin: var(--space-3) 0;
-  }
-
-  .menu__actions {
-    display: flex;
-    gap: var(--space-2);
-    flex-wrap: wrap;
-  }
-
-  .menu__quicklinks {
-    margin-top: var(--space-3);
-    display: grid;
-    gap: 0.25rem;
-  }
-
-  .menu__sublink {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--target-min);
-    text-decoration: none;
-    color: inherit;
-    opacity: 0.9;
-    padding: 0.4rem 0.2rem;
-    font-weight: 700;
-  }
-
-  .menu__sublink:hover {
-    opacity: 1;
-    text-decoration: underline;
-  }
-
-  @media (max-width: 860px) {
-    .nav--desktop,
-    .cta--desktop {
-      display: none;
-    }
-
-    .cta--mobile {
-      display: flex;
-    }
-
-    .inner {
-      grid-template-columns: auto 1fr auto;
-    }
-
-    .menu {
-      display: block;
-    }
-  }
-
-  @media (max-width: 420px) {
-    .menu__label {
-      display: none;
-    }
-
-    .menu__summary {
-      padding: 0.55rem 0.6rem;
-    }
-  }
-</style>
-</file>
-
 <file path="web/src/components/media/YouTubeEmbed.astro">
 ---
 type Props = {
@@ -3262,44 +2301,6 @@ const { title, embedUrl } = Astro.props;
     border: 0;
   }
 </style>
-</file>
-
-<file path="web/src/components/sections/CardGrid.astro">
----
-import Card from "../ui/Card.astro";
-import Grid from "../ui/CardGrid.astro";
-
-type CardItem = {
-  title: string;
-  description?: string;
-  href?: string;
-};
-
-type Props = {
-  title?: string;
-  subtitle?: string;
-  cards: CardItem[];
-  columns?: number;
-  columnsMin?: number;
-};
-
-const { title, subtitle, cards, columns, columnsMin = 240 } = Astro.props;
----
-
-<section class="stack">
-  {(title || subtitle) && (
-    <header class="stack--tight">
-      {title && <h2>{title}</h2>}
-      {subtitle && <p class="muted">{subtitle}</p>}
-    </header>
-  )}
-
-  <Grid columns={columns} columnsMin={columnsMin}>
-    {cards.map((c) => (
-      <Card title={c.title} description={c.description} href={c.href} />
-    ))}
-  </Grid>
-</section>
 </file>
 
 <file path="web/src/components/sections/EventList.astro">
@@ -3361,125 +2362,134 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
 </section>
 </file>
 
-<file path="web/src/components/sections/HeroBanner.astro">
+<file path="web/src/components/sections/RecurringActivities.astro">
 ---
-import type { ImageMetadata } from "astro";
-import { Image } from "astro:assets";
-import HeroUI from "../ui/Hero.astro";
+import { oneOffEvents, recurringActivities } from "../../data/activities";
+import { site } from "../../data/site";
 
-export type Props = {
-  title: string;
+type Props = {
+  title?: string;
   subtitle?: string;
-  primaryCtaLabel?: string;
-  primaryCtaHref?: string;
-  secondaryCtaLabel?: string;
-  secondaryCtaHref?: string;
-
-  background: ImageMetadata;
-
-  /**
-   * Keep the bridge centered-ish.
-   * Example: "50% 55%" (x y)
-   */
-  objectPosition?: string;
+  showNotes?: boolean;
 };
 
-const {
-  background,
-  objectPosition = "50% 55%",
-  ...heroProps
-} = Astro.props as Props;
+const { title = "Activities", subtitle, showNotes = true } = Astro.props;
+
+const now = new Date();
+const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+const fmtDate = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "medium",
+  timeZone: site.timeZone
+});
+const fmtDateTime = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: site.timeZone
+});
+
+const isFilled = (value?: string) => Boolean(value && value.trim() && value !== "TBD");
+const cleanedRecurring = recurringActivities.filter((activity) => {
+  const title = activity.title?.trim();
+  if (!title || title.toLowerCase().startsWith("etc")) {
+    return false;
+  }
+  return isFilled(activity.cadence) || isFilled(activity.time);
+});
+
+const oneOffUpcoming = oneOffEvents
+  .map((event) => {
+    const startAt = new Date(event.start);
+    return {
+      ...event,
+      startAt,
+      hasTime: event.start.includes("T")
+    };
+  })
+  .filter((event) => {
+    if (Number.isNaN(event.startAt.valueOf())) {
+      return false;
+    }
+    return event.hasTime ? event.startAt >= now : event.startAt >= startOfToday;
+  })
+  .sort((a, b) => a.startAt.valueOf() - b.startAt.valueOf());
 ---
 
-<section class="heroBanner fullbleed" style={`--hero-object-position:${objectPosition};`}>
-  <div class="heroBanner__media" aria-hidden="true">
-    <Image
-      src={background}
-      alt=""
-      widths={[640, 960, 1280, 1600, 1920]}
-      sizes="100vw"
-      loading="eager"
-      decoding="async"
-      fetchpriority="high"
-      class="heroBanner__img"
-    />
-    <div class="heroBanner__scrim" aria-hidden="true"></div>
+<section class="stack">
+  <div class="stack--tight">
+    <h2>{title}</h2>
+    {subtitle && <p class="muted">{subtitle}</p>}
   </div>
 
-  <div class="heroBanner__content">
-    <div class="heroBanner__container">
-      <HeroUI {...heroProps} />
+  {oneOffUpcoming.length > 0 && (
+    <div class="stack--tight">
+      <h3>One-off events</h3>
+      <ul class="recurring-list">
+        {oneOffUpcoming.map((event) => (
+          <li class="recurring-item">
+            <p class="recurring-text">
+              {event.link ? <a href={event.link}>{event.title}</a> : <span>{event.title}</span>}
+              {` on ${
+                event.hasTime ? fmtDateTime.format(event.startAt) : fmtDate.format(event.startAt)
+              }`}
+            </p>
+            {showNotes && event.note && <span class="recurring-note">{event.note}</span>}
+          </li>
+        ))}
+      </ul>
     </div>
-  </div>
+  )}
+
+  {oneOffUpcoming.length > 0 && <h3>Recurring activities</h3>}
+  <ul class="recurring-list">
+    {cleanedRecurring.map((activity) => (
+      <li class="recurring-item">
+        <p class="recurring-text">
+          {activity.link ? (
+            <a href={activity.link}>{activity.title}</a>
+          ) : (
+            <span>{activity.title}</span>
+          )}
+          {activity.cadence && ` ${activity.cadence}`}
+          {activity.time && ` at ${activity.time}`}
+          {(activity.cadence || activity.time) && "."}
+        </p>
+        {showNotes && activity.note && <span class="recurring-note">{activity.note}</span>}
+      </li>
+    ))}
+  </ul>
 </section>
 
 <style>
-  .heroBanner {
-    position: relative;
-    padding: var(--space-12) 0;
-    border-bottom: 1px solid var(--color-border);
-    overflow: hidden;
+  .recurring-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
   }
 
-  .heroBanner__media {
-    position: absolute;
-    inset: 0;
+  .recurring-item {
+    display: grid;
+    gap: var(--space-1);
   }
 
-  .heroBanner__img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: var(--hero-object-position);
-    transform: scale(1.02);
+  .recurring-text {
+    margin: 0;
+    font-size: 1rem;
   }
 
-  .heroBanner__scrim {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      180deg,
-      rgba(11, 15, 23, 0.45) 0%,
-      rgba(11, 15, 23, 0.18) 45%,
-      rgba(11, 15, 23, 0.55) 100%
-    );
+  .recurring-text a {
+    font-weight: 600;
+    text-decoration: none;
   }
 
-  .heroBanner__content {
-    position: relative;
-    z-index: 1;
+  .recurring-text a:hover {
+    text-decoration: underline;
   }
 
-  /* Match BaseLayout container sizing without nesting issues */
-  .heroBanner__container {
-    width: min(var(--container-max), calc(100% - var(--container-pad)));
-    margin: 0 auto;
-  }
-
-  /* Keep the existing “card” look, but make it sit nicely on the photo */
-  :global(.heroBanner .hero.card) {
-    background: rgba(255, 255, 255, 0.90);
-    backdrop-filter: blur(10px);
-    border-color: rgba(255, 255, 255, 0.35);
-  }
-
-  @media (max-width: 720px) {
-    .heroBanner {
-      padding: var(--space-8) 0;
-    }
-    /* Slightly higher crop on mobile so the bridge line stays visible */
-    .heroBanner {
-      --hero-object-position: 50% 50%;
-    }
-  }
-
-  @media (prefers-reduced-data: reduce) {
-    .heroBanner__media {
-      display: none;
-    }
-    .heroBanner {
-      background: var(--color-surface-2);
-    }
+  .recurring-note {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
   }
 </style>
 </file>
@@ -3584,74 +2594,6 @@ const template =
 </style>
 </file>
 
-<file path="web/src/components/ui/Hero.astro">
----
-import Button from "./Button.astro";
-
-type Props = {
-  title: string;
-  subtitle?: string;
-  primaryCtaLabel?: string;
-  primaryCtaHref?: string;
-  secondaryCtaLabel?: string;
-  secondaryCtaHref?: string;
-};
-
-const {
-  title,
-  subtitle,
-  primaryCtaLabel,
-  primaryCtaHref,
-  secondaryCtaLabel,
-  secondaryCtaHref
-} = Astro.props;
----
-
-<section class="hero card">
-  <div class="hero__inner">
-    <div>
-      <h1 class="hero__title">{title}</h1>
-      {subtitle && <p class="hero__subtitle muted">{subtitle}</p>}
-    </div>
-
-    {(primaryCtaLabel && primaryCtaHref) || (secondaryCtaLabel && secondaryCtaHref) ? (
-      <div class="hero__actions">
-        {primaryCtaLabel && primaryCtaHref && (
-          <Button href={primaryCtaHref} variant="primary">{primaryCtaLabel}</Button>
-        )}
-        {secondaryCtaLabel && secondaryCtaHref && (
-          <Button href={secondaryCtaHref} variant="secondary">{secondaryCtaLabel}</Button>
-        )}
-      </div>
-    ) : null}
-  </div>
-</section>
-
-<style>
-  .hero__inner {
-    display: grid;
-    gap: var(--space-4);
-  }
-
-  .hero__title {
-    margin: 0;
-    font-size: clamp(2.4rem, 1.8rem + 2.8vw, 3.5rem);
-    line-height: 1.15;
-  }
-
-  .hero__subtitle {
-    margin: var(--space-2) 0 0;
-    font-size: clamp(1.05rem, 0.95rem + 0.7vw, 1.4rem);
-  }
-
-  .hero__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-  }
-</style>
-</file>
-
 <file path="web/src/components/ui/Schedule.astro">
 ---
 import type { ScheduleItem } from "../../data/site";
@@ -3721,6 +2663,51 @@ const { title, message } = Astro.props;
 </section>
 </file>
 
+<file path="web/src/content/bulletins/2025-12-20.md">
+---
+title: "Sabbath Bulletin"
+date: "2025-12-20"
+summary: "Order of service, announcements, and weekly schedule."
+pdfUrl: "/bulletins/2025-12-20.pdf"
+---
+</file>
+
+<file path="web/src/content/ministries/womens-ministry.md">
+---
+title: "Women's Ministry"
+summary: "Connection, encouragement, and discipleship for women of all ages."
+leaderName: "Women's Ministry Team"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "First Tuesday of every month from 6:00–8:00 PM"
+category: "Women"
+tags: ["women", "discipleship", "community"]
+---
+
+## Women’s Ministry
+
+Women’s Ministry Team: Yejide Bell, Ada Durand, Maxine Griffiths, Sharon Luszcz
+
+Women’s Ministries exists to nurture, empower, and equip women to grow in their relationship with Jesus Christ and to use their God-given gifts in service to others. Our ministry provides a supportive and welcoming environment where women of all ages and backgrounds can connect, grow spiritually, and encourage one another.
+
+Through Bible study, prayer, fellowship, outreach, and service, Women’s Ministries seeks to strengthen faith, build meaningful relationships, and support women in their homes, church, and community. We are committed to uplifting women, fostering spiritual growth, and inspiring lives of purpose, compassion, and leadership in Christ.
+
+“Meeting Time: Women’s Ministries meets regularly on the first Tuesday of every month from 6:00–8:00 PM. Each month features a variety of programs, including Bible studies, health care education, and support-focused discussions, designed to meet the spiritual and practical needs of women.”
+
+### Special Programs & Upcoming Events
+
+• Women’s International Day – March 7: Join us as we celebrate Women’s International Day with a special program featuring Sister Sandra Hinds, hosted at our church.
+
+• Tween & Teen Retreat – May 15–16, 2026: A faith-building retreat for tweens and teens at Camp Winnekeag, focused on spiritual growth, connection, and empowerment.
+
+• enditnow® Emphasis Day – Fourth Sabbath of August. This annual emphasis day provides an opportunity for our church to address the issue of abuse, educate members and leadership, raise community awareness, and affirm to victims that the church is a place of care, support, and hope.
+
+### Resources
+
+- https://www.sneconline.org/copy-of-family-life-ministries
+- https://www.enditnow.org/
+- https://women.adventist.org/church-statements-against-violence
+</file>
+
 <file path="web/src/content/resources/2025/12/16/welcome-packet.md">
 ---
 title: "Welcome Packet"
@@ -3735,6 +2722,93 @@ attachmentUrl: "/resources/forms" # replace with a real PDF path if/when you add
 - Service times
 - What to expect
 - Ways to connect
+</file>
+
+<file path="web/src/data/activities.ts">
+export type RecurringActivity = {
+  title: string;
+  cadence: string;
+  time: string;
+  link: string;
+  note: string;
+};
+
+export type OneOffEvent = {
+  title: string;
+  start: string;
+  link?: string;
+  note?: string;
+};
+
+export const recurringActivities: RecurringActivity[] = [
+  {
+    title: "Pathfinders and Adventurers",
+    cadence: "meet on the first and third Sabbath",
+    time: "",
+    link: "/ministries/pathfinders",
+    note: "Public",
+  },
+  {
+    title: "Board meeting",
+    cadence: "is on the second Tuesday of every month",
+    time: "",
+    link: "/ministries/board-meeting",
+    note: "Members only",
+  },
+  {
+    title: "Men's ministry",
+    cadence: "is every Friday",
+    time: "7:00 PM",
+    link: "/ministries/mens-ministry",
+    note: "Public",
+  },
+  {
+    title: "Women's ministry",
+    cadence: "is on the first Tuesday of every month",
+    time: "",
+    link: "/ministries/womens-ministry",
+    note: "Public",
+  },
+  {
+    title: "Free spaghetti dinner",
+    cadence: "the 4th Wednesday of every month",
+    time: "",
+    link: "/ministries/community-meal-spaghetti",
+    note: "Public",
+  },
+  {
+    title: "Bible study",
+    cadence: "the 4th Sabbath",
+    time: "",
+    link: "/ministries/bible-study",
+    note: "Public",
+  },
+];
+
+export const oneOffEvents: OneOffEvent[] = [];
+</file>
+
+<file path="web/src/data/videos.json">
+[
+  {
+    "title": "Sabbath Worship Service",
+    "date": "2025-12-13",
+    "youtubeId": "TBD",
+    "summary": "Weekly worship service."
+  },
+  {
+    "title": "Bible Study / Message",
+    "date": "2025-12-06",
+    "youtubeId": "TBD",
+    "summary": "Sermon and reflection."
+  },
+  {
+    "title": "Special Program",
+    "date": "2025-11-29",
+    "youtubeId": "TBD",
+    "summary": "Guest speaker or special event."
+  }
+]
 </file>
 
 <file path="web/src/data/week-schedule.json">
@@ -4229,123 +3303,66 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
 }
 </file>
 
-<file path="web/tests/e2e/content-collections.spec.ts">
-import { expect, test } from '@playwright/test';
+<file path="web/tests/e2e/mobile.smoke.spec.ts">
+import { test, expect } from "@playwright/test";
 
-test('Events hub loads', async ({ page }) => {
-  await page.goto('/events');
-  await expect(page.getByRole('heading', { name: 'Events' })).toBeVisible();
-});
-
-test('Ministries hub loads', async ({ page }) => {
-  await page.goto('/ministries');
-  await expect(page.getByRole('heading', { name: 'Ministries' })).toBeVisible();
-});
-
-test('Resources hub loads', async ({ page }) => {
-  await page.goto('/resources');
-  await expect(page.getByRole('heading', { name: 'Resources', exact: true })).toBeVisible();
-});
-</file>
-
-<file path="web/tests/e2e/phase-5-media-portals.spec.ts">
-import { expect, test } from "@playwright/test";
-
-test("Media hub loads", async ({ page }) => {
-  await page.goto("/media");
-  await expect(page.getByRole("heading", { name: "Media", exact: true })).toBeVisible();
-
-  const quickLinks = page.getByRole("region", { name: "Quick links" });
-  await expect(quickLinks.getByRole("link", { name: "Watch Live", exact: true })).toBeVisible();
-  await expect(quickLinks.getByRole("link", { name: "Videos", exact: true })).toBeVisible();
-});
-
-test("Live page loads", async ({ page }) => {
-  await page.goto("/media/live");
-  await expect(page.getByRole("heading", { name: "Watch Live", exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Open YouTube channel", exact: true })).toBeVisible();
-});
-
-test("Videos page loads", async ({ page }) => {
-  await page.goto("/media/videos");
-  await expect(page.getByRole("heading", { name: "Videos", exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Browse on YouTube", exact: true })).toBeVisible();
-});
-
-test("Bulletins page loads", async ({ page }) => {
-  await page.goto("/resources/bulletins");
-  await expect(page.getByRole("heading", { name: "Bulletins", exact: true })).toBeVisible();
-});
-
-test("Forms directory loads", async ({ page }) => {
-  await page.goto("/resources/forms");
-  await expect(page.getByRole("heading", { name: "Forms", exact: true })).toBeVisible();
-});
-</file>
-
-<file path="web/tests/e2e/phase-6-search-and-analytics.spec.ts">
-import { expect, test } from "playwright/test";
-
-test("Search page loads", async ({ page }) => {
-  await page.goto("/search");
-  await expect(page.getByRole("heading", { name: "Search", exact: true })).toBeVisible();
-
-  // Astro Pagefind <Search id="site-search" ... /> should render an input inside this container.
-  const input = page.locator("#site-search input");
-  await expect(input).toBeVisible({ timeout: 10_000 });
-});
-
-test("Search returns results for a common term", async ({ page }) => {
-  // This test is intentionally loose to reduce flakiness.
-  // It just verifies that results can render.
-  await page.goto("/search");
-
-  const input = page.locator("#site-search input");
-  await expect(input).toBeVisible({ timeout: 10_000 });
-
-  await input.fill("resources");
-
-  // Pagefind UI renders results asynchronously.
-  // Wait for at least one result link to appear inside the Pagefind root.
-  const firstResultLink = page.locator("#site-search a[href]").first();
-  await expect(firstResultLink).toBeVisible({ timeout: 10_000 });
-});
-</file>
-
-<file path="web/tests/e2e/phase-7-seo.spec.ts">
-import { expect, test } from "@playwright/test";
-
-const PAGES: Array<{ path: string; robots: string }> = [
-  { path: "/", robots: "index,follow" },
-  { path: "/connect/plan-a-visit", robots: "index,follow" },
-  { path: "/connect/team", robots: "index,follow" },
-  { path: "/events", robots: "index,follow" },
-  { path: "/resources", robots: "index,follow" },
-  { path: "/media", robots: "index,follow" },
-  { path: "/search", robots: "noindex,follow" }
-];
-
-for (const { path, robots } of PAGES) {
-  test(`seo meta - ${path}`, async ({ page }) => {
-    await page.goto(path);
-
-    await expect(page).toHaveTitle(/.+/);
-
-    await expect(page.locator('meta[name="description"]'))
-      .toHaveAttribute("content", /.+/);
-
-    const canonical = page.locator('link[rel="canonical"]');
-    const canonicalHref = await canonical.getAttribute("href");
-    expect(canonicalHref).toBeTruthy();
-    expect(canonicalHref!).toContain(path);
-
-    await expect(page.locator('meta[property="og:title"]'))
-      .toHaveAttribute("content", /.+/);
-
-    await expect(page.locator('meta[name="robots"]'))
-      .toHaveAttribute("content", robots);
+test.describe("Smoke - mobile device", () => {
+  test("mobile header nav and primary CTA stay accessible on home", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page.locator("header nav")).toBeVisible();
+    await expect(page.getByRole("link", { name: /give/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /watch live/i })).toBeVisible();
   });
-}
+
+  test("visit page loads key content and CTA", async ({ page }) => {
+    await page.goto("/visit");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.locator("main")).toContainText(
+      /parking|directions|address/i,
+    );
+    await expect(page.getByRole("link", { name: /give/i })).toBeVisible();
+  });
+});
+</file>
+
+<file path="web/tests/e2e/phase-7-sitefiles.spec.ts">
+import { expect, test } from "@playwright/test";
+
+test("robots.txt exists and references sitemap", async ({ page }) => {
+  await page.goto("/robots.txt");
+  const body = await page.textContent("body");
+  expect(body).toContain("User-agent:");
+  expect(body).toContain("Sitemap:");
+});
+
+test("sitemap index exists", async ({ page }) => {
+  await page.goto("/sitemap-index.xml");
+  const body = await page.textContent("body");
+  expect(body).toContain("<sitemapindex");
+});
+</file>
+
+<file path="web/tests/e2e/smoke.spec.ts">
+import { test, expect } from "@playwright/test";
+
+test.describe("Smoke - cross browser", () => {
+  test("home renders primary navigation and CTA", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("header")).toBeVisible();
+    await expect(page.getByRole("link", { name: /watch live/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /give/i })).toBeVisible();
+  });
+
+  test("plan a visit page loads key content", async ({ page }) => {
+    await page.goto("/visit");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.locator("main")).toContainText(
+      /parking|directions|address/i,
+    );
+  });
+});
 </file>
 
 <file path="web/.env.example">
@@ -4354,15 +3371,187 @@ for (const { path, robots } of PAGES) {
 PUBLIC_CF_ANALYTICS_TOKEN=
 </file>
 
-<file path="web/tsconfig.json">
-{
-  "extends": "astro/tsconfigs/strict",
-  "compilerOptions": {
-    "resolveJsonModule": true
+<file path="web/lighthouserc.cjs">
+module.exports = {
+  ci: {
+    collect: {
+      staticDistDir: "./dist",
+      numberOfRuns: 3,
+    },
+    assert: {
+      assertions: {
+        "categories:performance": ["error", { minScore: 0.9 }],
+        "categories:accessibility": ["error", { minScore: 0.95 }],
+        "categories:seo": ["error", { minScore: 0.95 }],
+        "categories:best-practices": ["error", { minScore: 0.95 }],
+      },
+    },
+    upload: {
+      target: "filesystem",
+      outputDir: "./.lighthouseci",
+    },
   },
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"]
+};
+</file>
+
+<file path="web/linkinator.config.json">
+{
+  "recurse": true,
+  "cleanUrls": true,
+  "checkFragments": true,
+  "timeout": 30000,
+  "concurrency": 50,
+  "skip": ["^mailto:", "^tel:", "^https?://"]
 }
+</file>
+
+<file path="web/wrangler.jsonc">
+{
+  "main": "dist/_worker.js/index.js",
+  "name": "web",
+  "compatibility_date": "2025-12-19",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist",
+  },
+  "observability": {
+    "enabled": true,
+  },
+}
+</file>
+
+<file path=".gitignore">
+# Node
+node_modules/
+
+# Astro
+web/dist/
+web/.astro/
+web/.wrangler/tmp/
+
+# OS
+.DS_Store
+</file>
+
+<file path=".github/workflows/ci.yml">
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: ["main", "master"]
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+
+    env:
+      # Ensures canonical URLs + sitemap/robots generation are deterministic in CI
+      PUBLIC_SITE_URL: http://127.0.0.1:4321
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: E2E tests
+        run: npm run test:e2e:ci
+
+      - name: Internal link check
+        run: npm run test:links:ci
+
+      - name: Lighthouse CI
+        id: lighthouse
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: ./lighthouserc-ci.cjs
+          temporaryPublicStorage: true
+          uploadArtifacts: false
+
+      - name: Build Lighthouse summary
+        if: github.event_name == 'pull_request'
+        id: lhci-summary
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const core = require("@actions/core");
+            const manifest = JSON.parse(process.env.MANIFEST_JSON || "[]");
+            const entry = manifest[0] || {};
+            const summary = entry.summary || {};
+            const metricLabels = {
+              performance: "Performance",
+              accessibility: "Accessibility",
+              "best-practices": "Best Practices",
+              seo: "SEO",
+              pwa: "PWA",
+            };
+            const metrics = Object.keys(metricLabels)
+              .filter((key) => summary[key] !== undefined)
+              .map((key) => `| ${metricLabels[key]} | ${Math.round(summary[key] * 100)}% |`);
+            const table =
+              metrics.length > 0
+                ? ["| Metric | Score |", "| --- | --- |", ...metrics].join("\n")
+                : "No Lighthouse scores available.";
+            const links = JSON.parse(process.env.LINKS_JSON || "{}");
+            const reportLink = Object.values(links)[0];
+            const body = [
+              "## Lighthouse CI results",
+              table,
+              reportLink
+                ? `Temporary public report: [view it here](${reportLink})`
+                : "Temporary public report not available.",
+              "Artifacts remain in the `lighthouseci` artifact bundle for this run.",
+            ].join("\n\n");
+            core.setOutput("body", body);
+        env:
+          MANIFEST_JSON: ${{ steps.lighthouse.outputs.manifest }}
+          LINKS_JSON: ${{ steps.lighthouse.outputs.links }}
+
+      - name: Comment Lighthouse results
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.lhci-summary.outputs.body }}
+          tag: lighthouse-ci
+
+      - name: Upload Lighthouse artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouseci
+          path: web/.lighthouseci
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: web/playwright-report
 </file>
 
 <file path="docs/phase-0/source-of-truth.yml">
@@ -4404,236 +3593,509 @@ copy:
   welcome_message: "We would love to have you join our church family."
 </file>
 
-<file path="web/src/components/global/Footer.astro">
+<file path="web/src/components/global/Header.astro">
 ---
+import Button from "../ui/Button.astro";
 import { site } from "../../data/site";
-import { tel } from "../../lib/links";
 
-const year = new Date().getFullYear();
-const churchPhoneHref = tel(site.contact.phone);
-const pastorCellHref = tel(site.contact.pastorCell);
-const pastorCellLabel = site.contact.pastorCellLabel ?? "Pastor Kobe (call/text)";
-const hasPastorCell = Boolean(site.contact.pastorCell && site.contact.pastorCell.trim());
-const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAddress.trim().length);
-const hasFacebook = Boolean(site.portals.facebookUrl && site.portals.facebookUrl !== "TBD");
-const hasYouTube = Boolean(site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD");
+const pathname = Astro.url?.pathname ?? "/";
+
+function isActive(href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(href + "/");
+}
 
 function linkAttrs(item: { href: string; external?: boolean }) {
   return item.external ? { target: "_blank", rel: "noopener noreferrer" } : {};
 }
 
-const primaryNavLabels = ["Visit", "Contact"];
-const primaryActionLabels = ["Watch Live", "Give"];
-
-const isDefined = <T,>(value: T | undefined | null): value is T => Boolean(value);
-
-const findNav = (label: string) => site.nav.find((item) => item.label === label);
-const findAction = (label: string) => site.quickActions.find((item) => item.label === label);
-
-const primaryLinks = [
-  findNav("Visit"),
-  findNav("Contact"),
-  findAction("Watch Live"),
-  findAction("Give")
-].filter(isDefined);
-
-const secondaryNav = site.nav.filter((item) => !primaryNavLabels.includes(item.label));
-const secondaryActions = site.quickActions.filter((item) => !primaryActionLabels.includes(item.label));
+const watchLive = site.quickActions.find((i) => i.label === "Watch Live") ?? site.quickActions[0];
+const give = site.quickActions.find((i) => i.label === "Give") ?? site.quickActions[1];
+const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label && i.label !== give?.label);
 ---
 
-<footer class="site-footer">
+<header class="site-header">
   <div class="inner">
-    <div class="left">
-      <strong>{site.name}</strong>
+    <a class="brand" href="/" aria-label={site.name}>
+      <span class="brand__title">{site.shortName}</span>
+    </a>
 
-      <div class="muted">
-        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">
-          {site.contact.address}
+    <nav class="nav nav--desktop" aria-label="Primary navigation">
+      {site.nav.map((item) => (
+        <a
+          href={item.href}
+          aria-current={isActive(item.href) ? "page" : undefined}
+          {...linkAttrs(item)}
+        >
+          {item.label}
         </a>
-      </div>
-
-      {hasMailing ? (
-        <div class="muted small">
-          Mail: {site.contact.mailingAddress}
-        </div>
-      ) : null}
-
-      <div class="muted footer-contact">
-        {hasPastorCell ? (
-          <div>
-            <span class="footer-contact-label">{pastorCellLabel}:</span>
-            <a href={pastorCellHref}>{site.contact.pastorCell}</a>
-          </div>
-        ) : null}
-        <div>
-          <span class="footer-contact-label">Church:</span>
-          <a href={churchPhoneHref}>{site.contact.phone}</a>
-        </div>
-        <div>
-          <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
-        </div>
-      </div>
-
-      <div class="muted small">© {year}</div>
-    </div>
-
-    <nav class="right" aria-label="Footer links">
-      <div class="col col--primary">
-        <div class="col-title">Start here</div>
-        <div class="col-body links">
-          {primaryLinks.map((item) => (
-            <a href={item.href} {...linkAttrs(item)}>
-              {item.label}
-            </a>
-          ))}
-        </div>
-      </div>
-
-      <div class="col">
-        <div class="col-title">Explore</div>
-        <div class="col-body links">
-          {secondaryNav.map((item) => (
-            <a href={item.href} {...linkAttrs(item)}>
-              {item.label}
-            </a>
-          ))}
-        </div>
-      </div>
-
-      <div class="col">
-        <div class="col-title">Quick actions</div>
-        <div class="col-body links">
-          {secondaryActions.map((item) => (
-            <a href={item.href} {...linkAttrs(item)}>
-              {item.label}
-            </a>
-          ))}
-          {hasYouTube ? (
-            <a href={site.portals.youtubeChannelUrl} target="_blank" rel="noopener noreferrer">
-              YouTube
-            </a>
-          ) : null}
-          {hasFacebook ? (
-            <a href={site.portals.facebookUrl} target="_blank" rel="noopener noreferrer">
-              Facebook
-            </a>
-          ) : null}
-        </div>
-      </div>
-
-      <div class="col">
-        <div class="col-title">Service times</div>
-        <div class="col-body muted small">
-          {site.schedule.map((s) => (
-            <div class="line">
-              <span class="day">{s.day}</span>
-              <span aria-hidden="true"> · </span>
-              <span class="time">{s.time}</span>
-              <span aria-hidden="true"> — </span>
-              <span class="label">{s.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
+      ))}
     </nav>
+
+    <div class="right">
+      <div class="cta cta--desktop" aria-label="Primary actions">
+        {watchLive && (
+          <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
+            {watchLive.label}
+          </Button>
+        )}
+        {give && (
+          <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
+            {give.label}
+          </Button>
+        )}
+      </div>
+
+      <div class="cta cta--mobile" aria-label="Primary actions">
+        {watchLive && (
+          <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
+            {watchLive.label}
+          </Button>
+        )}
+        {give && (
+          <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
+            {give.label}
+          </Button>
+        )}
+      </div>
+
+      <details class="menu" aria-label="Mobile menu">
+        <summary class="menu__summary" aria-label="Open menu">
+          <span class="menu__icon" aria-hidden="true">☰</span>
+          <span class="menu__label">Menu</span>
+        </summary>
+
+        <div class="menu__panel">
+          <div class="menu__section" aria-label="Primary navigation" role="navigation">
+            {site.nav.map((item) => (
+              <a
+                class="menu__link"
+                href={item.href}
+                aria-current={isActive(item.href) ? "page" : undefined}
+                {...linkAttrs(item)}
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+
+          <div class="menu__divider" role="separator" aria-hidden="true"></div>
+
+          <div class="menu__section" aria-label="Quick actions">
+            <div class="menu__actions">
+              {watchLive && (
+                <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
+                  {watchLive.label}
+                </Button>
+              )}
+              {give && (
+                <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
+                  {give.label}
+                </Button>
+              )}
+            </div>
+
+            {otherQuick.length > 0 && (
+              <div class="menu__quicklinks" aria-label="More quick links">
+                {otherQuick.map((item) => (
+                  <a class="menu__sublink" href={item.href} {...linkAttrs(item)}>
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </details>
+    </div>
   </div>
-</footer>
+</header>
+
+<script>
+  // Close the mobile menu when a link is clicked.
+  document.addEventListener("click", (e) => {
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+
+    const link = target.closest("a");
+    const details = target.closest("details.menu");
+    if (link && details) details.removeAttribute("open");
+  });
+</script>
 
 <style>
-  .site-footer {
-    border-top: 1px solid var(--color-border);
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
     background: var(--color-white);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .inner {
     max-width: var(--container-max);
     margin: 0 auto;
-    padding: var(--space-6) var(--container-pad);
-    display: flex;
-    gap: var(--space-6);
-    justify-content: space-between;
-    flex-wrap: wrap;
-    align-items: flex-start;
+    padding: var(--space-3) var(--container-pad);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--space-4);
   }
 
-  .muted {
-    color: var(--color-text-muted);
-    margin-top: var(--space-2);
-  }
-
-  .footer-contact {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    margin-top: var(--space-2);
-  }
-
-  .footer-contact-label {
-    font-weight: 600;
-    margin-right: 0.35rem;
-  }
-
-  .small {
-    font-size: 0.95rem;
-  }
-
-  .left a {
+  .brand {
+    text-decoration: none;
     color: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: max-content;
+  }
+
+  .brand__title {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-size: var(--font-size-2);
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--target-min);
+    text-decoration: none;
+    color: inherit;
+    font-weight: 700;
+    opacity: 0.9;
+    padding: 0.55rem 0.7rem;
+    border-radius: 999px;
+  }
+
+  .nav a:hover {
+    background: var(--color-gray-50);
+    opacity: 1;
+  }
+
+  .nav a[aria-current="page"] {
+    background: var(--color-gray-100);
+    opacity: 1;
+  }
+
+  .cta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    justify-content: flex-end;
+    min-width: max-content;
   }
 
   .right {
     display: flex;
-    gap: var(--space-6);
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    min-width: max-content;
+  }
+
+  .cta--mobile {
+    display: none;
+  }
+
+  /* Mobile menu */
+  .menu {
+    display: none;
+    position: relative;
+  }
+
+  .menu__summary {
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+    padding: 0.55rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: var(--color-white);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 700;
+    min-height: var(--target-min);
+  }
+
+  .menu__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .menu[open] .menu__summary {
+    background: var(--color-gray-50);
+  }
+
+  .menu__panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.6rem);
+    width: min(92vw, 22rem);
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-3);
+    box-shadow: var(--shadow-2);
+    padding: var(--space-3);
+    z-index: 60;
+  }
+
+  .menu__section {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .menu__link {
+    display: flex;
+    align-items: center;
+    min-height: var(--target-min);
+    text-decoration: none;
+    color: inherit;
+    font-weight: 700;
+    padding: 0.6rem 0.7rem;
+    border-radius: var(--radius-2);
+  }
+
+  .menu__link:hover {
+    background: var(--color-gray-50);
+  }
+
+  .menu__link[aria-current="page"] {
+    background: var(--color-gray-100);
+  }
+
+  .menu__divider {
+    height: 1px;
+    background: var(--color-border);
+    margin: var(--space-3) 0;
+  }
+
+  .menu__actions {
+    display: flex;
+    gap: var(--space-2);
     flex-wrap: wrap;
-    align-items: flex-start;
   }
 
-  .col {
-    min-width: 190px;
+  .menu__quicklinks {
+    margin-top: var(--space-3);
     display: grid;
-    gap: var(--space-2);
+    gap: 0.25rem;
   }
 
-  .col-title {
-    font-weight: 800;
-    letter-spacing: -0.01em;
-  }
-
-  .col--primary .col-title {
-    color: var(--color-text);
-  }
-
-  .col-body {
-    display: grid;
-    gap: var(--space-2);
-  }
-
-  .line .day,
-  .line .time,
-  .line .label {
-    white-space: nowrap;
-  }
-
-  .links a {
+  .menu__sublink {
     display: inline-flex;
     align-items: center;
     min-height: var(--target-min);
-    padding: 0.2rem 0;
     text-decoration: none;
     color: inherit;
     opacity: 0.9;
-    font-weight: 600;
+    padding: 0.4rem 0.2rem;
+    font-weight: 700;
   }
 
-  .links a:hover {
+  .menu__sublink:hover {
     opacity: 1;
     text-decoration: underline;
   }
 
-  @media (max-width: 520px) {
-    .col {
-      min-width: 100%;
+  @media (max-width: 860px) {
+    .cta--desktop {
+      display: none;
+    }
+
+    .cta--mobile {
+      display: flex;
+    }
+
+    .inner {
+      grid-template-columns: auto 1fr auto;
+    }
+
+    .menu {
+      display: block;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .menu__label {
+      display: none;
+    }
+
+    .menu__summary {
+      padding: 0.55rem 0.6rem;
+    }
+  }
+</style>
+</file>
+
+<file path="web/src/components/sections/CardGrid.astro">
+---
+import Card from "../ui/Card.astro";
+import Grid from "../ui/CardGrid.astro";
+
+type CardItem = {
+  title: string;
+  description?: string;
+  href?: string;
+};
+
+type Props = {
+  title?: string;
+  subtitle?: string;
+  cards: CardItem[];
+  columns?: number;
+  columnsMin?: number;
+};
+
+const { title, subtitle, cards, columns, columnsMin = 240 } = Astro.props;
+---
+
+<section class="stack">
+  {(title || subtitle) && (
+    <div class="stack--tight">
+      {title && <h2>{title}</h2>}
+      {subtitle && <p class="muted">{subtitle}</p>}
+    </div>
+  )}
+
+  <Grid columns={columns} columnsMin={columnsMin}>
+    {cards.map((c) => (
+      <Card title={c.title} description={c.description} href={c.href} />
+    ))}
+  </Grid>
+</section>
+</file>
+
+<file path="web/src/components/sections/HeroBanner.astro">
+---
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import HeroUI from "../ui/Hero.astro";
+
+export type Props = {
+  title: string;
+  subtitle?: string;
+  primaryCtaLabel?: string;
+  primaryCtaHref?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+
+  background: ImageMetadata;
+
+  /**
+   * Keep the bridge centered-ish.
+   * Example: "50% 55%" (x y)
+   */
+  objectPosition?: string;
+};
+
+const {
+  background,
+  objectPosition = "50% 55%",
+  ...heroProps
+} = Astro.props as Props;
+---
+
+<section class="heroBanner fullbleed" style={`--hero-object-position:${objectPosition};`}>
+  <div class="heroBanner__media" aria-hidden="true">
+    <Image
+      src={background}
+      alt=""
+      widths={[640, 960, 1280, 1600, 1920]}
+      sizes="100vw"
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
+      class="heroBanner__img"
+    />
+    <div class="heroBanner__scrim" aria-hidden="true"></div>
+  </div>
+
+  <div class="heroBanner__content">
+    <div class="heroBanner__container">
+      <HeroUI {...heroProps} />
+    </div>
+  </div>
+</section>
+
+<style>
+  .heroBanner {
+    position: relative;
+    padding: var(--space-12) 0;
+    border-bottom: 1px solid var(--color-border);
+    overflow: hidden;
+  }
+
+  .heroBanner__media {
+    position: absolute;
+    inset: 0;
+  }
+
+  .heroBanner__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--hero-object-position);
+    transform: scale(1.02);
+  }
+
+  .heroBanner__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(11, 15, 23, 0.45) 0%,
+      rgba(11, 15, 23, 0.18) 45%,
+      rgba(11, 15, 23, 0.55) 100%
+    );
+  }
+
+  .heroBanner__content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  /* Match BaseLayout container sizing without nesting issues */
+  .heroBanner__container {
+    width: min(var(--container-max), calc(100% - var(--container-pad)));
+    margin: 0;
+    padding-left: var(--container-pad);
+  }
+
+  /* Keep the existing “card” look, but make it sit nicely on the photo */
+  :global(.heroBanner .hero.card) {
+    background: rgba(255, 255, 255, 0.90);
+    backdrop-filter: blur(10px);
+    border-color: rgba(255, 255, 255, 0.35);
+  }
+
+  @media (max-width: 720px) {
+    .heroBanner {
+      padding: var(--space-8) 0;
+    }
+    /* Slightly higher crop on mobile so the bridge line stays visible */
+    .heroBanner {
+      --hero-object-position: 50% 50%;
+    }
+  }
+
+  @media (prefers-reduced-data: reduce) {
+    .heroBanner__media {
+      display: none;
+    }
+    .heroBanner {
+      background: var(--color-surface-2);
     }
   }
 </style>
@@ -4703,110 +4165,6 @@ const toneClass = tone === "warn" ? "banner--warn" : "banner--info";
 </style>
 </file>
 
-<file path="web/src/components/ui/Button.astro">
----
-type Variant = "primary" | "secondary" | "ghost";
-type Size = "sm" | "md" | "lg";
-
-type Props = {
-  href?: string;
-  external?: boolean;
-  variant?: Variant;
-  size?: Size;
-  disabled?: boolean;
-  autoFocus?: boolean;
-};
-
-const {
-  href,
-  external = false,
-  variant = "primary",
-  size = "md",
-  disabled = false,
-  autoFocus = false,
-} = Astro.props as Props;
-
-const className = `btn btn--${variant} btn--${size}`;
----
-
-{href ? (
-  <a
-    class={className}
-    href={href}
-    target={external ? "_blank" : undefined}
-    rel={external ? "noopener noreferrer" : undefined}
-  >
-    <slot />
-  </a>
-) : (
-  <button class={className} type="button" disabled={disabled} autofocus={autoFocus}>
-    <slot />
-  </button>
-)}
-
-<style>
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    border-radius: var(--radius-2);
-    text-decoration: none;
-    font-weight: 700;
-    border: 1px solid transparent;
-    cursor: pointer;
-    min-height: var(--target-min);
-  }
-
-  .btn--sm {
-    font-size: var(--font-size-0);
-    padding: var(--space-2) var(--space-3);
-  }
-
-  .btn--md {
-    font-size: var(--font-size-1);
-    padding: var(--space-2) var(--space-4);
-  }
-
-  .btn--lg {
-    font-size: var(--font-size-2);
-    padding: var(--space-3) var(--space-6);
-  }
-
-  .btn--primary {
-    background: var(--color-primary);
-    color: var(--color-white);
-  }
-
-  .btn--primary:hover {
-    background: var(--color-primary-hover);
-  }
-
-  .btn--secondary {
-    background: var(--color-gray-50);
-    border-color: var(--color-border);
-  }
-
-  .btn--secondary:hover {
-    background: var(--color-gray-100);
-  }
-
-  .btn--ghost {
-    background: transparent;
-    border-color: var(--color-border);
-  }
-
-  .btn--ghost:hover {
-    background: var(--color-gray-50);
-  }
-
-  .btn:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
-  }
-</style>
-</file>
-
 <file path="web/src/components/ui/Card.astro">
 ---
 type Props = {
@@ -4869,26 +4227,38 @@ tags: ["worship", "sabbath"]
 Everyone. Come as you are.
 </file>
 
-<file path="web/src/content/ministries/children.md">
+<file path="web/src/content/ministries/pathfinders.md">
 ---
-title: "Children’s Ministry"
-summary: "Bible stories, songs, and activities designed for kids to grow in faith and community."
-leaderName: "Children’s Ministry Team"
+title: "Pathfinders & Adventurers"
+summary: "The Seventh-day Adventist Church’s Adventurers and Pathfinders Clubs are Christ-centered programs designed to nurture children and youth in their spiritual, mental, physical, and social development."
+leaderName: "Daunette Lemard-Reid"
 leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "Sabbaths during the service"
+meetingTime: "First and Third Sabbath of each month, from 3:00 PM – 5:00 PM."
 category: "Children & Youth"
-ctaLabel: "Contact us"
-ctaHref: "/connect/contact"
-tags: ["kids", "families"]
+tags: ["children", "teens", "family", "discipleship", "adventure"]
 ---
 
 ## Overview
 
-We support families by providing age-appropriate activities and a safe environment.
+“The Seventh-day Adventist Church’s Adventurers and Pathfinders Clubs are Christ-centered programs designed to nurture children and youth in their spiritual, mental, physical, and social development.”
 
-## How to get involved
+Pathfinders & Adventurers Club Director: Daunette Lemard-Reid
 
-Talk to the greeter team or use the contact form.
+Meeting Time: First and Third Sabbath of each month, from 3:00 PM – 5:00 PM.
+
+## Adventurers
+
+“The Adventurer Club is a fun, Christ-centered program for children ages 4–9 that helps them grow spiritually, socially, mentally, and physically. Through hands-on activities, Bible learning, games, and service projects, children build faith, character, confidence, friendships, and life skills in a supportive, family-focused environment while preparing for the Pathfinder journey ahead.”
+
+## Pathfinders
+
+“Pathfinders are a worldwide organization of young people sponsored by the Seventh-day Adventist Church, with nearly 2 million members around the globe. Young people of any religious persuasion, or none at all, are welcome and encouraged to join the organization.”
+
+• Pathfinders (ages 10–15) provides opportunities for youth to grow in leadership, teamwork, and personal responsibility through outdoor activities, community service, spiritual growth, and practical life skills.
+
+## Contact
+
+To learn more about our Pathfinders and Adventurers Clubs or to get involved, please click here for more information: [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) (link to contact us)
 </file>
 
 <file path="web/src/data/site-links.json">
@@ -5012,46 +4382,6 @@ const { mission } = site;
           adventist.org
         </a>
         .
-      </p>
-    </section>
-  </div>
-</BaseLayout>
-</file>
-
-<file path="web/src/pages/connect/worship-with-us/index.astro">
----
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import Schedule from "../../../components/ui/Schedule.astro";
-import { site } from "../../../data/site";
----
-
-<BaseLayout
-  title="Worship With Us"
-  description={`Learn what Sabbath School, Worship Service, and midweek Prayer Meeting are like at ${site.name}.`}
->
-  <div class="stack">
-    <h1>Worship With Us</h1>
-
-    <Schedule title="Weekly Schedule" items={site.schedule} />
-
-    <section class="card stack--tight">
-      <h2>Sabbath School</h2>
-      <p class="muted">
-        Sabbath School is a Bible study time for all ages, with classes for children and adults.
-      </p>
-    </section>
-
-    <section class="card stack--tight">
-      <h2>Worship Service</h2>
-      <p class="muted">
-        Our worship service includes singing, prayer, Scripture, and a message from the Bible.
-      </p>
-    </section>
-
-    <section class="card stack--tight">
-      <h2>Midweek Prayer Meeting</h2>
-      <p class="muted">
-        Join us midweek for prayer, encouragement, and Bible study.
       </p>
     </section>
   </div>
@@ -5528,238 +4858,365 @@ import { site } from "../../data/site";
 </BaseLayout>
 </file>
 
-<file path="web/src/styles/global.css">
-@import "./tokens.css";
+<file path="web/src/pages/components.astro">
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Button, { type Size, type Variant } from "../components/ui/Button.astro";
+import Banner from "../components/ui/Banner.astro";
+import Card from "../components/ui/Card.astro";
 
-:root {
-  color-scheme: light;
-}
+const buttonVariants: { label: string; variant: Variant }[] = [
+  { label: "Primary", variant: "primary" },
+  { label: "Secondary", variant: "secondary" },
+  { label: "Ghost", variant: "ghost" },
+];
 
-* {
-  box-sizing: border-box;
-}
+const buttonSizes: { label: string; size: Size }[] = [
+  { label: "Small", size: "sm" },
+  { label: "Medium (default)", size: "md" },
+  { label: "Large", size: "lg" },
+];
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-}
+const linkSamples = [
+  { label: "Plan a visit", href: "/connect/plan-a-visit", helper: "Internal CTA", external: false },
+  {
+    label: "Design handoff notes",
+    href: "/docs/ui-handoff.md",
+    helper: "Documents align with design tokens",
+    external: false,
+  },
+  {
+    label: "Cross-device guide",
+    href: "https://playwright.dev/docs/test-configuration",
+    helper: "External resource (opens new tab)",
+    external: true,
+  },
+];
 
-body {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-  font-size: var(--font-size-1);
-  line-height: 1.6;
-  color: var(--color-text);
-  background: var(--color-bg);
-}
+const cards = [
+  {
+    title: "Service snapshot",
+    description: "Button-driven CTAs magnify the worship preview and giving link.",
+    href: "/connect/worship-with-us",
+  },
+  {
+    title: "Ministry stories",
+    description: "Cards frame the latest community updates without extra markup.",
+  },
+];
 
-h1 {
-  font-size: clamp(2.2rem, 1.6rem + 2.4vw, 3.2rem);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-}
+const badges = [
+  { label: "New", className: "badge badge--primary" },
+  { label: "Draft", className: "badge badge--muted" },
+  { label: "Alert", className: "badge badge--warn" },
+];
 
-h2 {
-  font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.4rem);
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-}
+const tableRows = [
+  { component: "Button", usage: "Primary, secondary, ghost shapes", pattern: "Hero/CTA pattern" },
+  { component: "Banner", usage: "Info + warning alerts", pattern: "Announcements + policy changes" },
+  { component: "Card", usage: "Service/ministry highlights", pattern: "Grid + stack layouts" },
+];
 
-h3 {
-  font-size: clamp(1.25rem, 1.05rem + 1vw, 1.7rem);
-  line-height: 1.25;
-}
+const listItems = [
+  "Spacing relies on `var(--space-*)` tokens that keep grids and stacks aligned.",
+  "Color, border, and focus tokens (*primary, border, focus*) stay consistent site wide.",
+  "Animations respect `stack` and `cluster` helpers so cards stay responsive.",
+];
+---
 
-p,
-li {
-  max-width: 70ch;
-}
+<BaseLayout title="Components" description="Living component library for First Springfield’s web toolkit.">
+  <section class="component-hero">
+    <p class="eyebrow">Component library</p>
+    <h1>Components</h1>
+    <p>
+      A compact guide to the shared UI surface, so designers and engineers can see the token-powered elements
+      that ship across First Springfield’s site.
+    </p>
+  </section>
 
-a {
-  color: inherit;
-}
+  <section class="component-section">
+    <header>
+      <h2>Buttons</h2>
+      <p>Variants + sizes use the shared tokens so CTAs feel consistent anywhere they appear.</p>
+    </header>
 
-summary {
-  min-height: var(--target-min);
-  padding-block: var(--space-2);
-}
+    <div class="component-grid component-grid--variants">
+      {buttonVariants.map(({ label, variant }) => (
+        <article>
+          <p class="component-label">{label}</p>
+          <Button variant={variant} size="md">{label}</Button>
+        </article>
+      ))}
+    </div>
 
-.link {
-  color: var(--color-primary);
-  text-decoration-line: underline;
-  text-decoration-thickness: 0.08em;
-  text-underline-offset: 0.2em;
-  text-decoration-skip-ink: auto;
-  font-weight: 600;
-  transition: color 120ms ease, text-decoration-thickness 120ms ease;
-}
+    <div class="component-grid component-grid--sizes">
+      {buttonSizes.map(({ label, size }) => (
+        <article>
+          <p class="component-label">{label}</p>
+          <Button variant="primary" size={size}>{label}</Button>
+        </article>
+      ))}
+    </div>
 
-.link:hover {
-  color: var(--color-primary-hover);
-  text-decoration-thickness: 0.14em;
-}
+    <div class="component-grid component-grid--states">
+      <article>
+        <p class="component-label">Disabled</p>
+        <Button variant="primary" size="md" disabled>Disabled</Button>
+      </article>
+      <article>
+        <p class="component-label">Focus-visible</p>
+        <Button variant="primary" size="md" autoFocus>Focus state</Button>
+      </article>
+    </div>
+    <p class="component-hint">Use Tab (or the demo focus button) to see the outline from the site-wide focus token.</p>
+  </section>
 
-a:focus-visible,
-button:focus-visible,
-summary:focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 3px;
-}
+  <section class="component-section">
+    <header>
+      <h2>Links + external icon behavior</h2>
+      <p>Shared link styles highlight internal links and signal external destinations.</p>
+    </header>
+    <div class="component-grid component-grid--links">
+      {linkSamples.map(({ label, href, helper, external }) => (
+        <a
+          class="component-link"
+          href={href}
+          target={external ? "_blank" : undefined}
+          rel={external ? "noreferrer noopener" : undefined}
+        >
+          <span>{label}</span>
+          <span class="component-link__hint">{helper}</span>
+          {external ? <span aria-hidden="true" class="component-link__icon">↗</span> : null}
+        </a>
+      ))}
+    </div>
+  </section>
 
-.container {
-  width: min(var(--container-max), calc(100% - var(--container-pad)));
-  margin: 0 auto;
-}
+  <section class="component-section">
+    <header>
+      <h2>Banner states</h2>
+      <p>Alert banners sport info or warn tones to stay calm yet clear.</p>
+    </header>
+    <div class="component-grid component-grid--banners">
+      <Banner message="Service updates land here before they reach the hero." tone="info" ctaLabel="Read service updates" ctaHref="/connect/about" />
+      <Banner message="Safety and campus policies use the warning tone." tone="warn" ctaLabel="Welcoming summary" ctaHref="/connect/worship-with-us" />
+    </div>
+  </section>
 
-.fullbleed {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-}
+  <section class="component-section">
+    <header>
+      <h2>Cards & badges</h2>
+      <p>Cards stretch into grids; badges keep metadata compact.</p>
+    </header>
+    <div class="component-grid component-grid--cards">
+      {cards.map((card) => (
+        <Card title={card.title} description={card.description} href={card.href} />
+      ))}
+    </div>
+    <div class="badge-row">
+      {badges.map((badge) => (
+        <span class={badge.className}>{badge.label}</span>
+      ))}
+    </div>
+  </section>
 
-.main {
-  padding: var(--space-8) 0;
-}
+  <section class="component-section">
+    <header>
+      <h2>Table & list styles</h2>
+      <p>Responsive tables and stacks keep content legible on every viewport.</p>
+    </header>
+    <div class="component-table-wrapper">
+      <table class="component-table">
+        <thead>
+          <tr>
+            <th scope="col">Component</th>
+            <th scope="col">Usage</th>
+            <th scope="col">Pattern</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tableRows.map((row) => (
+            <tr>
+              <td>{row.component}</td>
+              <td>{row.usage}</td>
+              <td>{row.pattern}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <ul class="component-list">
+      {listItems.map((item) => (
+        <li>{item}</li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>
 
-.small {
-  font-size: var(--font-size-0);
-}
-
-.muted {
-  color: var(--color-text-muted);
-}
-
-.form-label {
-  font-weight: 700;
-}
-
-.card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-4);
-  padding: var(--space-6);
-  box-shadow: var(--shadow-1);
-  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
-}
-
-.card--link {
-  display: block;
-  color: inherit;
-  text-decoration: none;
-}
-
-.card--link:hover,
-.card--link:focus-visible {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-2);
-  border-color: var(--color-border-strong);
-}
-
-.prose > * {
-  margin: 0;
-}
-
-.prose > * + * {
-  margin-top: var(--space-4);
-}
-
-.prose :where(h2, h3, h4) {
-  margin-top: var(--space-6);
-  margin-bottom: var(--space-2);
-}
-
-.prose :where(ul, ol) {
-  padding-left: 1.4rem;
-}
-
-.prose :where(li + li) {
-  margin-top: var(--space-2);
-}
-
-.prose :where(blockquote) {
-  margin-left: 0;
-  padding-left: var(--space-4);
-  border-left: 3px solid var(--color-border);
-  color: var(--color-text-muted);
-}
-
-.stack,
-.stack--tight,
-.stack--loose {
-  display: grid;
-}
-
-.stack {
-  gap: var(--space-6);
-}
-
-.stack--tight {
-  gap: var(--space-2);
-}
-
-.stack--loose {
-  gap: var(--space-8);
-}
-
-.stack > *,
-.stack--tight > *,
-.stack--loose > * {
-  margin: 0;
-}
-
-.cluster {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.cluster--between {
-  justify-content: space-between;
-}
-
-.cluster--baseline {
-  align-items: baseline;
-}
-
-.cluster--loose {
-  gap: var(--space-4);
-}
-
-.grid {
-  display: grid;
-  gap: var(--space-4);
-}
-
-.grid--cards {
-  display: grid;
-  gap: var(--space-4);
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
-
-.skip-link {
-  position: absolute;
-  top: var(--space-2);
-  left: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-2);
-  text-decoration: none;
-  transform: translateY(-200%);
-  transition: transform 120ms ease;
-  z-index: 999;
-}
-
-.skip-link:focus {
-  transform: translateY(0);
-}
-
-@media (max-width: 860px) {
-  .main {
-    padding: var(--space-6) 0;
+<style>
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: var(--font-size-0);
+    margin-bottom: var(--space-2);
+    color: var(--color-text-muted);
   }
-}
+
+  .component-hero {
+    margin-bottom: var(--space-8);
+  }
+
+  .component-section {
+    margin-bottom: var(--space-10);
+  }
+
+  .component-section header h2 {
+    margin: 0 0 var(--space-2);
+  }
+
+  .component-section header p {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .component-grid {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  }
+
+  .component-grid--variants,
+  .component-grid--sizes,
+  .component-grid--states {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .component-grid--links {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+
+  .component-grid--cards {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .component-grid--banners {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .component-label {
+    margin: 0;
+    font-size: var(--font-size-0);
+    color: var(--color-text-muted);
+  }
+
+  .component-hint {
+    margin-top: var(--space-3);
+    font-size: var(--font-size-0);
+    color: var(--color-text-muted);
+  }
+
+  .component-link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-3);
+    padding: var(--space-3);
+    text-decoration: none;
+    color: inherit;
+    background: var(--color-surface);
+  }
+
+  .component-link:hover,
+  .component-link:focus-visible {
+    border-color: var(--color-border-strong);
+    box-shadow: var(--shadow-1);
+  }
+
+  .component-link__hint {
+    font-size: var(--font-size-0);
+    color: var(--color-text-muted);
+  }
+
+  .component-link__icon {
+    font-size: 0.9rem;
+    color: var(--color-primary);
+  }
+
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-2);
+    font-weight: 600;
+    font-size: var(--font-size-0);
+  }
+
+  .badge--primary {
+    background: #fdecea;
+    color: #991b1b;
+  }
+
+  .badge--muted {
+    background: var(--color-gray-50);
+    color: var(--color-gray-600);
+  }
+
+  .badge--warn {
+    background: #fff4e5;
+    color: #b45309;
+  }
+
+  .component-table-wrapper {
+    overflow-x: auto;
+    margin-top: var(--space-4);
+  }
+
+  .component-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--color-border);
+  }
+
+  .component-table th,
+  .component-table td {
+    padding: var(--space-3);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .component-table th {
+    font-size: var(--font-size-0);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-text-muted);
+  }
+
+  .component-list {
+    margin-top: var(--space-4);
+    padding-left: 1.2rem;
+    color: var(--color-text);
+  }
+
+  .component-list li + li {
+    margin-top: var(--space-2);
+  }
+
+  @media (max-width: 640px) {
+    .component-grid--variants,
+    .component-grid--sizes,
+    .component-grid--states {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
 </file>
 
 <file path="web/src/styles/tokens.css">
@@ -5884,51 +5341,175 @@ const bulletins = defineCollection({
 export const collections = { events, ministries, resources, bulletins };
 </file>
 
-<file path="web/tests/e2e/phase-7-a11y.spec.ts">
-import AxeBuilder from "@axe-core/playwright";
+<file path="web/test-results/.last-run 2.json">
+{
+  "status": "passed",
+  "failedTests": []
+}
+</file>
+
+<file path="web/test-results/.last-run.json">
+{
+  "status": "passed",
+  "failedTests": []
+}
+</file>
+
+<file path="web/tests/e2e/content-collections.spec.ts">
 import { expect, test } from "@playwright/test";
 
-const PAGES = [
-  "/",
-  "/components",
-  "/connect/plan-a-visit",
-  "/connect/team",
-  "/events",
-  "/resources",
-  "/media",
-  "/search",
+test("Events hub loads", async ({ page }) => {
+  await page.goto("/events");
+  await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
+});
+
+test("Ministries hub loads", async ({ page }) => {
+  await page.goto("/ministries");
+  await expect(page.getByRole("heading", { name: "Ministries" })).toBeVisible();
+});
+
+test("Resources hub loads", async ({ page }) => {
+  await page.goto("/resources");
+  await expect(
+    page.getByRole("heading", { name: "Resources", exact: true }),
+  ).toBeVisible();
+});
+</file>
+
+<file path="web/tests/e2e/phase-5-media-portals.spec.ts">
+import { expect, test } from "@playwright/test";
+
+test("Media hub loads", async ({ page }) => {
+  await page.goto("/media");
+  await expect(
+    page.getByRole("heading", { name: "Media", exact: true }),
+  ).toBeVisible();
+
+  const quickLinks = page.getByRole("region", { name: "Quick links" });
+  await expect(
+    quickLinks.getByRole("link", { name: "Watch Live", exact: true }),
+  ).toBeVisible();
+  await expect(
+    quickLinks.getByRole("link", { name: "Videos", exact: true }),
+  ).toBeVisible();
+});
+
+test("Live page loads", async ({ page }) => {
+  await page.goto("/media/live");
+  await expect(
+    page.getByRole("heading", { name: "Watch Live", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Open YouTube channel", exact: true }),
+  ).toBeVisible();
+});
+
+test("Videos page loads", async ({ page }) => {
+  await page.goto("/media/videos");
+  await expect(
+    page.getByRole("heading", { name: "Videos", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Browse on YouTube", exact: true }),
+  ).toBeVisible();
+});
+
+test("Bulletins page loads", async ({ page }) => {
+  await page.goto("/resources/bulletins");
+  await expect(
+    page.getByRole("heading", { name: "Bulletins", exact: true }),
+  ).toBeVisible();
+});
+
+test("Forms directory loads", async ({ page }) => {
+  await page.goto("/resources/forms");
+  await expect(
+    page.getByRole("heading", { name: "Forms", exact: true }),
+  ).toBeVisible();
+});
+</file>
+
+<file path="web/tests/e2e/phase-6-search-and-analytics.spec.ts">
+import { expect, test } from "playwright/test";
+
+test("Search page loads", async ({ page }) => {
+  await page.goto("/search");
+  await expect(
+    page.getByRole("heading", { name: "Search", exact: true }),
+  ).toBeVisible();
+
+  // Astro Pagefind <Search id="site-search" ... /> should render an input inside this container.
+  const input = page.locator("#site-search input");
+  await expect(input).toBeVisible({ timeout: 10_000 });
+});
+
+test("Search returns results for a common term", async ({ page }) => {
+  // This test is intentionally loose to reduce flakiness.
+  // It just verifies that results can render.
+  await page.goto("/search");
+
+  const input = page.locator("#site-search input");
+  await expect(input).toBeVisible({ timeout: 10_000 });
+
+  await input.fill("resources");
+
+  // Pagefind UI renders results asynchronously.
+  // Wait for at least one result link to appear inside the Pagefind root.
+  const firstResultLink = page.locator("#site-search a[href]").first();
+  await expect(firstResultLink).toBeVisible({ timeout: 10_000 });
+});
+</file>
+
+<file path="web/tests/e2e/phase-7-seo.spec.ts">
+import { expect, test } from "@playwright/test";
+
+const PAGES: Array<{ path: string; robots: string }> = [
+  { path: "/", robots: "index,follow" },
+  { path: "/connect/plan-a-visit", robots: "index,follow" },
+  { path: "/connect/team", robots: "index,follow" },
+  { path: "/events", robots: "index,follow" },
+  { path: "/resources", robots: "index,follow" },
+  { path: "/media", robots: "index,follow" },
+  { path: "/search", robots: "noindex,follow" },
 ];
 
-for (const path of PAGES) {
-  test(`a11y (axe) - ${path}`, async ({ page }) => {
+for (const { path, robots } of PAGES) {
+  test(`seo meta - ${path}`, async ({ page }) => {
     await page.goto(path);
 
-    if (path === "/search") {
-      await page.locator("#site-search input.pagefind-ui__search-input").waitFor();
+    await expect(page).toHaveTitle(/.+/);
 
-      // Ensure the Pagefind input has a real label (axe: label-title-only)
-      await page.evaluate(() => {
-        const root = document.getElementById("site-search");
-        const input = root?.querySelector("input.pagefind-ui__search-input") as HTMLInputElement | null;
-        const label = document.getElementById("site-search-label") as HTMLLabelElement | null;
-
-        if (!input || !label) return;
-
-        input.id = "site-search-input";
-        input.setAttribute("aria-labelledby", "site-search-label");
-        input.setAttribute("aria-label", "Search the site");
-        input.removeAttribute("title");
-      });
-    }
-
-    const results = await new AxeBuilder({ page }).analyze();
-
-    const highImpact = results.violations.filter((v) =>
-      ["serious", "critical"].includes(v.impact ?? "")
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      "content",
+      /.+/,
     );
 
-    expect(highImpact).toEqual([]);
+    const canonical = page.locator('link[rel="canonical"]');
+    const canonicalHref = await canonical.getAttribute("href");
+    expect(canonicalHref).toBeTruthy();
+    expect(canonicalHref!).toContain(path);
+
+    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+      "content",
+      /.+/,
+    );
+
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      robots,
+    );
   });
+}
+</file>
+
+<file path="web/tsconfig.json">
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "resolveJsonModule": true
+  },
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"]
 }
 </file>
 
@@ -5938,6 +5519,257 @@ for (const path of PAGES) {
 web/.lighthouseci
 web/.wrangler
 package/
+</file>
+
+<file path="web/.github/workflows/ci.yml">
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: ["main", "master"]
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+
+    env:
+      # Ensures canonical URLs + sitemap/robots generation are deterministic in CI
+      PUBLIC_SITE_URL: http://127.0.0.1:4321
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: E2E tests
+        run: npm run test:e2e:ci
+
+      - name: Internal link check
+        run: npm run test:links:ci
+
+      - name: Lighthouse CI
+        run: npm run lighthouse:ci
+
+      - name: Upload Lighthouse artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouseci
+          path: web/.lighthouseci
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: web/playwright-report
+</file>
+
+<file path="web/src/components/ui/Button.astro">
+---
+export type Variant = "primary" | "secondary" | "ghost";
+export type Size = "sm" | "md" | "lg";
+
+type Props = {
+  href?: string;
+  external?: boolean;
+  variant?: Variant;
+  size?: Size;
+  disabled?: boolean;
+  autoFocus?: boolean;
+};
+
+const {
+  href,
+  external = false,
+  variant = "primary",
+  size = "md",
+  disabled = false,
+  autoFocus = false,
+} = Astro.props as Props;
+
+const className = `btn btn--${variant} btn--${size}`;
+---
+
+{href ? (
+  <a
+    class={className}
+    href={href}
+    target={external ? "_blank" : undefined}
+    rel={external ? "noopener noreferrer" : undefined}
+  >
+    <slot />
+  </a>
+) : (
+  <button class={className} type="button" disabled={disabled} autofocus={autoFocus}>
+    <slot />
+  </button>
+)}
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    border-radius: var(--radius-2);
+    text-decoration: none;
+    font-weight: 700;
+    border: 1px solid transparent;
+    cursor: pointer;
+    min-height: var(--target-min);
+  }
+
+  .btn--sm {
+    font-size: var(--font-size-0);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .btn--md {
+    font-size: var(--font-size-1);
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .btn--lg {
+    font-size: var(--font-size-2);
+    padding: var(--space-3) var(--space-6);
+  }
+
+  .btn--primary {
+    background: var(--color-primary);
+    color: var(--color-white);
+  }
+
+  .btn--primary:hover {
+    background: var(--color-primary-hover);
+  }
+
+  .btn--secondary {
+    background: var(--color-gray-50);
+    border-color: var(--color-border);
+  }
+
+  .btn--secondary:hover {
+    background: var(--color-gray-100);
+  }
+
+  .btn--ghost {
+    background: transparent;
+    border-color: var(--color-border);
+  }
+
+  .btn--ghost:hover {
+    background: var(--color-gray-50);
+  }
+
+  .btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+</style>
+</file>
+
+<file path="web/src/components/ui/Hero.astro">
+---
+import Button from "./Button.astro";
+
+type Props = {
+  title: string;
+  subtitle?: string;
+  primaryCtaLabel?: string;
+  primaryCtaHref?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+};
+
+const {
+  title,
+  subtitle,
+  primaryCtaLabel,
+  primaryCtaHref,
+  secondaryCtaLabel,
+  secondaryCtaHref
+} = Astro.props;
+---
+
+<section class="hero card">
+  <div class="hero__inner">
+    <div>
+      <h1 class="hero__title">{title}</h1>
+      {subtitle && <p class="hero__subtitle muted">{subtitle}</p>}
+    </div>
+
+    {(primaryCtaLabel && primaryCtaHref) || (secondaryCtaLabel && secondaryCtaHref) ? (
+      <div class="hero__actions">
+        {primaryCtaLabel && primaryCtaHref && (
+          <Button href={primaryCtaHref} variant="primary">{primaryCtaLabel}</Button>
+        )}
+        {secondaryCtaLabel && secondaryCtaHref && (
+          <Button href={secondaryCtaHref} variant="secondary">{secondaryCtaLabel}</Button>
+        )}
+      </div>
+    ) : null}
+  </div>
+</section>
+
+<style>
+  .hero__inner {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .hero__title {
+    margin: 0;
+    font-size: clamp(2.4rem, 1.8rem + 2.8vw, 3.5rem);
+    line-height: 1.15;
+  }
+
+  .hero__subtitle {
+    margin: var(--space-2) 0 0;
+    font-size: clamp(1.05rem, 0.95rem + 0.7vw, 1.4rem);
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .hero {
+    max-width: min(560px, 100%);
+    margin: 0;
+    padding: clamp(1.25rem, 1rem + 0.5vw, 1.75rem);
+    align-self: flex-start;
+  }
+
+  @media (max-width: 720px) {
+    .hero {
+      padding: var(--space-5);
+    }
+  }
+</style>
 </file>
 
 <file path="web/src/components/Header.astro">
@@ -6045,48 +5877,6 @@ function linkAttrs(item: { href: string; external?: boolean }) {
 </script>
 </file>
 
-<file path="web/src/pages/connect/plan-a-visit/index.astro">
----
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import Schedule from "../../../components/ui/Schedule.astro";
-import { site } from "../../../data/site";
----
-
-<BaseLayout
-  title="Plan a Visit"
-  description={`Service times, directions, parking, and what to expect when visiting ${site.name}.`}
->
-  <div class="stack">
-    <h1>Plan a Visit</h1>
-
-    <Schedule title="Service Times" items={site.schedule} />
-
-    <section class="card stack">
-      <h2>Directions</h2>
-      <p class="muted">
-        Address:{" "}
-        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">
-          {site.contact.address}
-        </a>
-      </p>
-
-      <ul class="muted">
-        {site.visit.directions.map((d) => (
-          <li>{d}</li>
-        ))}
-      </ul>
-    </section>
-
-    <section class="card stack">
-      <h2>What to expect</h2>
-      <p class="muted">{site.visit.languageNote}</p>
-      <p class="muted">{site.visit.parkingNote}</p>
-      <p class="muted">{site.visit.accessibilityNote}</p>
-    </section>
-  </div>
-</BaseLayout>
-</file>
-
 <file path="web/src/pages/connect/prayer/index.astro">
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
@@ -6121,6 +5911,60 @@ const hasPrayerForm = Boolean(prayerFormUrl && prayerFormUrl !== "TBD");
       <p class="small muted">
         Please avoid including sensitive information.
       </p>
+    </section>
+  </div>
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/connect/worship-with-us/index.astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Schedule from "../../../components/ui/Schedule.astro";
+import { site } from "../../../data/site";
+---
+
+<BaseLayout
+  title="Worship With Us"
+  description={`Learn what Sabbath School, Worship Service, and midweek Prayer Meeting are like at ${site.name}.`}
+>
+  <div class="stack">
+    <h1>Worship With Us</h1>
+
+    <Schedule title="Weekly Schedule" items={site.schedule} />
+
+    <section class="card stack--tight">
+      <h2>Sabbath School</h2>
+      <p class="muted">
+        Sabbath School is a Bible study time for all ages, with classes for children and adults.
+      </p>
+    </section>
+
+    <section class="card stack--tight">
+      <h2>Worship Service</h2>
+      <p class="muted">
+        Our worship service includes singing, prayer, Scripture, and a message from the Bible.
+      </p>
+    </section>
+
+    <section class="card stack--tight">
+      <h2>Midweek Prayer Meeting</h2>
+      <p class="muted">
+        Join us midweek for prayer, encouragement, and Bible study.
+      </p>
+      <ul class="muted">
+        <li><strong>When:</strong> Wednesdays at 7:00 p.m.</li>
+        <li><strong>In person:</strong> Church annex</li>
+        <li><strong>Online:</strong>
+          <a
+            href="https://us02web.zoom.us/j/87430121210?pwd=QVNCRUlXcDdtU2dUSUdrbFdVdDlMUT09"
+            target="_blank"
+            rel="noreferrer"
+          >Join via Zoom</a>
+        </li>
+        <li><strong>Dial-in:</strong> (646) 558-8656</li>
+        <li><strong>Meeting ID:</strong> 874 3012 1210</li>
+        <li><strong>Passcode:</strong> 487844</li>
+      </ul>
     </section>
   </div>
 </BaseLayout>
@@ -6377,6 +6221,306 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
 </BaseLayout>
 </file>
 
+<file path="web/src/styles/global.css">
+@import "./tokens.css";
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  font-size: var(--font-size-1);
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+h1 {
+  font-size: clamp(2.2rem, 1.6rem + 2.4vw, 3.2rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.4rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: clamp(1.25rem, 1.05rem + 1vw, 1.7rem);
+  line-height: 1.25;
+}
+
+p,
+li {
+  max-width: 70ch;
+}
+
+a {
+  color: inherit;
+}
+
+summary {
+  min-height: var(--target-min);
+  padding-block: var(--space-2);
+}
+
+.link {
+  color: var(--color-primary);
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.2em;
+  text-decoration-skip-ink: auto;
+  font-weight: 600;
+  transition:
+    color 120ms ease,
+    text-decoration-thickness 120ms ease;
+}
+
+.link:hover {
+  color: var(--color-primary-hover);
+  text-decoration-thickness: 0.14em;
+}
+
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.container {
+  width: min(var(--container-max), calc(100% - var(--container-pad)));
+  margin: 0 auto;
+}
+
+.fullbleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+.main {
+  padding: var(--space-8) 0;
+}
+
+.small {
+  font-size: var(--font-size-0);
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.form-label {
+  font-weight: 700;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-4);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-1);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+}
+
+.card--link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.card--link:hover,
+.card--link:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-2);
+  border-color: var(--color-border-strong);
+}
+
+.prose > * {
+  margin: 0;
+}
+
+.prose > * + * {
+  margin-top: var(--space-4);
+}
+
+.prose :where(h2, h3, h4) {
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-2);
+}
+
+.prose :where(ul, ol) {
+  padding-left: 1.4rem;
+}
+
+.prose :where(li + li) {
+  margin-top: var(--space-2);
+}
+
+.prose :where(blockquote) {
+  margin-left: 0;
+  padding-left: var(--space-4);
+  border-left: 3px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.stack,
+.stack--tight,
+.stack--loose {
+  display: grid;
+}
+
+.stack {
+  gap: var(--space-6);
+}
+
+.stack--tight {
+  gap: var(--space-2);
+}
+
+.stack--loose {
+  gap: var(--space-8);
+}
+
+.stack > *,
+.stack--tight > *,
+.stack--loose > * {
+  margin: 0;
+}
+
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.cluster--between {
+  justify-content: space-between;
+}
+
+.cluster--baseline {
+  align-items: baseline;
+}
+
+.cluster--loose {
+  gap: var(--space-4);
+}
+
+.grid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.grid--cards {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.skip-link {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2);
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform 120ms ease;
+  z-index: 999;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+@media (max-width: 860px) {
+  .main {
+    padding: var(--space-6) 0;
+  }
+}
+</file>
+
+<file path="web/tests/e2e/phase-7-a11y.spec.ts">
+import AxeBuilder from "@axe-core/playwright";
+import { expect, test } from "@playwright/test";
+
+const PAGES = [
+  "/",
+  "/components",
+  "/connect/plan-a-visit",
+  "/connect/team",
+  "/events",
+  "/resources",
+  "/media",
+  "/search",
+];
+
+for (const path of PAGES) {
+  test(`a11y (axe) - ${path}`, async ({ page }) => {
+    await page.goto(path);
+
+    if (path === "/search") {
+      await page
+        .locator("#site-search input.pagefind-ui__search-input")
+        .waitFor();
+
+      // Ensure the Pagefind input has a real label (axe: label-title-only)
+      await page.evaluate(() => {
+        const root = document.getElementById("site-search");
+        const input = root?.querySelector(
+          "input.pagefind-ui__search-input",
+        ) as HTMLInputElement | null;
+        const label = document.getElementById(
+          "site-search-label",
+        ) as HTMLLabelElement | null;
+
+        if (!input || !label) return;
+
+        input.id = "site-search-input";
+        input.setAttribute("aria-labelledby", "site-search-label");
+        input.setAttribute("aria-label", "Search the site");
+        input.removeAttribute("title");
+      });
+    }
+
+    const results = await new AxeBuilder({ page }).analyze();
+
+    const highImpact = results.violations.filter((v) =>
+      ["serious", "critical"].includes(v.impact ?? ""),
+    );
+
+    expect(highImpact).toEqual([]);
+  });
+}
+</file>
+
 <file path="web/astro.config.mjs">
 import cloudflare from "@astrojs/cloudflare";
 import mdx from "@astrojs/mdx";
@@ -6415,79 +6559,235 @@ export default defineConfig({
 });
 </file>
 
-<file path="README.md">
-# First Springfield Church Website
+<file path="web/src/components/global/Footer.astro">
+---
+import { site } from "../../data/site";
+import { tel } from "../../lib/links";
 
-![CI](https://github.com/josuejero/church-website/actions/workflows/web/.github/workflows/ci.yml/badge.svg) ![Lighthouse CI budget enforced](https://img.shields.io/badge/Lighthouse%20CI-budget%20enforced-brightgreen)
+const year = new Date().getFullYear();
+const churchPhoneHref = tel(site.contact.phone);
+const pastorCellHref = tel(site.contact.pastorCell);
+const pastorCellLabel = site.contact.pastorCellLabel ?? "Pastor (call/text)";
+const hasPastorCell = Boolean(site.contact.pastorCell && site.contact.pastorCell.trim());
+const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAddress.trim().length);
+const hasFacebook = Boolean(site.portals.facebookUrl && site.portals.facebookUrl !== "TBD");
+const hasYouTube = Boolean(site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD");
 
-This repo hosts the new First Springfield SDA site built with Astro and Cloudflare Workers. The focus is on a fast, accessible experience for worshipers, visitors, and church staff who need schedules, ministries, giving links, and helpful content in a heartbeat.
+function linkAttrs(item: { href: string; external?: boolean }) {
+  return item.external ? { target: "_blank", rel: "noopener noreferrer" } : {};
+}
 
-**Live demo:** https://firstspringfieldma.adventistchurch.org/
+const primaryNavLabels = ["Visit", "Contact"];
+const primaryActionLabels = ["Watch Live", "Give"];
 
-## Why this project is a UI-intern-quality repo
+const isDefined = <T,>(value: T | undefined | null): value is T => Boolean(value);
 
-- **UI from spec:** the designer handoff lives in [docs/ui-handoff.md](docs/ui-handoff.md), showing how colors, spacing, and layout principles translate into code.
-- **Cross-browser smoke:** Playwright runs the Chromium full suite plus Firefox/WebKit smoke tests to prove it works everywhere.
-- **Accessibility:** axe scans are part of the CI workflow so every push guards against regressions.
-- **Performance:** Lighthouse CI budgets are enforced to keep the experience fast.
-- **Cross-device:** Playwright `mobile-smoke` project plus device emulation validate the UI at representative mobile viewports.
+const findNav = (label: string) => site.nav.find((item) => item.label === label);
+const primaryLinks = [
+  findNav("Visit"),
+  findNav("Contact")
+].filter(isDefined);
 
-## Getting started
+const secondaryNav = site.nav.filter((item) => !primaryNavLabels.includes(item.label));
+const secondaryActions = site.quickActions.filter((item) => !primaryActionLabels.includes(item.label));
+---
 
-1. `cd web`
-2. `npm install`
-3. `npm run dev`
+<footer class="site-footer">
+  <div class="inner">
+    <div class="left">
+      <strong>{site.name}</strong>
 
-The remaining scripts live inside `web/package.json`. `npm run build` produces a static output in `web/dist`, and `npm run preview` lets you inspect the production bundle locally before deployment.
+      <div class="muted">
+        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">
+          {site.contact.address}
+        </a>
+      </div>
 
-## Local development
+      {hasMailing ? (
+        <div class="muted small">
+          Mail: {site.contact.mailingAddress}
+        </div>
+      ) : null}
 
-| Command | Purpose |
-| --- | --- |
-| `cd web && npm install` | Install dependencies and make the Astro scripts available. |
-| `cd web && npm run dev` | Start the Astro dev server at `localhost:4321`. |
-| `cd web && npm run qa` | Run `astro check`, Playwright E2E, Linkinator, and Lighthouse locally. |
-| `cd web && npm run format` | Format Astro/Svelte files with Prettier + plugins. |
+      <div class="muted footer-contact">
+        {hasPastorCell ? (
+          <div>
+            <span class="footer-contact-label">{pastorCellLabel}:</span>
+            <a href={pastorCellHref}>{site.contact.pastorCell}</a>
+          </div>
+        ) : null}
+        <div>
+          <span class="footer-contact-label">Church:</span>
+          <a href={churchPhoneHref}>{site.contact.phone}</a>
+        </div>
+        <div>
+          <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+        </div>
+      </div>
 
-## Tech highlights
+      <div class="muted small">© {year}</div>
+    </div>
 
-- Astro + Cloudflare Workers deliver content-first rendering with partial hydration where it makes the most sense.
-- Tokens govern spacing, typography, color, and elevation so the component library stays cohesive.
-- Accessibility-first surface rules (focus-visible, skip link, 44px tap targets, semantic headings) keep the site welcoming to everyone.
-- Accessibility commitment: We follow WCAG 2.2 intent—44px tap targets, strong focus indicators, meaningful heading hierarchy, and keyboard navigation via the skip link so the UI feels reliable on every device (`web/src/styles/a11y.css`, `web/tests/e2e/phase-7-a11y.spec.ts`).
-- A smoke suite (Playwright E2E, Linkinator links, Lighthouse CI) keeps regressions off the branch.
-- Performance, accessibility, best practices, and SEO budgets run inside CI so builds never slip below the target thresholds.
+    <nav class="right" aria-label="Footer links">
+      <div class="col col--primary">
+        <div class="col-title">Start here</div>
+        <div class="col-body links">
+          {primaryLinks.map((item) => (
+            <a href={item.href} {...linkAttrs(item)}>
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </div>
 
-## Engineering highlights
+      <div class="col">
+        <div class="col-title">Explore</div>
+        <div class="col-body links">
+          {secondaryNav.map((item) => (
+            <a href={item.href} {...linkAttrs(item)}>
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </div>
 
-- Design tokens and the shared component library keep layout rhythm consistent as new stories land.
-- The cross-engine smoke suite stitches together Playwright, link checking, and Lighthouse to prove the experience in multiple browsers.
-- CI enforces the lightweight Lighthouse budget plus Playwright/linkinator updates on every push.
+      <div class="col">
+        <div class="col-title">Quick actions</div>
+        <div class="col-body links">
+          {secondaryActions.map((item) => (
+            <a href={item.href} {...linkAttrs(item)}>
+              {item.label}
+            </a>
+          ))}
+          {hasYouTube ? (
+            <a href={site.portals.youtubeChannelUrl} target="_blank" rel="noopener noreferrer">
+              YouTube
+            </a>
+          ) : null}
+          {hasFacebook ? (
+            <a href={site.portals.facebookUrl} target="_blank" rel="noopener noreferrer">
+              Facebook
+            </a>
+          ) : null}
+        </div>
+      </div>
 
-## Performance budget (Lighthouse CI)
+      <div class="col">
+        <div class="col-title">Service times</div>
+        <div class="col-body muted small">
+          {site.schedule.map((s) => (
+            <div class="line">
+              <span class="day">{s.day}</span>
+              <span aria-hidden="true"> · </span>
+              <span class="time">{s.time}</span>
+              <span aria-hidden="true"> — </span>
+              <span class="label">{s.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
-![Latest Lighthouse CI run](docs/assets/lighthouse-latest.png)
+    </nav>
+  </div>
+</footer>
 
-We enforce a small Lighthouse CI budget in order to catch “death by a thousand cuts” (unoptimized images, heavy scripts, accidental layout shifts) before it reaches production:
-- The CI workflow now runs `treosh/lighthouse-ci-action`, uploads `web/.lighthouseci` as the `lighthouseci` artifact, and posts a PR comment (`tag: lighthouse-ci`) that links to the temporary HTML report so reviewers see the latest scores without rerunning locally.
-- Performance score must stay at or above 0.90.
-- Accessibility score must stay at or above 0.95.
-- Best Practices score must stay at or above 0.95.
-- SEO score must stay at or above 0.95.
+<style>
+  .site-footer {
+    border-top: 1px solid var(--color-border);
+    background: var(--color-white);
+  }
 
-Lighthouse category assertions operate on a 0–1 scale in CI configs, so 0.90 corresponds to “90/100 style” expectations. Config: `web/lighthouserc.cjs`. Run locally from the `web/` folder via `npm run lighthouse`.
+  .inner {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: var(--space-6) var(--container-pad);
+    display: flex;
+    gap: var(--space-6);
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
 
-## Supporting docs
+  .muted {
+    color: var(--color-text-muted);
+    margin-top: var(--space-2);
+  }
 
-- [Design handoff](docs/ui-handoff.md)
-- [Web developer README](web/README.md)
-- [Component guide (living style guide)](/components)
-- [Community health docs](CONTRIBUTING.md) _(includes CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, LICENSE)_
+  .footer-contact {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin-top: var(--space-2);
+  }
 
-## Troubleshooting
+  .footer-contact-label {
+    font-weight: 600;
+    margin-right: 0.35rem;
+  }
 
-- If Playwright fails locally, run `npx playwright install --with-deps` and consult Playwright’s docs on CI workflows/setup patterns.
-- If Lighthouse CI fails, inspect large images or heavyweight scripts, optimize them, and rerun `npm run lighthouse`; budgets guard performance, accessibility, best practices, and SEO.
+  .small {
+    font-size: 0.95rem;
+  }
+
+  .left a {
+    color: inherit;
+  }
+
+  .right {
+    display: flex;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .col {
+    min-width: 190px;
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .col-title {
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  .col--primary .col-title {
+    color: var(--color-text);
+  }
+
+  .col-body {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .line .day,
+  .line .time,
+  .line .label {
+    white-space: nowrap;
+  }
+
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--target-min);
+    padding: 0.2rem 0;
+    text-decoration: none;
+    color: inherit;
+    opacity: 0.9;
+    font-weight: 600;
+  }
+
+  .links a:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+
+  @media (max-width: 520px) {
+    .col {
+      min-width: 100%;
+    }
+  }
+</style>
 </file>
 
 <file path="web/src/components/Footer.astro">
@@ -6626,6 +6926,58 @@ const ogLocale = locale.replace("-", "_");
 </html>
 </file>
 
+<file path="web/src/pages/connect/plan-a-visit/index.astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import PlanVisitContent from "../../../components/PlanVisitContent.astro";
+import { site } from "../../../data/site";
+---
+
+<BaseLayout
+  title="Plan a Visit"
+  description={`Service times, directions, parking, and what to expect when visiting ${site.name}.`}
+>
+  <PlanVisitContent />
+</BaseLayout>
+</file>
+
+<file path="web/src/content/ministries/children.md">
+---
+title: "Children’s Ministry"
+summary: "Nurturing 3–9-year-olds to know Jesus through story, song, and safe, joyful community."
+leaderName: "Giselle Davey"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "Sabbath mornings (see programs below)"
+category: "Children & Youth"
+ctaLabel: "Contact us"
+ctaHref: "/connect/contact"
+tags: ["kids", "families"]
+---
+
+## Children’s Ministry
+
+Coordinator: Giselle Davey
+
+The mission of the Children’s Ministries Department is to nurture children into a loving, serving relationship with Jesus. We are committed to creating a safe, joyful, and faith-filled environment where children can grow spiritually, emotionally, socially, and mentally while learning how deeply they are loved by God.
+
+We seek to fulfill this mission by providing age-appropriate programs that encourage Bible learning, worship, service, and fellowship, while partnering closely with families to support children’s spiritual growth.
+
+### Our Programs & Meeting Times
+
+- • Sabbath School begins every Sabbath at 10:00 AM, offering engaging Bible-based lessons for children.
+- • Children’s Choir Practice takes place every Sabbath from 10:55–11:10 AM, helping children worship God through music.
+- • Children’s Church is held on the first and third Sabbath of each month, immediately following the Children’s Story, starting June 2026. Children’s Church is designed for children ages 3–9 and includes Bible stories, crafts, singing, a short sermonette, and snacks. For the safety of all children, parents are required to sign children in and out each Sabbath.
+- • Vacation Bible School (VBS): July 28 to July 30 from 6 pm to 7:15 pm.
+
+Through these ministries, we aim to help children grow in faith, build friendships, and develop a strong foundation that will guide them throughout their lives.
+
+### Resources
+
+- https://www.youtube.com/c/adventistchildrensministries
+- https://www.faithfinders.com/god-sent-his-son-to-be-my-friend-bible-study-guides
+- https://www.gracelink.net/podcast
+</file>
+
 <file path="web/src/pages/connect/contact/index.astro">
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
@@ -6637,7 +6989,8 @@ import { tel } from "../../../lib/links";
 
 const phoneHref = tel(site.contact.phone);
 const pastorCellHref = tel(site.contact.pastorCell);
-const pastorCellLabel = site.contact.pastorCellLabel ?? "Pastor Kobe (call/text)";
+const pastorCellLabel = site.contact.pastorCellLabel ?? "Pastor (call/text)";
+const pastorDisplayName = site.contact.pastorName ?? "the pastor";
 const hasPastorCell = Boolean(site.contact.pastorCell && site.contact.pastorCell.trim());
 const hasContactForm = site.portals.contactFormUrl && site.portals.contactFormUrl !== "TBD";
 const hasFacebook = site.portals.facebookUrl && site.portals.facebookUrl !== "TBD";
@@ -6684,7 +7037,7 @@ const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAd
       <section class="card stack" aria-labelledby="contact-pastor">
         <h2 id="contact-pastor">{pastorCellLabel}</h2>
         <p class="muted">
-          The church phone may not be answered 24/7. For a faster response, call or text Pastor Kobe:
+          The church phone may not be answered 24/7. For a faster response, call or text {pastorDisplayName}:
           <a href={pastorCellHref}>{site.contact.pastorCell}</a>
         </p>
       </section>
@@ -6747,50 +7100,6 @@ const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAd
 </BaseLayout>
 </file>
 
-<file path="web/playwright.config.ts">
-import { defineConfig, devices } from '@playwright/test';
-
-const HOST = '127.0.0.1';
-const PORT = 4321;
-const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://${HOST}:${PORT}/`;
-
-export default defineConfig({
-  testDir: './tests/e2e',
-  fullyParallel: true,
-  use: {
-    baseURL: BASE_URL,
-    trace: 'retain-on-failure',
-  },
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox-smoke',
-      use: { ...devices['Desktop Firefox'] },
-      testMatch: /.*smoke\.spec\.ts/,
-    },
-    {
-      name: 'webkit-smoke',
-      use: { ...devices['Desktop Safari'] },
-      testMatch: /.*smoke\.spec\.ts/,
-    },
-    {
-      name: 'mobile-smoke',
-      use: { ...devices['iPhone 13'] },
-      testMatch: /.*smoke\.spec\.ts/,
-    },
-  ],
-  webServer: {
-    command: `npm run build && npx wrangler dev --local --ip ${HOST} --port ${PORT} --log-level error`,
-    url: BASE_URL,
-    timeout: 120 * 1000,
-    reuseExistingServer: !process.env.CI,
-  },
-});
-</file>
-
 <file path="web/package.json">
 {
   "name": "web",
@@ -6845,252 +7154,123 @@ export default defineConfig({
 }
 </file>
 
-<file path="web/src/data/site.ts">
-export type NavItem = {
-  label: string;
-  href: string;
-  external?: boolean;
-};
+<file path="web/playwright.config.ts">
+import { defineConfig, devices } from "@playwright/test";
 
-export type ScheduleItem = {
-  label: string;
-  day: string;
-  time: string;
-};
+const HOST = "127.0.0.1";
+const PORT = 4321;
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://${HOST}:${PORT}/`;
 
-export type PortalLinks = {
-  givingUrl: string;
-  youtubeChannelUrl: string;
-  youtubeLiveEmbedUrl: string;
-  facebookUrl: string;
-  prayerFormUrl: string;
-  contactFormUrl: string;
-  volunteerFormUrl: string;
-  oldWebsiteUrl: string;
-};
-
-export type TeamMember = {
-  role: string;
-  name: string;
-  email?: string;
-};
-
-export type ContactTopic = {
-  topic: string;
-  contactRole: string;
-  email?: string;
-  href?: string;
-  hrefLabel?: string;
-  external?: boolean;
-  note?: string;
-};
-
-// Official public contact details (NAD directory / eAdventist).
-// If the church requests different public-facing details, update them here.
-const PUBLIC_EMAIL = "firstspringfieldsda@gmail.com";
-const PASTOR_NAME = "Pastor Abankwah Amoakohene";
-
-const TIME_ZONE = "America/New_York";
-
-const ADDRESS_LINE = "1118 Sumner Ave, Springfield, MA 01118-2154";
-const MAPS_URL =
-  "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(ADDRESS_LINE);
-
-const VISIT_NOTES = {
-  directions: [
-    "From I-91: take Exit 6 toward Springfield, then follow signs toward Sumner Ave.",
-    "From I-90: take Exit 5, follow signs toward Springfield and take Exit 5, then follow local signs to Sumner Ave."
+export default defineConfig({
+  testDir: "./tests/e2e",
+  fullyParallel: true,
+  use: {
+    baseURL: BASE_URL,
+    trace: "retain-on-failure",
+  },
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "firefox-smoke",
+      use: { ...devices["Desktop Firefox"] },
+      testMatch: /.*smoke\.spec\.ts/,
+    },
+    {
+      name: "webkit-smoke",
+      use: { ...devices["Desktop Safari"] },
+      testMatch: /.*smoke\.spec\.ts/,
+    },
+    {
+      name: "mobile-smoke",
+      use: { ...devices["iPhone 13"] },
+      testMatch: /.*smoke\.spec\.ts/,
+    },
   ],
-  languageNote:
-    "Services are primarily in English. If you need Spanish support, please contact us and we will help.",
-  parkingNote:
-    "Street parking is available near the church. Please arrive a few minutes early to find a spot.",
-  accessibilityNote:
-    "If you need accessibility accommodations, please contact us ahead of time so we can assist."
-};
-
-const MISSION = {
-  statement:
-    "Make disciples of Jesus Christ who live as His loving witnesses and proclaim to all people the everlasting gospel of the Three Angels' Messages in preparation for His soon return (Matt 28:18-20, Acts 1:8, Rev 14:6-12).",
-  method:
-    "Guided by the Bible and the Holy Spirit, Seventh-day Adventists pursue the mission of making disciples through Christ-like living, healing, serving, proclaiming, teaching, and training.",
-  vision:
-    "In harmony with Bible revelation, Seventh-day Adventists see as the climax of God's plan the restoration of all His creation to full harmony with His perfect will and righteousness."
-};
-
-// Single source of truth for public links + service times
-const portals: PortalLinks = {
-  // If you have a church-specific AdventistGiving link, replace this.
-  givingUrl: "https://adventistgiving.org/",
-  youtubeChannelUrl: "https://www.youtube.com/@1stspringfieldsdama74",
-  // YouTube live embed: replace with a playlist/embed if the church prefers.
-  youtubeLiveEmbedUrl:
-    "https://www.youtube.com/embed/live_stream?channel=UCkmryvqlHb3JIwVLc07FZwA",
-  // Add the official Facebook page when confirmed.
-  facebookUrl: "",
-  // Optional forms (set to real URLs when ready)
-  prayerFormUrl: "",
-  contactFormUrl: "",
-  volunteerFormUrl: "",
-  // Official AdventistChurchConnect site (currently under construction)
-  oldWebsiteUrl: "https://firstspringfieldma.adventistchurch.org/"
-};
-
-const weekSchedule: ScheduleItem[] = [
-  { label: "Sabbath School", day: "Saturday", time: "10:00 AM" },
-  { label: "Worship", day: "Saturday", time: "11:15 AM" },
-  { label: "Prayer Meeting", day: "Wednesday", time: "7:00 PM" }
-];
-
-const leadershipTeam: TeamMember[] = [
-  { role: "Pastor", name: PASTOR_NAME, email: PUBLIC_EMAIL },
-  { role: "Head Elder", name: "Church Office", email: PUBLIC_EMAIL },
-  { role: "Head Deacon", name: "Church Office", email: PUBLIC_EMAIL },
-  { role: "Church Clerk", name: "Church Office", email: PUBLIC_EMAIL },
-  { role: "Treasurer", name: "Church Office", email: PUBLIC_EMAIL }
-];
-
-const ministryLeads: TeamMember[] = [
-  { role: "Children’s Ministry", name: "Children’s Ministry Team", email: PUBLIC_EMAIL },
-  { role: "Youth Ministry", name: "Youth Ministry Team", email: PUBLIC_EMAIL },
-  { role: "Women’s Ministry", name: "Women’s Ministry Team", email: PUBLIC_EMAIL },
-  { role: "Men’s Ministry", name: "Men’s Ministry Team", email: PUBLIC_EMAIL },
-  { role: "Communications / Media", name: "Media Team", email: PUBLIC_EMAIL }
-];
-
-const hasVolunteerForm = portals.volunteerFormUrl && portals.volunteerFormUrl !== "TBD";
-const hasPrayerForm = portals.prayerFormUrl && portals.prayerFormUrl !== "TBD";
-
-const contactTopics: ContactTopic[] = [
-  {
-    topic: "First-time visit questions",
-    contactRole: "Greeter / Hospitality",
-    email: PUBLIC_EMAIL,
-    note: "Happy to answer questions about parking, what to expect, and children’s programs."
+  webServer: {
+    command: `npm run build && npx wrangler dev --local --ip ${HOST} --port ${PORT} --log-level error`,
+    url: BASE_URL,
+    timeout: 120 * 1000,
+    reuseExistingServer: !process.env.CI,
   },
-  {
-    topic: "Bible study",
-    contactRole: "Pastor",
-    email: PUBLIC_EMAIL,
-    note: "We can connect you with a study group or set up a visit."
-  },
-  {
-    topic: "Prayer Request",
-    contactRole: "Prayer Team",
-    email: PUBLIC_EMAIL,
-    href: hasPrayerForm ? portals.prayerFormUrl : "/connect/contact",
-    hrefLabel: hasPrayerForm ? "Open prayer form" : "Contact us",
-    external: hasPrayerForm ? true : false
-  },
-  {
-    topic: "Need help choosing a ministry",
-    contactRole: "Pastor",
-    email: PUBLIC_EMAIL,
-    note: "If you are unsure who to contact, start here."
-  },
-  {
-    topic: "Volunteering",
-    contactRole: "Ministry Leads",
-    email: PUBLIC_EMAIL,
-    href: hasVolunteerForm ? portals.volunteerFormUrl : "/connect/contact",
-    hrefLabel: hasVolunteerForm ? "Open volunteer form" : "Contact us",
-    external: hasVolunteerForm ? true : false
-  },
-  {
-    topic: "Giving questions",
-    contactRole: "Treasurer",
-    email: PUBLIC_EMAIL,
-    href: "/give",
-    hrefLabel: "Go to giving page"
-  }
-];
+});
+</file>
 
-// Visitor-facing nav (matches real routes and keeps the header feeling “finished”)
-const nav: NavItem[] = [
-  { label: "Visit", href: "/connect/plan-a-visit" },
-  { label: "Contact", href: "/connect/contact" },
-  { label: "About Us", href: "/connect/about" },
-  { label: "Our Team", href: "/connect/team" },
-  { label: "Ministries", href: "/ministries" },
-  { label: "Events", href: "/events" },
-  { label: "Privacy", href: "/privacy" }
-];
+<file path="README.md">
+# First Springfield Church Website
 
-// “Always available” actions (show as buttons in the header)
-const quickActions: NavItem[] = [
-  { label: "Watch Live", href: "/media/live" },
-  { label: "Give", href: "/give" },
-  { label: "Prayer Request", href: "/connect/prayer" },
-  { label: "Bulletins", href: "/resources/bulletins" },
-  { label: "Volunteer", href: "/serve" }
-];
+![CI](https://github.com/josuejero/church-website/actions/workflows/ci.yml/badge.svg) ![Lighthouse CI budget enforced](https://img.shields.io/badge/Lighthouse%20CI-budget%20enforced-brightgreen) [![Live App](https://img.shields.io/badge/app-live-brightgreen.svg)](https://church-website.josuejero.workers.dev/)
 
-// Social links used in the legacy footer component
-const social: NavItem[] = [];
-if (portals.youtubeChannelUrl && portals.youtubeChannelUrl !== "TBD") {
-  social.push({ label: "YouTube", href: portals.youtubeChannelUrl, external: true });
-}
-if (portals.facebookUrl && portals.facebookUrl !== "TBD") {
-  social.push({ label: "Facebook", href: portals.facebookUrl, external: true });
-}
+This repo hosts the new First Springfield SDA site built with Astro and Cloudflare Workers. The focus is on a fast, accessible experience for worshipers, visitors, and church staff who need schedules, ministries, giving links, and helpful content in a heartbeat.
 
-export const site = {
-  name: "First Springfield Seventh-day Adventist Church",
-  shortName: "First Springfield SDA",
-  locale: "en-US",
-  timeZone: TIME_ZONE,
-  description:
-    "A Seventh-day Adventist church community in Springfield, MA. Join us for worship, Bible study, and service.",
-  address: {
-    street: "1118 Sumner Ave",
-    city: "Springfield",
-    state: "MA",
-    zip: "01118-2154"
-  },
-  contact: {
-    email: PUBLIC_EMAIL,
-    phone: "413-782-6260",
-    pastorCell: "(240) 850-9452",
-    pastorCellLabel: "Pastor Kobe (call/text)",
-    address: ADDRESS_LINE,
-    mapsUrl: MAPS_URL,
-    // Leave blank unless the church asks for a distinct mailing address.
-    mailingAddress: ""
-  },
+**Live demo:** https://church-website.josuejero.workers.dev/
 
-  map: {
-    embedSrc:
-      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2961.4635291201326!2d-72.5766111!3d42.1059871!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x3c9b7d2fd5f3b6f2!2sFirst%20Springfield%20Seventh-day%20Adventist%20Church!5e0!3m2!1sen!2sus!4v0000000000000",
-    directions: VISIT_NOTES.directions
-  },
+## Why this project is a UI-intern-quality repo
 
-  visit: VISIT_NOTES,
-  mission: MISSION,
+- **UI from spec:** the designer handoff lives in [docs/ui-handoff.md](docs/ui-handoff.md), showing how colors, spacing, and layout principles translate into code.
+- **Cross-browser smoke:** Playwright runs the Chromium full suite plus Firefox/WebKit smoke tests to prove it works everywhere.
+- **Accessibility:** axe scans are part of the CI workflow so every push guards against regressions.
+- **Performance:** Lighthouse CI budgets are enforced to keep the experience fast.
+- **Cross-device:** Playwright `mobile-smoke` project plus device emulation validate the UI at representative mobile viewports.
 
-  team: {
-    leadership: [
-      { name: PASTOR_NAME, role: "Pastor", email: PUBLIC_EMAIL },
-      { name: "Head Elder", role: "Elder", email: PUBLIC_EMAIL },
-      { name: "Church Clerk", role: "Clerk", email: PUBLIC_EMAIL }
-    ]
-  },
+## Getting started
 
-  schedule: weekSchedule,
-  portals,
+1. `cd web`
+2. `npm install`
+3. `npm run dev`
 
-  nav,
-  quickActions,
+The remaining scripts live inside `web/package.json`. `npm run build` produces a static output in `web/dist`, and `npm run preview` lets you inspect the production bundle locally before deployment.
 
-  // Used by the legacy footer component
-  social,
+## Local development
 
-  // Team page sections
-  leadershipTeam,
-  ministryLeads,
+| Command | Purpose |
+| --- | --- |
+| `cd web && npm install` | Install dependencies and make the Astro scripts available. |
+| `cd web && npm run dev` | Start the Astro dev server at `localhost:4321`. |
+| `cd web && npm run qa` | Run `astro check`, Playwright E2E, Linkinator, and Lighthouse locally. |
+| `cd web && npm run format` | Format Astro/Svelte files with Prettier + plugins. |
 
-  // Contact page topics
-  contactTopics
-};
+## Tech highlights
+
+- Astro + Cloudflare Workers deliver content-first rendering with partial hydration where it makes the most sense.
+- Tokens govern spacing, typography, color, and elevation so the component library stays cohesive.
+- Accessibility-first surface rules (focus-visible, skip link, 44px tap targets, semantic headings) keep the site welcoming to everyone.
+- Accessibility commitment: We follow WCAG 2.2 intent—44px tap targets, strong focus indicators, meaningful heading hierarchy, and keyboard navigation via the skip link so the UI feels reliable on every device (`web/src/styles/a11y.css`, `web/tests/e2e/phase-7-a11y.spec.ts`).
+- A smoke suite (Playwright E2E, Linkinator links, Lighthouse CI) keeps regressions off the branch.
+- Performance, accessibility, best practices, and SEO budgets run inside CI so builds never slip below the target thresholds.
+
+## Engineering highlights
+
+- Design tokens and the shared component library keep layout rhythm consistent as new stories land.
+- The cross-engine smoke suite stitches together Playwright, link checking, and Lighthouse to prove the experience in multiple browsers.
+- CI enforces the lightweight Lighthouse budget plus Playwright/linkinator updates on every push.
+
+## Performance budget (Lighthouse CI)
+
+![Latest Lighthouse CI run](docs/assets/lighthouse-latest.png)
+
+We enforce a small Lighthouse CI budget in order to catch “death by a thousand cuts” (unoptimized images, heavy scripts, accidental layout shifts) before it reaches production:
+- The CI workflow now runs `treosh/lighthouse-ci-action`, uploads `web/.lighthouseci` as the `lighthouseci` artifact, and posts a PR comment (`tag: lighthouse-ci`) that links to the temporary HTML report so reviewers see the latest scores without rerunning locally.
+- Performance score must stay at or above 0.90.
+- Accessibility score must stay at or above 0.95.
+- Best Practices score must stay at or above 0.95.
+- SEO score must stay at or above 0.95.
+
+Lighthouse category assertions operate on a 0–1 scale in CI configs, so 0.90 corresponds to “90/100 style” expectations. Config: `web/lighthouserc.cjs`. Run locally from the `web/` folder via `npm run lighthouse`.
+
+## Supporting docs
+
+- [Design handoff](docs/ui-handoff.md)
+- [Web developer README](web/README.md)
+- [Component guide (living style guide)](/components)
+- [Community health docs](CONTRIBUTING.md) _(includes CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, LICENSE)_
+
+## Troubleshooting
+
+- If Playwright fails locally, run `npx playwright install --with-deps` and consult Playwright’s docs on CI workflows/setup patterns.
+- If Lighthouse CI fails, inspect large images or heavyweight scripts, optimize them, and rerun `npm run lighthouse`; budgets guard performance, accessibility, best practices, and SEO.
 </file>
 
 <file path="web/src/pages/index.astro">
@@ -7105,9 +7285,22 @@ import { Image } from "astro:assets";
 import { site } from "../data/site";
 import heroBg from "../assets/photos/first-springfield-exterior.png";
 import bridgeDusk from "../assets/photos/bridge-dusk.jpg";
+import churchLogo from "../assets/photos/church-logo-primary.jpg";
 ---
 
 <BaseLayout title={site.name} description={site.description}>
+  <section class="home-logo" aria-label="First Springfield Church logo">
+    <Image
+      src={churchLogo}
+      alt="First Springfield Seventh-day Adventist Church logo"
+      widths={[180, 280, 360]}
+      sizes="(max-width: 720px) 60vw, 18vw"
+      loading="eager"
+      decoding="async"
+      class="home-logo__img"
+    />
+  </section>
+
   <HeroBanner
     background={heroBg}
     objectPosition="50% 35%"
@@ -7115,7 +7308,7 @@ import bridgeDusk from "../assets/photos/bridge-dusk.jpg";
     subtitle="A vibrant, multicultural Seventh-day Adventist church in the heart of Springfield, MA."
     primaryCtaLabel="Plan a Visit"
     primaryCtaHref="/connect/plan-a-visit"
-    secondaryCtaLabel="Watch Live"
+    secondaryCtaLabel="Watch online"
     secondaryCtaHref="/media/live"
   />
 
@@ -7196,6 +7389,17 @@ import bridgeDusk from "../assets/photos/bridge-dusk.jpg";
 </BaseLayout>
 
 <style>
+  .home-logo {
+    margin: var(--space-8) auto 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .home-logo__img {
+    width: min(220px, 80vw);
+    height: auto;
+    display: block;
+  }
   .photo-montage {
     gap: var(--space-4);
     margin: var(--space-10) 0;
@@ -7252,6 +7456,269 @@ import bridgeDusk from "../assets/photos/bridge-dusk.jpg";
     }
   }
 </style>
+</file>
+
+<file path="web/src/data/site.ts">
+export type NavItem = {
+  label: string;
+  href: string;
+  external?: boolean;
+};
+
+export type ScheduleItem = {
+  label: string;
+  day: string;
+  time: string;
+};
+
+export type PortalLinks = {
+  givingUrl: string;
+  youtubeChannelUrl: string;
+  youtubeLiveEmbedUrl: string;
+  facebookUrl: string;
+  prayerFormUrl: string;
+  contactFormUrl: string;
+  volunteerFormUrl: string;
+  oldWebsiteUrl: string;
+};
+
+export type TeamMember = {
+  role: string;
+  name: string;
+  email?: string;
+};
+
+export type ContactTopic = {
+  topic: string;
+  contactRole: string;
+  email?: string;
+  href?: string;
+  hrefLabel?: string;
+  external?: boolean;
+  note?: string;
+};
+
+// Official public contact details (NAD directory / eAdventist).
+// If the church requests different public-facing details, update them here.
+const PUBLIC_EMAIL = "firstspringfieldsda@gmail.com";
+const PASTOR_NAME = "Pastor Abankwa Amoakohene";
+
+const TIME_ZONE = "America/New_York";
+
+const ADDRESS_LINE = "1118 Sumner Ave, Springfield, MA 01118-2154";
+const MAPS_URL =
+  "https://www.google.com/maps/dir/?api=1&destination=" +
+  encodeURIComponent(ADDRESS_LINE);
+
+const VISIT_NOTES = {
+  directions: [
+    "From I-91: take Exit 6 toward Springfield, then follow signs toward Sumner Ave.",
+    "From I-90: take Exit 5, follow signs toward Springfield and take Exit 5, then follow local signs to Sumner Ave.",
+  ],
+  languageNote:
+    "Services are primarily in English. If you need Spanish support, please contact us and we will help.",
+  parkingNote:
+    "Street parking is available near the church. Please arrive a few minutes early to find a spot.",
+  accessibilityNote:
+    "If you need accessibility accommodations, please contact us ahead of time so we can assist.",
+};
+
+const MISSION = {
+  statement:
+    "Make disciples of Jesus Christ who live as His loving witnesses and proclaim to all people the everlasting gospel of the Three Angels' Messages in preparation for His soon return (Matt 28:18-20, Acts 1:8, Rev 14:6-12).",
+  method:
+    "Guided by the Bible and the Holy Spirit, Seventh-day Adventists pursue the mission of making disciples through Christ-like living, healing, serving, proclaiming, teaching, and training.",
+  vision:
+    "In harmony with Bible revelation, Seventh-day Adventists see as the climax of God's plan the restoration of all His creation to full harmony with His perfect will and righteousness.",
+};
+
+// Single source of truth for public links + service times
+const portals: PortalLinks = {
+  // If you have a church-specific AdventistGiving link, replace this.
+  givingUrl: "https://adventistgiving.org/",
+  youtubeChannelUrl: "https://www.youtube.com/@1stspringfieldsdama74",
+  // YouTube live embed: replace with a playlist/embed if the church prefers.
+  youtubeLiveEmbedUrl:
+    "https://www.youtube.com/embed/live_stream?channel=UCkmryvqlHb3JIwVLc07FZwA",
+  // Add the official Facebook page when confirmed.
+  facebookUrl: "",
+  // Optional forms (set to real URLs when ready)
+  prayerFormUrl: "",
+  contactFormUrl: "",
+  volunteerFormUrl: "",
+  // Official AdventistChurchConnect site (currently under construction)
+  oldWebsiteUrl: "https://firstspringfieldma.adventistchurch.org/",
+};
+
+const weekSchedule: ScheduleItem[] = [
+  { label: "Sabbath School", day: "Saturday", time: "10:00 AM" },
+  { label: "Worship", day: "Saturday", time: "11:15 AM" },
+  { label: "Prayer Meeting", day: "Wednesday", time: "7:00 PM" },
+];
+
+const leadershipTeam: TeamMember[] = [
+  { role: "Pastor", name: PASTOR_NAME, email: PUBLIC_EMAIL },
+  { role: "Head Elder", name: "Church Office", email: PUBLIC_EMAIL },
+  { role: "Head Deacon", name: "Church Office", email: PUBLIC_EMAIL },
+  { role: "Church Clerk", name: "Church Office", email: PUBLIC_EMAIL },
+  { role: "Treasurer", name: "Church Office", email: PUBLIC_EMAIL },
+];
+
+const ministryLeads: TeamMember[] = [
+  {
+    role: "Children’s Ministry",
+    name: "Giselle Davey",
+    email: PUBLIC_EMAIL,
+  },
+  { role: "Youth Ministry", name: "Youth Ministry Team", email: PUBLIC_EMAIL },
+  {
+    role: "Women’s Ministry",
+    name: "Women’s Ministry Team",
+    email: PUBLIC_EMAIL,
+  },
+  { role: "Men’s Ministry", name: "Men’s Ministry Team", email: PUBLIC_EMAIL },
+  { role: "Communications / Media", name: "Media Team", email: PUBLIC_EMAIL },
+];
+
+const hasVolunteerForm =
+  portals.volunteerFormUrl && portals.volunteerFormUrl !== "TBD";
+const hasPrayerForm = portals.prayerFormUrl && portals.prayerFormUrl !== "TBD";
+
+const contactTopics: ContactTopic[] = [
+  {
+    topic: "First-time visit questions",
+    contactRole: "Greeter / Hospitality",
+    email: PUBLIC_EMAIL,
+    note: "Happy to answer questions about parking, what to expect, and children’s programs.",
+  },
+  {
+    topic: "Bible study",
+    contactRole: "Pastor",
+    email: PUBLIC_EMAIL,
+    note: "We can connect you with a study group or set up a visit.",
+  },
+  {
+    topic: "Prayer Request",
+    contactRole: "Prayer Team",
+    email: PUBLIC_EMAIL,
+    href: hasPrayerForm ? portals.prayerFormUrl : "/connect/contact",
+    hrefLabel: hasPrayerForm ? "Open prayer form" : "Contact us",
+    external: hasPrayerForm ? true : false,
+  },
+  {
+    topic: "Need help choosing a ministry",
+    contactRole: "Pastor",
+    email: PUBLIC_EMAIL,
+    note: "If you are unsure who to contact, start here.",
+  },
+  {
+    topic: "Volunteering",
+    contactRole: "Ministry Leads",
+    email: PUBLIC_EMAIL,
+    href: hasVolunteerForm ? portals.volunteerFormUrl : "/connect/contact",
+    hrefLabel: hasVolunteerForm ? "Open volunteer form" : "Contact us",
+    external: hasVolunteerForm ? true : false,
+  },
+  {
+    topic: "Giving questions",
+    contactRole: "Treasurer",
+    email: PUBLIC_EMAIL,
+    href: "/give",
+    hrefLabel: "Go to giving page",
+  },
+];
+
+// Visitor-facing nav (matches real routes and keeps the header feeling “finished”)
+const nav: NavItem[] = [
+  { label: "Visit", href: "/connect/plan-a-visit" },
+  { label: "Contact", href: "/connect/contact" },
+  { label: "About Us", href: "/connect/about" },
+  { label: "Our Team", href: "/connect/team" },
+  { label: "Ministries", href: "/ministries" },
+  { label: "Events", href: "/events" },
+  { label: "Privacy", href: "/privacy" },
+];
+
+// “Always available” actions (show as buttons in the header)
+const quickActions: NavItem[] = [
+  { label: "Watch Live", href: "/media/live" },
+  { label: "Give", href: "/give" },
+  { label: "Prayer Request", href: "/connect/prayer" },
+  { label: "Bulletins", href: "/resources/bulletins" },
+  { label: "Volunteer", href: "/serve" },
+];
+
+// Social links used in the legacy footer component
+const social: NavItem[] = [];
+if (portals.youtubeChannelUrl && portals.youtubeChannelUrl !== "TBD") {
+  social.push({
+    label: "YouTube",
+    href: portals.youtubeChannelUrl,
+    external: true,
+  });
+}
+if (portals.facebookUrl && portals.facebookUrl !== "TBD") {
+  social.push({ label: "Facebook", href: portals.facebookUrl, external: true });
+}
+
+export const site = {
+  name: "First Springfield Seventh-day Adventist Church",
+  shortName: "First Springfield SDA",
+  locale: "en-US",
+  timeZone: TIME_ZONE,
+  description:
+    "A Seventh-day Adventist church community in Springfield, MA. Join us for worship, Bible study, and service.",
+  address: {
+    street: "1118 Sumner Ave",
+    city: "Springfield",
+    state: "MA",
+    zip: "01118-2154",
+  },
+  contact: {
+    email: PUBLIC_EMAIL,
+    phone: "413-782-6260",
+    pastorCell: "240-850-9452",
+    pastorCellLabel: "Pastor Abankwa Amoakohene (call/text)",
+    pastorName: PASTOR_NAME,
+    address: ADDRESS_LINE,
+    mapsUrl: MAPS_URL,
+    // Leave blank unless the church asks for a distinct mailing address.
+    mailingAddress: "",
+  },
+
+  map: {
+    embedSrc:
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2961.4635291201326!2d-72.5766111!3d42.1059871!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x3c9b7d2fd5f3b6f2!2sFirst%20Springfield%20Seventh-day%20Adventist%20Church!5e0!3m2!1sen!2sus!4v0000000000000",
+    directions: VISIT_NOTES.directions,
+  },
+
+  visit: VISIT_NOTES,
+  mission: MISSION,
+
+  team: {
+    leadership: [
+      { name: PASTOR_NAME, role: "Pastor", email: PUBLIC_EMAIL },
+      { name: "Head Elder", role: "Elder", email: PUBLIC_EMAIL },
+      { name: "Church Clerk", role: "Clerk", email: PUBLIC_EMAIL },
+    ],
+  },
+
+  schedule: weekSchedule,
+  portals,
+
+  nav,
+  quickActions,
+
+  // Used by the legacy footer component
+  social,
+
+  // Team page sections
+  leadershipTeam,
+  ministryLeads,
+
+  // Contact page topics
+  contactTopics,
+};
 </file>
 
 </files>

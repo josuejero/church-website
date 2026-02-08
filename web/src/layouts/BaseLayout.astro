@@ -30,6 +30,8 @@ const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
 const ogImageUrl = new URL(ogImagePath, baseUrl).href;
 const locale = site.locale ?? "en-US";
 const ogLocale = locale.replace("-", "_");
+const cfAnalyticsToken = import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN;
+const analyticsEnabled = Astro.env.PROD && Boolean(cfAnalyticsToken);
 ---
 
 <!doctype html>
@@ -71,5 +73,12 @@ const ogLocale = locale.replace("-", "_");
       </div>
     </main>
     <Footer />
+    {analyticsEnabled ? (
+      <script
+        defer
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon={`{"token": "${cfAnalyticsToken}"}`}
+      ></script>
+    ) : null}
   </body>
 </html>

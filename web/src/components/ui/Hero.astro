@@ -18,6 +18,7 @@ const {
   secondaryCtaLabel,
   secondaryCtaHref
 } = Astro.props;
+const hasMeta = Boolean(Astro.slots?.meta);
 ---
 
 <section class="hero card">
@@ -26,6 +27,12 @@ const {
       <h1 class="hero__title">{title}</h1>
       {subtitle && <p class="hero__subtitle muted">{subtitle}</p>}
     </div>
+
+    {hasMeta ? (
+      <div class="hero__meta">
+        <slot name="meta" />
+      </div>
+    ) : null}
 
     {(primaryCtaLabel && primaryCtaHref) || (secondaryCtaLabel && secondaryCtaHref) ? (
       <div class="hero__actions">
@@ -61,6 +68,50 @@ const {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-3);
+  }
+
+  .hero__meta {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  }
+
+  .hero__meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .hero__meta-label {
+    margin: 0;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .hero__meta-value {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .hero__meta-link {
+    font-weight: 600;
+  }
+
+  .hero__meta-leader {
+    font-weight: 500;
+  }
+
+  .hero__meta-email {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+  }
+
+  @media (min-width: 720px) {
+    .hero__meta {
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
   }
 
   .hero {

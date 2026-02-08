@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import HeroSection from "../../components/sections/Hero.astro";
 import { getCollection, getEntry } from "astro:content";
 import { mailto } from "../../lib/links";
 
@@ -41,37 +42,41 @@ const title =
 
 const description =
   data.description ?? data.summary ?? `Learn more about ${title}.`;
+const heroSubtitle = data.summary ?? description;
 ---
 
 <BaseLayout title={title} description={description}>
   <div class="stack">
-    <h1>{title}</h1>
+    <HeroSection title={title} subtitle={heroSubtitle}>
+      {meetingTime ? (
+        <article slot="meta" class="hero__meta-item">
+          <p class="hero__meta-label">Meeting time</p>
+          <p class="hero__meta-value">{meetingTime}</p>
+        </article>
+      ) : (
+        <article slot="meta" class="hero__meta-item">
+          <p class="hero__meta-label">Meeting time</p>
+          <p class="hero__meta-value">
+            <a class="hero__meta-link" href="/connect/contact">{fallbackMessage}</a>
+          </p>
+        </article>
+      )}
 
-    <section class="card">
-      <div class="stack--tight">
-        <div class="stack--tight">
-          <h2>When we meet</h2>
-          {meetingTime ? (
-            <p class="muted">{meetingTime}</p>
-          ) : (
-            <p class="muted">
-              <a class="link" href="/connect/contact">{fallbackMessage}</a>
-            </p>
-          )}
-        </div>
-        <div class="stack--tight">
-          <h2>Contact</h2>
-          <div class="muted stack--tight">
-            {leaderName ? <div>{leaderName}</div> : null}
-            {leaderEmail ? (
-              <a href={mailto(leaderEmail, `${title} ministry`)}>{leaderEmail}</a>
-            ) : (
-              <a class="link" href="/connect/contact">{fallbackMessage}</a>
-            )}
-          </div>
-        </div>
-      </div>
-    </section>
+      <article slot="meta" class="hero__meta-item">
+        <p class="hero__meta-label">Contact</p>
+        {leaderName && <p class="hero__meta-leader">{leaderName}</p>}
+        {leaderEmail ? (
+          <a
+            class="hero__meta-link hero__meta-email"
+            href={mailto(leaderEmail, `${title} ministry`)}
+          >
+            {leaderEmail}
+          </a>
+        ) : (
+          <a class="hero__meta-link" href="/connect/contact">{fallbackMessage}</a>
+        )}
+      </article>
+    </HeroSection>
 
     {Content ? (
       <section class="card">

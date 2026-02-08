@@ -1,3 +1,6 @@
+import siteLinks from "./site-links.json";
+import weekScheduleData from "./week-schedule.json";
+
 export type NavItem = {
   label: string;
   href: string;
@@ -71,29 +74,11 @@ const MISSION = {
     "In harmony with Bible revelation, Seventh-day Adventists see as the climax of God's plan the restoration of all His creation to full harmony with His perfect will and righteousness.",
 };
 
-// Single source of truth for public links + service times
-const portals: PortalLinks = {
-  // If you have a church-specific AdventistGiving link, replace this.
-  givingUrl: "https://adventistgiving.org/",
-  youtubeChannelUrl: "https://www.youtube.com/@1stspringfieldsdama74",
-  // YouTube live embed: replace with a playlist/embed if the church prefers.
-  youtubeLiveEmbedUrl:
-    "https://www.youtube.com/embed/live_stream?channel=UCkmryvqlHb3JIwVLc07FZwA",
-  // Add the official Facebook page when confirmed.
-  facebookUrl: "",
-  // Optional forms (set to real URLs when ready)
-  prayerFormUrl: "",
-  contactFormUrl: "",
-  volunteerFormUrl: "",
-  // Official AdventistChurchConnect site (currently under construction)
-  oldWebsiteUrl: "https://firstspringfieldma.adventistchurch.org/",
-};
+// Official portal links live in `site-links.json` so teams have a single editable file.
+const portals: PortalLinks = siteLinks as PortalLinks;
 
-const weekSchedule: ScheduleItem[] = [
-  { label: "Sabbath School", day: "Saturday", time: "10:00 AM" },
-  { label: "Worship", day: "Saturday", time: "11:15 AM" },
-  { label: "Prayer Meeting", day: "Wednesday", time: "7:00 PM" },
-];
+// Weekly service times are defined in `week-schedule.json`.
+const weekSchedule: ScheduleItem[] = weekScheduleData as ScheduleItem[];
 
 const leadershipTeam: TeamMember[] = [
   { role: "Pastor", name: PASTOR_NAME, email: PUBLIC_EMAIL },
@@ -184,6 +169,7 @@ const quickActions: NavItem[] = [
   { label: "Give", href: "/give" },
   { label: "Prayer Request", href: "/connect/prayer" },
   { label: "Bulletins", href: "/resources/bulletins" },
+  { label: "Announcements", href: "/resources/announcements" },
   { label: "Volunteer", href: "/serve" },
 ];
 
