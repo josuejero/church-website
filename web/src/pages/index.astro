@@ -9,9 +9,22 @@ import { Image } from "astro:assets";
 import { site } from "../data/site";
 import heroBg from "../assets/photos/first-springfield-exterior.png";
 import bridgeDusk from "../assets/photos/bridge-dusk.jpg";
+import churchLogo from "../assets/photos/church-logo-primary.jpg";
 ---
 
 <BaseLayout title={site.name} description={site.description}>
+  <section class="home-logo" aria-label="First Springfield Church logo">
+    <Image
+      src={churchLogo}
+      alt="First Springfield Seventh-day Adventist Church logo"
+      widths={[180, 280, 360]}
+      sizes="(max-width: 720px) 60vw, 18vw"
+      loading="eager"
+      decoding="async"
+      class="home-logo__img"
+    />
+  </section>
+
   <HeroBanner
     background={heroBg}
     objectPosition="50% 35%"
@@ -100,6 +113,17 @@ import bridgeDusk from "../assets/photos/bridge-dusk.jpg";
 </BaseLayout>
 
 <style>
+  .home-logo {
+    margin: var(--space-8) auto 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .home-logo__img {
+    width: min(220px, 80vw);
+    height: auto;
+    display: block;
+  }
   .photo-montage {
     gap: var(--space-4);
     margin: var(--space-10) 0;

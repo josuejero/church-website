@@ -84,12 +84,15 @@ const {
   .heroBanner__content {
     position: relative;
     z-index: 1;
+    display: flex;
+    justify-content: flex-start;
   }
 
   /* Match BaseLayout container sizing without nesting issues */
   .heroBanner__container {
     width: min(var(--container-max), calc(100% - var(--container-pad)));
-    margin: 0 auto;
+    margin: 0;
+    padding-left: var(--container-pad);
   }
 
   /* Keep the existing “card” look, but make it sit nicely on the photo */
