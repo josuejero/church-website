@@ -106,7 +106,7 @@ const leadershipTeam: TeamMember[] = [
 const ministryLeads: TeamMember[] = [
   {
     role: "Children’s Ministry",
-    name: "Children’s Ministry Team",
+    name: "Giselle Davey",
     email: PUBLIC_EMAIL,
   },
   { role: "Youth Ministry", name: "Youth Ministry Team", email: PUBLIC_EMAIL },
