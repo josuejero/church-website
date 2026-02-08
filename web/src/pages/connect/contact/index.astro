@@ -8,7 +8,8 @@ import { tel } from "../../../lib/links";
 
 const phoneHref = tel(site.contact.phone);
 const pastorCellHref = tel(site.contact.pastorCell);
-const pastorCellLabel = site.contact.pastorCellLabel ?? "Pastor Kobe (call/text)";
+const pastorCellLabel = site.contact.pastorCellLabel ?? "Pastor (call/text)";
+const pastorDisplayName = site.contact.pastorName ?? "the pastor";
 const hasPastorCell = Boolean(site.contact.pastorCell && site.contact.pastorCell.trim());
 const hasContactForm = site.portals.contactFormUrl && site.portals.contactFormUrl !== "TBD";
 const hasFacebook = site.portals.facebookUrl && site.portals.facebookUrl !== "TBD";
@@ -55,7 +56,7 @@ const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAd
       <section class="card stack" aria-labelledby="contact-pastor">
         <h2 id="contact-pastor">{pastorCellLabel}</h2>
         <p class="muted">
-          The church phone may not be answered 24/7. For a faster response, call or text Pastor Kobe:
+          The church phone may not be answered 24/7. For a faster response, call or text {pastorDisplayName}:
           <a href={pastorCellHref}>{site.contact.pastorCell}</a>
         </p>
       </section>

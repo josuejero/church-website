@@ -5,7 +5,7 @@ import { tel } from "../../lib/links";
 const year = new Date().getFullYear();
 const churchPhoneHref = tel(site.contact.phone);
 const pastorCellHref = tel(site.contact.pastorCell);
-const pastorCellLabel = site.contact.pastorCellLabel ?? "Pastor Kobe (call/text)";
+const pastorCellLabel = site.contact.pastorCellLabel ?? "Pastor (call/text)";
 const hasPastorCell = Boolean(site.contact.pastorCell && site.contact.pastorCell.trim());
 const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAddress.trim().length);
 const hasFacebook = Boolean(site.portals.facebookUrl && site.portals.facebookUrl !== "TBD");

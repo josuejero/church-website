@@ -40,7 +40,7 @@ export type ContactTopic = {
 // Official public contact details (NAD directory / eAdventist).
 // If the church requests different public-facing details, update them here.
 const PUBLIC_EMAIL = "firstspringfieldsda@gmail.com";
-const PASTOR_NAME = "Pastor Abankwah Amoakohene";
+const PASTOR_NAME = "Pastor Abankwa Amoakohene";
 
 const TIME_ZONE = "America/New_York";
 
@@ -216,8 +216,9 @@ export const site = {
   contact: {
     email: PUBLIC_EMAIL,
     phone: "413-782-6260",
-    pastorCell: "(240) 850-9452",
-    pastorCellLabel: "Pastor Kobe (call/text)",
+    pastorCell: "240-850-9452",
+    pastorCellLabel: "Pastor Abankwa Amoakohene (call/text)",
+    pastorName: PASTOR_NAME,
     address: ADDRESS_LINE,
     mapsUrl: MAPS_URL,
     // Leave blank unless the church asks for a distinct mailing address.
