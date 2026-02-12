@@ -1,9 +1,10 @@
 ---
 import Button from "../ui/Button.astro";
-import weeklyHighlights from "../../data/weekly-highlights.json";
+import weeklyHighlights from "../../data/weekly-highlights";
+import type { WeeklyHighlight } from "../../data/weekly-highlights";
 import { recurringActivities } from "../../data/activities";
 
-type HighlightConfig = (typeof weeklyHighlights)[number];
+type HighlightConfig = WeeklyHighlight;
 
 type HighlightCard = {
   id: string;
@@ -23,7 +24,7 @@ const highlightItems = weeklyHighlights
 
     const timePieces = [source.day, source.time].filter(Boolean);
     const timeLabel = timePieces.length ? timePieces.join(" · ") : undefined;
-    const href = highlight.ctaHref ?? source.link;
+    const href = highlight.ctaHref ?? highlight.href ?? source.link;
     const ctaLabel = highlight.ctaLabel ?? "Learn more";
     const ctaExternal = typeof highlight.external === "boolean"
       ? highlight.external
@@ -31,16 +32,18 @@ const highlightItems = weeklyHighlights
       ? /^https?:\/\//.test(href)
       : false;
 
-    return {
+    const card: HighlightCard = {
       id: source.id,
-      title: highlight.title ?? source.title,
+      title: highlight.title ?? source.title ?? highlight.text,
       description: highlight.description ?? source.cadence,
       tag: highlight.tag ?? source.category ?? undefined,
       timeLabel,
       href,
       ctaLabel,
       ctaExternal,
-    } as HighlightCard;
+    };
+
+    return card;
   })
   .filter((item): item is HighlightCard => Boolean(item));
 ---

@@ -1,15 +1,7 @@
 ---
-import weeklyHighlights from "../../data/weekly-highlights.json";
+import weeklyHighlights from "../../data/weekly-highlights";
 
-type HighlightItem = {
-  text: string;
-  href?: string;
-  badge?: string;
-};
-
-const highlights = weeklyHighlights.filter(
-  (item): item is HighlightItem => typeof item?.text === "string" && item.text.trim().length > 0
-);
+const highlights = weeklyHighlights.filter((item) => item.text.trim().length > 0);
 const tickerDuration = highlights.length ? Math.max(highlights.length * 4, 24) : 24;
 const marqueeItems = highlights.length ? [...highlights, ...highlights] : [];
 const isExternal = (href?: string) => typeof href === "string" && /^https?:\/\//.test(href);
@@ -23,8 +15,8 @@ const isExternal = (href?: string) => typeof href === "string" && /^https?:\/\//
         role="list"
         style={`--ticker-duration: ${tickerDuration}s`}
       >
-        {marqueeItems.map((item, index) => (
-          <div class="highlights-scroller__item" role="listitem" key={`highlight-${index}`}>
+        {marqueeItems.map((item) => (
+          <div class="highlights-scroller__item" role="listitem">
             {item.badge ? <span class="highlights-scroller__badge">{item.badge}</span> : null}
             {item.href ? (
               <a

@@ -1,6 +1,5 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
-import { site } from "../../../data/site";
 
 const formAction = import.meta.env.PUBLIC_CONNECT_CARD_FORM_ACTION ?? "";
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
@@ -32,7 +31,7 @@ const interestsId = (value: string) => `interest-${value}`;
   title="Connect Card"
   description="Submit a Connect Card to let the team know how to pray for you, follow up, or support your next steps."
 >
-  <script slot="head" src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script slot="head" is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <div class="stack connect-card">
     <div class="connect-card__intro">

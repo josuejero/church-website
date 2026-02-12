@@ -33,7 +33,7 @@ const ogImageUrl = new URL(ogImagePath, baseUrl).href;
 const locale = site.locale ?? "en-US";
 const ogLocale = locale.replace("-", "_");
 const cfAnalyticsToken = import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN;
-const analyticsEnabled = Astro.env?.PROD && Boolean(cfAnalyticsToken);
+const analyticsEnabled = import.meta.env.PROD && Boolean(cfAnalyticsToken);
 const alertConfig = siteAlert as {
   enabled?: boolean;
   title?: string;
@@ -95,6 +95,7 @@ const showAlert = Boolean(alertConfig.enabled && alertConfig.title && alertConfi
     <Footer />
     {analyticsEnabled ? (
       <script
+        is:inline
         defer
         src="https://static.cloudflareinsights.com/beacon.min.js"
         data-cf-beacon={`{"token": "${cfAnalyticsToken}"}`}

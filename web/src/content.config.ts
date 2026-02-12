@@ -1,7 +1,7 @@
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { defineCollection } from "astro:content";
-import { announcementTagValues } from "./data/announcement-tags";
+import { announcementTagEnumValues } from "./data/announcement-tags";
 
 const shared = z.object({
   title: z.string(),
@@ -70,7 +70,7 @@ const announcements = defineCollection({
   schema: z.object({
     title: z.string(),
     date: z.coerce.date(),
-    tags: z.array(z.enum(announcementTagValues)).optional(),
+    tags: z.array(z.enum(announcementTagEnumValues)).optional(),
     summary: z.string(),
     featured: z.boolean().optional(),
     expires: z.coerce.date().optional(),

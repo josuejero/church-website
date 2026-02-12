@@ -29,7 +29,8 @@ export const announcementTags = [
 export type AnnouncementTagInfo = (typeof announcementTags)[number];
 export type AnnouncementTagValue = AnnouncementTagInfo["value"];
 
-export const announcementTagValues = announcementTags.map((tag) => tag.value) as AnnouncementTagValue[];
+export const announcementTagValues = announcementTags.map((tag) => tag.value) as readonly AnnouncementTagValue[];
+export const announcementTagEnumValues = announcementTagValues as [AnnouncementTagValue, ...AnnouncementTagValue[]];
 
 export const announcementTagLabels = announcementTags.reduce(
   (map, tag) => {

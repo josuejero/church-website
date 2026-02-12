@@ -1,15 +1,31 @@
 ---
-import BaseLayout from "../../../../layouts/BaseLayout.astro";
-import Button from "../../../../components/ui/Button.astro";
-import ContentCard from "../../../../components/content/ContentCard.astro";
-import { site } from "../../../../data/site";
-import { announcementTagLabels } from "../../../../data/announcement-tags";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Button from "../../../components/ui/Button.astro";
+import ContentCard from "../../../components/content/ContentCard.astro";
+import { site } from "../../../data/site";
+import { announcementTagLabels } from "../../../data/announcement-tags";
 import {
   announcementsPerPage,
   getArchiveMonths,
   getSortedAnnouncements,
   paginateAnnouncements,
-} from "../../../../lib/announcements";
+} from "../../../lib/announcements";
+
+export async function getStaticPaths() {
+  const announcements = await getSortedAnnouncements();
+  const totalPages = Math.max(1, Math.ceil(announcements.length / announcementsPerPage));
+  const paths = [];
+
+  for (let pageNumber = 2; pageNumber <= totalPages; pageNumber++) {
+    paths.push({
+      params: {
+        page: ["page", String(pageNumber)],
+      },
+    });
+  }
+
+  return paths;
+}
 
 const announcements = await getSortedAnnouncements();
 const segments = (Astro.params.page ?? []) as string[];

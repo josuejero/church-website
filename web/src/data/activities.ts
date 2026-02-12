@@ -50,11 +50,28 @@ export const recurringActivities: RecurringActivity[] = [
     category: "service",
   },
   {
+    id: "nar-anon",
+    title: "Nar-Anon",
+    cadence: "Mondays at 7:00 PM in the fellowship hall",
+    day: "Monday",
+    time: "7:00 PM",
+    note: "Support for families and friends affected by addiction",
+    category: "community",
+  },
+  {
     id: "pathfinders",
     title: "Pathfinders and Adventurers",
     cadence: "Meet on the first and third Sabbath",
     link: "/ministries/pathfinders",
     note: "Public",
+    category: "ministry",
+  },
+  {
+    id: "table-talk",
+    title: "Table Talk",
+    cadence: "Friday small groups over supper",
+    day: "Friday",
+    note: "Youth and young adult conversations around faith",
     category: "ministry",
   },
   {

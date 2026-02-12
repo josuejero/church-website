@@ -38,14 +38,19 @@ const formattedDate = parsedDate && !Number.isNaN(parsedDate.valueOf())
   ? new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone }).format(parsedDate)
   : null;
 
-const liveAttributes = announce
-  ? { role: "status", "aria-live": "polite", "aria-atomic": "true" }
-  : {};
+const roleAttribute = announce ? "status" as const : undefined;
+const ariaLiveAttribute = announce ? "polite" as const : undefined;
+const ariaAtomicAttribute = announce ? "true" as const : undefined;
 
 const rootClass = `site-alert site-alert--${variant}`;
 ---
 
-<section class={rootClass} {...liveAttributes}>
+<section
+  class={rootClass}
+  role={roleAttribute}
+  aria-live={ariaLiveAttribute}
+  aria-atomic={ariaAtomicAttribute}
+>
   <div class="site-alert__content">
     <div>
       <p class="site-alert__heading">{title}</p>

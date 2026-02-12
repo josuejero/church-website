@@ -4,7 +4,12 @@ import Button from "../../../components/ui/Button.astro";
 import ContentCard from "../../../components/content/ContentCard.astro";
 import { site } from "../../../data/site";
 import { announcementTagLabels, announcementTags } from "../../../data/announcement-tags";
-import { announcementsPerPage, getArchiveMonths, getSortedAnnouncements } from "../../../lib/announcements";
+import {
+  announcementsPerPage,
+  getArchiveMonths,
+  getSortedAnnouncements,
+} from "../../../lib/announcements";
+import type { AnnouncementEntry } from "../../../lib/announcements";
 
 const announcements = await getSortedAnnouncements();
 const rawTag = Astro.url.searchParams.get("tag");
@@ -33,7 +38,7 @@ const tagDescription = activeTag
 
 const tagQuery = (tagValue?: string) =>
   tagValue ? `/resources/announcements?tag=${tagValue}` : "/resources/announcements";
-const detailHref = (entry) => `/resources/announcements/${entry.id}`;
+const detailHref = (entry: AnnouncementEntry) => `/resources/announcements/${entry.id}`;
 const tagLabel = activeTag ? activeTag.label : "All";
 const submitDeadline = "Wednesday 5 PM";
 const clerkDestination = "Church Clerk (Church Office)";

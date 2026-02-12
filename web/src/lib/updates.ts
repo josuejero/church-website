@@ -3,8 +3,6 @@ import type { CollectionEntry } from "astro:content";
 
 export type UpdateEntry = CollectionEntry<"updates">;
 
-const showDrafts = !import.meta.env.PROD;
-
 export async function getSortedUpdates(options?: { includeDrafts?: boolean }) {
   const all = await getCollection("updates");
   return all

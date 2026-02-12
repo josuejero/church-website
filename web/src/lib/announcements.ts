@@ -4,7 +4,7 @@ import { site } from "../data/site";
 
 export const announcementsPerPage = 6;
 
-type AnnouncementEntry = CollectionEntry<"announcements">;
+export type AnnouncementEntry = CollectionEntry<"announcements">;
 
 const showDrafts = !import.meta.env.PROD;
 

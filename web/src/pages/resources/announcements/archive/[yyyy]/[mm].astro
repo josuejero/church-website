@@ -1,13 +1,13 @@
 ---
-import BaseLayout from "../../../../../../layouts/BaseLayout.astro";
-import Button from "../../../../../../components/ui/Button.astro";
-import ContentCard from "../../../../../../components/content/ContentCard.astro";
-import { site } from "../../../../../../data/site";
-import { announcementTagLabels } from "../../../../../../data/announcement-tags";
+import BaseLayout from "../../../../../layouts/BaseLayout.astro";
+import Button from "../../../../../components/ui/Button.astro";
+import ContentCard from "../../../../../components/content/ContentCard.astro";
+import { site } from "../../../../../data/site";
+import { announcementTagLabels } from "../../../../../data/announcement-tags";
 import {
   getArchiveMonths,
   getSortedAnnouncements,
-} from "../../../../../../lib/announcements";
+} from "../../../../../lib/announcements";
 
 export async function getStaticPaths() {
   const announcements = await getSortedAnnouncements({ includeExpired: true });

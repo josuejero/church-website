@@ -1,10 +1,10 @@
 ---
-import BaseLayout from "../../../../layouts/BaseLayout.astro";
-import Button from "../../../../components/ui/Button.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Button from "../../../components/ui/Button.astro";
 import { getEntry, render } from "astro:content";
-import { site } from "../../../../data/site";
-import { announcementTagLabels } from "../../../../data/announcement-tags";
-import { getArchiveMonths, getSortedAnnouncements } from "../../../../lib/announcements";
+import { site } from "../../../data/site";
+import { announcementTagLabels } from "../../../data/announcement-tags";
+import { getArchiveMonths, getSortedAnnouncements } from "../../../lib/announcements";
 
 export async function getStaticPaths() {
   const announcements = await getSortedAnnouncements();
