@@ -3,6 +3,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import HeroBanner from "../components/sections/HeroBanner.astro";
 import CardGrid from "../components/sections/CardGrid.astro";
 import EventList from "../components/sections/EventList.astro";
+import BudgetProgress from "../components/ui/BudgetProgress.astro";
+import HighlightsScroller from "../components/ui/HighlightsScroller.astro";
+import PrayerMeetingCallout from "../components/sections/PrayerMeetingCallout.astro";
 import RecurringActivities from "../components/sections/RecurringActivities.astro";
 import SermonHighlight from "../components/sections/SermonHighlight.astro";
 import { Image } from "astro:assets";
@@ -10,6 +13,8 @@ import { site } from "../data/site";
 import heroBg from "../assets/photos/first-springfield-exterior.png";
 import bridgeDusk from "../assets/photos/bridge-dusk.jpg";
 import churchLogo from "../assets/photos/church-logo-primary.jpg";
+import { prayerMeetingDetails } from "../data/activities";
+import Button from "../components/ui/Button.astro";
 ---
 
 <BaseLayout title={site.name} description={site.description}>
@@ -34,7 +39,21 @@ import churchLogo from "../assets/photos/church-logo-primary.jpg";
     primaryCtaHref="/connect/plan-a-visit"
     secondaryCtaLabel="Watch online"
     secondaryCtaHref="/media/live"
-  />
+  >
+    <div slot="meta" class="index-hero__meta">
+      <p class="muted index-hero__meta-copy">
+        Looking for a way to introduce yourself or let us know you’re interested in joining a ministry?
+        Fill out a Connect Card and our team will follow up.
+      </p>
+      <Button href="/connect/connect-card" variant="secondary">Submit a Connect Card</Button>
+    </div>
+  </HeroBanner>
+
+  <PrayerMeetingCallout meeting={prayerMeetingDetails} />
+  <HighlightsScroller />
+  <section class="home-budget">
+    <BudgetProgress />
+  </section>
 
   <section class="photo-montage stack">
     <div class="photo-montage__intro">
@@ -174,9 +193,25 @@ import churchLogo from "../assets/photos/church-logo-primary.jpg";
     color: var(--color-text-muted);
   }
 
-  @media (max-width: 720px) {
-    .photo-card__img {
-      height: 200px;
-    }
+@media (max-width: 720px) {
+  .photo-card__img {
+    height: 200px;
+  }
+}
+
+.index-hero__meta {
+  margin-top: var(--space-4);
+  display: grid;
+  gap: var(--space-3);
+}
+
+  .index-hero__meta-copy {
+    margin: 0;
+  }
+
+  .home-budget {
+    max-width: 520px;
+    width: min(520px, 100%);
+    margin: 0 auto;
   }
 </style>

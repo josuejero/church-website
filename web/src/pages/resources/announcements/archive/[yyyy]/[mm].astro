@@ -1,0 +1,112 @@
+---
+import BaseLayout from "../../../../../../layouts/BaseLayout.astro";
+import Button from "../../../../../../components/ui/Button.astro";
+import ContentCard from "../../../../../../components/content/ContentCard.astro";
+import { site } from "../../../../../../data/site";
+import { announcementTagLabels } from "../../../../../../data/announcement-tags";
+import {
+  getArchiveMonths,
+  getSortedAnnouncements,
+} from "../../../../../../lib/announcements";
+
+export async function getStaticPaths() {
+  const announcements = await getSortedAnnouncements({ includeExpired: true });
+  const months = getArchiveMonths(announcements);
+  return months.map(({ year, month }) => ({
+    params: {
+      yyyy: String(year),
+      mm: String(month).padStart(2, "0"),
+    },
+  }));
+}
+
+const { yyyy, mm } = Astro.params;
+const year = Number(yyyy);
+const month = Number(mm);
+if (Number.isNaN(year) || Number.isNaN(month)) {
+  throw new Error(`Invalid archive path: ${yyyy}/${mm}`);
+}
+
+const announcements = await getSortedAnnouncements({ includeExpired: true });
+const filtered = announcements.filter(
+  (entry) =>
+    entry.data.date.getFullYear() === year && entry.data.date.getMonth() + 1 === month
+);
+const metaFormatter = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "medium",
+  timeZone: site.timeZone,
+});
+const monthLabel = new Intl.DateTimeFormat(site.locale, {
+  month: "long",
+  year: "numeric",
+  timeZone: site.timeZone,
+}).format(new Date(year, month - 1, 1));
+const archiveMonths = getArchiveMonths(announcements);
+const updatesUrl = "/updates";
+const rssUrl = "/resources/announcements/rss.xml";
+---
+
+<BaseLayout title={`Announcements · ${monthLabel}`}>
+  <div class="stack">
+    <h1>Announcements archive · {monthLabel}</h1>
+    <p class="muted">
+      {filtered.length === 0
+        ? "No announcements published during this month."
+        : `${filtered.length} announcement${filtered.length === 1 ? "" : "s"} in ${monthLabel}.`}
+    </p>
+    <div class="cluster">
+      <Button href="/resources/announcements" variant="ghost">Back to announcements</Button>
+      <Button href={updatesUrl} variant="ghost">Visit updates page</Button>
+      <Button href={rssUrl} variant="ghost" size="sm">Subscribe via RSS</Button>
+    </div>
+
+    {filtered.length === 0 ? null : (
+      <div class="grid--cards">
+        {filtered.map((entry) => (
+          <ContentCard
+            href={`/resources/announcements/${entry.id}`}
+            title={entry.data.title}
+            summary={entry.data.summary}
+            meta={metaFormatter.format(entry.data.date)}
+            tags={entry.data.tags?.map((value) => announcementTagLabels[value] ?? value)}
+          />
+        ))}
+      </div>
+    )}
+
+    <section class="card stack--tight">
+      <h2>Archive by month</h2>
+      {archiveMonths.length === 0 ? (
+        <p class="muted">No archived months yet.</p>
+      ) : (
+        <ul class="archive-list">
+          {archiveMonths.map(({ year: archiveYear, month: archiveMonth, label }) => (
+            <li>
+              <a
+                class="link"
+                href={`/resources/announcements/archive/${archiveYear}/${String(archiveMonth).padStart(2, "0")}`}
+              >
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .archive-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .archive-list li {
+    min-width: 180px;
+  }
+</style>

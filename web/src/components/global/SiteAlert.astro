@@ -1,0 +1,124 @@
+---
+import Button from "../ui/Button.astro";
+import { site } from "../../data/site";
+
+type SiteAlertVariant = "info" | "warn";
+
+type Props = {
+  title: string;
+  message: string;
+  href?: string;
+  variant?: SiteAlertVariant;
+  updatedAt?: string;
+  announce?: boolean;
+  ctaLabel?: string;
+  ctaExternal?: boolean;
+  hideCta?: boolean;
+};
+
+const {
+  title,
+  message,
+  href,
+  variant = "info",
+  updatedAt,
+  announce = true,
+  ctaLabel,
+  ctaExternal = false,
+  hideCta = false,
+} = Astro.props as Props;
+
+const alertHref = href ?? "/updates";
+
+const locale = site.locale ?? "en-US";
+const timeZone = site.timeZone ?? "UTC";
+
+const parsedDate = updatedAt ? new Date(updatedAt) : null;
+const formattedDate = parsedDate && !Number.isNaN(parsedDate.valueOf())
+  ? new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone }).format(parsedDate)
+  : null;
+
+const liveAttributes = announce
+  ? { role: "status", "aria-live": "polite", "aria-atomic": "true" }
+  : {};
+
+const rootClass = `site-alert site-alert--${variant}`;
+---
+
+<section class={rootClass} {...liveAttributes}>
+  <div class="site-alert__content">
+    <div>
+      <p class="site-alert__heading">{title}</p>
+      <p class="site-alert__message">{message}</p>
+    </div>
+    <div class="site-alert__actions">
+      {formattedDate ? (
+        <p class="site-alert__meta">Updated {formattedDate}</p>
+      ) : null}
+      {alertHref && !hideCta ? (
+        <Button href={alertHref} variant="ghost" size="sm" external={ctaExternal}>
+          {ctaLabel ?? "See updates"}
+        </Button>
+      ) : null}
+    </div>
+  </div>
+</section>
+
+<style>
+  .site-alert {
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-3);
+    padding: var(--space-4);
+    margin: 0 auto var(--space-6);
+    background: var(--color-surface-2);
+  }
+
+  .site-alert--warn {
+    background: #fff4e3;
+    border-color: #f97316;
+  }
+
+  .site-alert__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+
+  .site-alert__heading {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .site-alert__message {
+    margin: 0.25rem 0 0;
+  }
+
+  .site-alert__actions {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .site-alert__meta {
+    margin: 0;
+    font-size: var(--font-size-0);
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 640px) {
+    .site-alert__content {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .site-alert__actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+</style>

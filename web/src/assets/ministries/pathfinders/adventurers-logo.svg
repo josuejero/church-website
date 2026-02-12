@@ -1,0 +1,6 @@
+<svg width="240" height="120" viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Adventurers Club logo">
+  <rect width="240" height="120" rx="18" fill="#f48c06" />
+  <path d="M30 74c0-12 9-21 21-21h38l18-24 18 24h38c12 0 21 9 21 21s-9 21-21 21H51c-12 0-21-9-21-21z" fill="#fff3d1" opacity="0.6" />
+  <text x="120" y="48" text-anchor="middle" fill="#1f1f23" font-family="'Segoe UI', Arial, sans-serif" font-size="24" font-weight="700">Adventurers</text>
+  <text x="120" y="86" text-anchor="middle" fill="#1f1f23" font-family="'Segoe UI', Arial, sans-serif" font-size="14" letter-spacing="1">Faith. Friendship. Fun.</text>
+</svg>

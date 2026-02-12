@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BudgetProgress from "../../components/ui/BudgetProgress.astro";
 import Button from "../../components/ui/Button.astro";
 import { site } from "../../data/site";
 ---
@@ -7,6 +8,7 @@ import { site } from "../../data/site";
 <BaseLayout title="Give" description={`Support ${site.name} through online giving.`}>
   <div class="stack">
     <h1>Give</h1>
+    <BudgetProgress />
 
     <section class="card stack">
       <h2>Thank you for your generosity</h2>

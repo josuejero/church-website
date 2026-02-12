@@ -8,13 +8,15 @@ type Props = {
   ctaLabel?: string;
   ctaHref?: string;
   tone?: BannerTone;
+  ctaExternal?: boolean;
 };
 
 const {
   message,
   ctaLabel,
   ctaHref,
-  tone = "info"
+  tone = "info",
+  ctaExternal = false
 } = Astro.props as Props;
 
 const toneClass = tone === "warn" ? "banner--warn" : "banner--info";
@@ -24,7 +26,9 @@ const toneClass = tone === "warn" ? "banner--warn" : "banner--info";
   <div class="banner__inner">
     <div class="banner__msg">{message}</div>
     {ctaLabel && ctaHref ? (
-      <Button href={ctaHref} variant="ghost" size="sm">{ctaLabel}</Button>
+      <Button href={ctaHref} variant="ghost" size="sm" external={ctaExternal}>
+        {ctaLabel}
+      </Button>
     ) : null}
   </div>
 </section>

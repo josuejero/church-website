@@ -1,0 +1,49 @@
+---
+export type Variant = "info" | "warning" | "urgent";
+
+type Props = {
+  variant?: Variant;
+};
+
+const { variant = "info" } = Astro.props as Props;
+const className = `notice notice--${variant}`;
+---
+
+<section class={className} role="status">
+  <div class="notice__content">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .notice {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-radius: var(--radius-3);
+    border: 1px solid transparent;
+    background: var(--color-surface-2);
+    color: var(--color-text);
+    box-shadow: var(--shadow-1);
+  }
+
+  .notice__content {
+    width: 100%;
+  }
+
+  .notice--info {
+    border-color: var(--color-border);
+    background: var(--color-surface-2);
+  }
+
+  .notice--warning {
+    border-color: #f59e0b;
+    background: #fff7ed;
+  }
+
+  .notice--urgent {
+    border-color: #b91c1c;
+    background: #fee2e2;
+  }
+</style>

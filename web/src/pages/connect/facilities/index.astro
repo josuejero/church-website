@@ -1,0 +1,73 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import NoticeBanner from "../../../components/ui/NoticeBanner.astro";
+import { site } from "../../../data/site";
+import { mailto, tel } from "../../../lib/links";
+
+const emailHref = mailto(site.contact.email);
+const phoneHref = tel(site.contact.phone);
+---
+
+<BaseLayout
+  title="Facilities"
+  description="Learn how to request and schedule space at First Springfield SDA."
+>
+  <div class="stack">
+    <h1>Facilities use</h1>
+
+    <NoticeBanner variant="urgent">
+      <strong>Temporary suspension:</strong> Use of the Annex (fellowship hall, classrooms, and adjoining restrooms) is suspended until repairs finish. Please reach out to the church office before planning an event to confirm whether any spaces are currently available.
+    </NoticeBanner>
+
+    <section class="card stack" aria-labelledby="facilities-request-heading">
+      <h2 id="facilities-request-heading">How to request use</h2>
+      <p>
+        Share the basics of your event: what rooms you need, how many people you expect, and any equipment (sound, tables, audiovisual) you will be using. Email the church office at
+        <a href={emailHref}>{site.contact.email}</a> or call <a href={phoneHref}>{site.contact.phone}</a> and include "Facility request" in the subject line.
+      </p>
+      <div class="prose">
+        <ol>
+          <li>Confirm the preferred date(s) and time range, including setup and teardown windows.</li>
+          <li>Mention whether you need support from our media/AV volunteers, custodial crew, or parking volunteers.</li>
+          <li>Let us know if your group carries its own insurance or needs a certificate of insurance.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="card stack" aria-labelledby="facilities-approval-heading">
+      <h2 id="facilities-approval-heading">Who approves &amp; schedules</h2>
+      <p>
+        The Pastor, Head Elder, and church office team review every request to avoid calendar conflicts and make sure ministry priorities stay in step with our mission. Once everyone signs off, the office will confirm the room assignment and email you a reservation summary with any follow-up items.
+      </p>
+      <p class="muted">
+        Please do not assume a space is reserved until you receive an approval email. Approval may include instructions for additional ministry oversight depending on the type of event.
+      </p>
+    </section>
+
+    <section class="card stack" aria-labelledby="facilities-lead-time-heading">
+      <h2 id="facilities-lead-time-heading">Expected lead time</h2>
+      <p>
+        Standard events require at least four weeks notice so we can review the calendar, verify staffing, and align insurance coverage. Large receptions, off-site retreats, or anything requiring extra custodial support should be submitted six weeks ahead. Smaller meetings may be considered with two weeks' notice but are subject to available space.
+      </p>
+      <p class="muted">
+        When possible, confirm recurring meetings for the next quarter before the last Sunday of the current month so we can hold the rooms you rely on.
+      </p>
+    </section>
+
+    <section class="card stack" aria-labelledby="facilities-rules-heading">
+      <h2 id="facilities-rules-heading">Basic rules</h2>
+      <div class="prose">
+        <ul>
+          <li>Leave every space as you found it—wipe down tables, sweep floors, return chairs and equipment to the storage closet, and remove all trash. Extra trash bags are available in the janitor closet; please bag and haul trash to the dumpster behind the building.</li>
+          <li>Keys for classrooms, the main sanctuary, or the Annex must be picked up and returned at the church office during business hours. Report any missing keys immediately so we can re-key locks if needed.</li>
+          <li>Protect carpets and wood floors by using spill guards, liners, or trays when serving food or beverages. No confetti, helium balloons, or permanent adhesives on walls.</li>
+          <li>Keep exterior doors locked when you are not escorting guests, and make sure everyone exits before the building is secured. Immediately report any maintenance or safety issues to the office.</li>
+          <li>If your group needs parking assistance, we can supply cones or volunteers. Please set up signage only with office approval so we do not block emergency routes.</li>
+        </ul>
+      </div>
+      <p class="small muted">
+        Failure to follow these guidelines may result in loss of future facility privileges. If your plans change, let us know as soon as possible so we can free up the space for another group.
+      </p>
+    </section>
+  </div>
+</BaseLayout>

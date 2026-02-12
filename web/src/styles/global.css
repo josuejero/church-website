@@ -136,6 +136,19 @@ summary:focus-visible {
   border-color: var(--color-border-strong);
 }
 
+.hero-card.hero {
+  max-width: min(520px, 100%);
+  padding: var(--space-5);
+  min-height: 0;
+  margin-inline: 0;
+}
+
+@media (max-width: 720px) {
+  .hero-card.hero {
+    padding: var(--space-4);
+  }
+}
+
 .prose > * {
   margin: 0;
 }

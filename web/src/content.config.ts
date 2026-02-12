@@ -1,6 +1,7 @@
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { defineCollection } from "astro:content";
+import { announcementTagValues } from "./data/announcement-tags";
 
 const shared = z.object({
   title: z.string(),
@@ -45,6 +46,14 @@ const resources = defineCollection({
   }),
 });
 
+const devotionals = defineCollection({
+  loader: glob({ pattern: "**/[^_]*.md", base: "./src/content/devotionals" }),
+  schema: shared.extend({
+    date: z.coerce.date(),
+    link: z.string().optional(),
+  }),
+});
+
 const bulletins = defineCollection({
   loader: glob({ pattern: "**/[^_]*.md", base: "./src/content/bulletins" }),
   schema: z.object({
@@ -56,4 +65,45 @@ const bulletins = defineCollection({
   }),
 });
 
-export const collections = { events, ministries, resources, bulletins };
+const announcements = defineCollection({
+  loader: glob({ pattern: "**/[^_]*.md", base: "./src/content/announcements" }),
+  schema: z.object({
+    title: z.string(),
+    date: z.coerce.date(),
+    tags: z.array(z.enum(announcementTagValues)).optional(),
+    summary: z.string(),
+    featured: z.boolean().optional(),
+    expires: z.coerce.date().optional(),
+    draft: z.boolean().optional(),
+  }),
+});
+
+const updates = defineCollection({
+  loader: glob({ pattern: "**/[^_]*.md", base: "./src/content/updates" }),
+  schema: shared.extend({
+    date: z.coerce.date(),
+    category: z.enum(["weather", "building", "schedule"]),
+  }),
+});
+
+const verses = defineCollection({
+  loader: glob({ pattern: "**/[^_]*.md", base: "./src/content/verses" }),
+  schema: z.object({
+    date: z.coerce.date(),
+    reference: z.string(),
+    verseText: z.string(),
+    translation: z.string(),
+    draft: z.boolean().optional(),
+  }),
+});
+
+export const collections = {
+  events,
+  ministries,
+  resources,
+  devotionals,
+  bulletins,
+  announcements,
+  updates,
+  verses,
+};

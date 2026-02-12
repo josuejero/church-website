@@ -25,6 +25,7 @@ const {
   objectPosition = "50% 55%",
   ...heroProps
 } = Astro.props as Props;
+const hasMetaSlot = Boolean(Astro.slots?.meta);
 ---
 
 <section class="heroBanner fullbleed" style={`--hero-object-position:${objectPosition};`}>
@@ -44,7 +45,9 @@ const {
 
   <div class="heroBanner__content">
     <div class="heroBanner__container">
-      <HeroUI {...heroProps} />
+      <HeroUI {...heroProps} className="hero-card">
+        {hasMetaSlot ? <slot name="meta" slot="meta" /> : null}
+      </HeroUI>
     </div>
   </div>
 </section>

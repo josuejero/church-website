@@ -1,0 +1,160 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Hero from '../../../components/ui/Hero.astro';
+import { getCollection, render } from 'astro:content';
+import { site } from '../../../data/site';
+
+const verses = await getCollection('verses', ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+const sortedVerses = [...verses].sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const todayVerse = sortedVerses[0];
+let TodayVerseContent = null;
+if (todayVerse) {
+  const rendered = await render(todayVerse);
+  TodayVerseContent = rendered.Content;
+}
+
+const fmt = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: 'full',
+  timeZone: site.timeZone,
+});
+
+const trustedLinks = [
+  {
+    label: 'Bible Gateway Verse of the Day',
+    href: 'https://www.biblegateway.com/featured/verse-of-the-day/',
+    description: 'Verse and short devotional notes in dozens of translations.',
+  },
+  {
+    label: 'YouVersion Verse of the Day',
+    href: 'https://www.bible.com/verse-of-the-day',
+    description: 'Short verse with the ability to read it in your preferred translation or listen to audio.',
+  },
+  {
+    label: 'Bible Hub Verse of the Day',
+    href: 'https://biblehub.com/verse-of-the-day/',
+    description: 'Compiles the same verse in multiple translations plus background notes.',
+  },
+  {
+    label: 'DailyVerses.net',
+    href: 'https://dailyverses.net/',
+    description: 'Simple verse-of-the-day cards for quiet meditation or sharing with friends.',
+  },
+];
+
+const recentVerses = sortedVerses.slice(1, 4);
+const verseLines = todayVerse
+  ? todayVerse.data.verseText
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+  : [];
+---
+
+<BaseLayout
+  title="Daily Bible Verse"
+  description="A curated verse with reflection plus curated portals for the day."
+>
+  <Hero
+    title="Daily Bible Verse"
+    subtitle="A short passage to focus on today’s trust in Scripture."
+  />
+
+  <section class="stack--loose">
+    <article class="card stack--tight">
+      <h2>Curated scripture, ready when you need it</h2>
+      <p>
+        Each verse you see here is selected manually, then paired with a brief reflection so you can hold on
+        to a single truth and let it shape your day.
+      </p>
+    </article>
+
+    {todayVerse ? (
+      <article class="card stack" aria-labelledby="today-verse-title">
+        <div class="stack--tight">
+          <p class="muted small">
+            <strong>Today · </strong>
+            {fmt.format(todayVerse.data.date)}
+          </p>
+          <h2 id="today-verse-title">{todayVerse.data.reference}</h2>
+          <p class="muted small">{todayVerse.data.translation}</p>
+        </div>
+
+        <blockquote class="verse-quote">
+          {verseLines.map((line) => (
+            <p>{line}</p>
+          ))}
+          <cite>
+            {todayVerse.data.reference} ({todayVerse.data.translation})
+          </cite>
+        </blockquote>
+
+        {TodayVerseContent && (
+          <div class="prose">
+            <TodayVerseContent />
+          </div>
+        )}
+      </article>
+    ) : (
+      <article class="card">
+        <p class="muted">No verse has been published yet. Check back again soon.</p>
+      </article>
+    )}
+
+    {recentVerses.length > 0 && (
+      <article class="card stack--tight">
+        <h3>Recent verses</h3>
+        <ul class="stack--tight">
+          {recentVerses.map((entry) => (
+            <li>
+              <p class="muted small">{fmt.format(entry.data.date)}</p>
+              <p>
+                <strong>{entry.data.reference}</strong> · {entry.data.translation}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </article>
+    )}
+
+    <article class="card stack--tight">
+      <h3>Trusted verse resources</h3>
+      <ul class="stack--tight">
+        {trustedLinks.map((link) => (
+          <li>
+            <a class="link" href={link.href} target="_blank" rel="noopener noreferrer">
+              {link.label}
+            </a>
+            <p class="muted small">{link.description}</p>
+          </li>
+        ))}
+      </ul>
+    </article>
+  </section>
+
+  <style>
+    .verse-quote {
+      margin: var(--space-4) 0 0;
+      padding-left: var(--space-4);
+      border-left: 4px solid var(--color-border);
+    }
+
+    .verse-quote p {
+      margin: 0 0 var(--space-2);
+      font-size: var(--font-size-1);
+    }
+
+    .verse-quote cite {
+      display: block;
+      margin-top: var(--space-3);
+      font-style: normal;
+      color: var(--color-muted);
+      font-size: var(--font-size-0);
+    }
+  </style>
+</BaseLayout>

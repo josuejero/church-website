@@ -1,62 +1,240 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Button from "../../../components/ui/Button.astro";
-import Card from "../../../components/ui/Card.astro";
+import ContentCard from "../../../components/content/ContentCard.astro";
 import { site } from "../../../data/site";
-import { getCollection } from "astro:content";
+import { announcementTagLabels, announcementTags } from "../../../data/announcement-tags";
+import { announcementsPerPage, getArchiveMonths, getSortedAnnouncements } from "../../../lib/announcements";
 
-const bulletins = await getCollection("bulletins", ({ data }) => {
-  return import.meta.env.PROD ? data.draft !== true : true;
+const announcements = await getSortedAnnouncements();
+const rawTag = Astro.url.searchParams.get("tag");
+const activeTag = announcementTags.find((tag) => tag.value === rawTag);
+const filteredAnnouncements = activeTag
+  ? announcements.filter((entry) => entry.data.tags?.includes(activeTag.value))
+  : announcements;
+const featured =
+  filteredAnnouncements.find((entry) => entry.data.featured) ?? filteredAnnouncements[0];
+const visibleAnnouncements = filteredAnnouncements.slice(0, announcementsPerPage);
+const showMore = filteredAnnouncements.length > announcementsPerPage;
+const metaFormatter = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "medium",
+  timeZone: site.timeZone,
 });
-
-const sorted = bulletins.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-const current = sorted[0];
-const fmt = new Intl.DateTimeFormat(site.locale, {
+const highlightFormatter = new Intl.DateTimeFormat(site.locale, {
   dateStyle: "full",
   timeZone: site.timeZone,
 });
+const archiveMonths = getArchiveMonths(await getSortedAnnouncements({ includeExpired: true }));
+const rssUrl = "/resources/announcements/rss.xml";
+const updatesUrl = "/updates";
+const tagDescription = activeTag
+  ? `Showing ${activeTag.label} updates.`
+  : "Showing everything.";
+
+const tagQuery = (tagValue?: string) =>
+  tagValue ? `/resources/announcements?tag=${tagValue}` : "/resources/announcements";
+const detailHref = (entry) => `/resources/announcements/${entry.id}`;
+const tagLabel = activeTag ? activeTag.label : "All";
+const submitDeadline = "Wednesday 5 PM";
+const clerkDestination = "Church Clerk (Church Office)";
+const contactHref = "/connect/contact";
+const contactEmail = site.contact.email;
 ---
 
 <BaseLayout
-  title="Weekly Announcements"
-  description="See what the communications team is sharing with the church each week."
+  title="Announcements"
+  description="Church announcements, tagging, and archival history for Saturday worship and outreach."
 >
   <div class="stack">
-    <h1>Weekly Announcements</h1>
+    <h1>Announcements</h1>
     <p class="muted">
-      The communications team gathers updates from every ministry so you can stay informed about worship plans,
-      volunteer needs, prayer requests, and upcoming outreach opportunities.
+      The communications team gathers weekly updates from every ministry so you can stay informed about worship plans,
+      volunteer opportunities, and urgent alerts.
     </p>
 
-    <section class="card stack--tight">
-      <h2>Share an announcement</h2>
-      <p>
-        Send bulletin-ready announcements and event highlights to the communications team by Wednesday evenings to
-        ensure they make the next Sabbath format.
-      </p>
-      <ul>
-        <li>Include a clear event title, date, time, and any registration/RSVP info.</li>
-        <li>Mention who your announcement should contact for follow-up questions.</li>
-        <li>Keep messages concise; our announcement time is limited.</li>
-      </ul>
-      <p class="muted">Email updates to {site.contact.email} or call {site.contact.phone}.</p>
-      <div class="cluster">
-        <Button href="/connect/contact" variant="secondary">Contact communications</Button>
-        <Button href="/resources/bulletins" variant="ghost">Browse bulletins</Button>
+    <section class="card stack--tight" aria-labelledby="announcements-filter">
+      <div class="cluster--between">
+        <div>
+          <h2 id="announcements-filter">Browse announcements</h2>
+          <p class="muted">{tagDescription}</p>
+        </div>
+        <div class="cluster">
+          <Button href={updatesUrl} variant="ghost">Visit updates page</Button>
+          <Button href={rssUrl} variant="ghost" size="sm">Subscribe via RSS</Button>
+        </div>
+      </div>
+
+      <div class="chips" role="list">
+        <a
+          class={`chip ${!rawTag ? "chip--active" : ""}`}
+          href={tagQuery()}
+          aria-pressed={!rawTag}
+          role="listitem"
+        >
+          All
+        </a>
+        {announcementTags.map((tag) => (
+          <a
+            class={`chip ${rawTag === tag.value ? "chip--active" : ""}`}
+            href={tagQuery(tag.value)}
+            aria-pressed={rawTag === tag.value}
+            role="listitem"
+          >
+            {tag.label}
+          </a>
+        ))}
       </div>
     </section>
 
-    <section class="stack--tight">
-      <h2>Current announcements</h2>
-      {current ? (
-        <Card
-          title={current.data.title}
-          description={`${fmt.format(current.data.date)}${current.data.summary ? ` • ${current.data.summary}` : ""}`.trim()}
-          href={current.data.pdfUrl}
-        />
+    {featured ? (
+      <section class="card stack--tight featured-card">
+        <div class="cluster--between">
+          <div>
+            <p class="muted">Featured announcement</p>
+            <h2>{featured.data.title}</h2>
+            <p class="muted">
+              {highlightFormatter.format(featured.data.date)} {featured.data.summary ? `• ${featured.data.summary}` : ""}
+            </p>
+            {featured.data.tags && featured.data.tags.length > 0 && (
+              <ul class="chip-list">
+                {featured.data.tags.map((value) => (
+                  <li>
+                    <span class="chip chip--readonly">
+                      {announcementTagLabels[value] ?? value}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <Button href={detailHref(featured)} variant="secondary">Read details</Button>
+        </div>
+      </section>
+    ) : null}
+
+    <section class="stack--tight" aria-labelledby="announcements-list">
+      <div class="cluster--between">
+        <h2 id="announcements-list">Latest announcements</h2>
+        <p class="muted">
+          Showing {visibleAnnouncements.length} of {filteredAnnouncements.length} {tagLabel.toLowerCase()}{filteredAnnouncements.length === 1 ? " announcement" : " announcements"}.
+        </p>
+      </div>
+
+      {visibleAnnouncements.length === 0 ? (
+        <p class="muted">
+          No announcements found for {tagLabel.toLowerCase()}. Try another tag or visit the updates page.
+        </p>
       ) : (
-        <p class="muted">Announcements will appear here once a bulletin is published.</p>
+        <div class="grid--cards">
+          {visibleAnnouncements.map((entry) => (
+            <ContentCard
+              href={detailHref(entry)}
+              title={entry.data.title}
+              summary={entry.data.summary}
+              meta={metaFormatter.format(entry.data.date)}
+              tags={entry.data.tags?.map((value) => announcementTagLabels[value] ?? value)}
+            />
+          ))}
+        </div>
       )}
+
+      {showMore ? (
+        <div class="cluster--between pagination">
+          <p class="muted">{`Older announcements appear on the next page.`}</p>
+          <Button href="/resources/announcements/page/2" variant="ghost">Older announcements</Button>
+        </div>
+      ) : null}
+    </section>
+
+    <section class="card stack--tight" aria-labelledby="announcements-archive">
+      <h2 id="announcements-archive">Archive by month</h2>
+      {archiveMonths.length === 0 ? (
+        <p class="muted">No archived months yet.</p>
+      ) : (
+        <ul class="archive-list">
+          {archiveMonths.map(({ year, month, label }) => (
+            <li>
+              <a class="link" href={`/resources/announcements/archive/${year}/${String(month).padStart(2, "0")}`}>
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+
+    <section class="card stack" aria-labelledby="announcements-submit">
+      <h2 id="announcements-submit">Submit an announcement</h2>
+      <p class="muted">
+        Deadline: {submitDeadline}. Destination: {clerkDestination}. Email {contactEmail} or use the Connect page below.
+      </p>
+      <div class="cluster">
+        <Button href={contactHref} variant="secondary">Contact Church Clerk</Button>
+        <Button href={updatesUrl} variant="ghost">See updates page</Button>
+      </div>
+      <p class="small muted">
+        Phase 6 will create the Connect Card; you can add a dedicated announcement submission form later if needed.
+      </p>
     </section>
   </div>
 </BaseLayout>
+
+<style>
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+  }
+
+  .chip {
+    border-radius: var(--radius-4);
+    border: 1px solid var(--color-border);
+    padding: 0.35rem 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: inherit;
+    background: var(--color-surface);
+  }
+
+  .chip--active {
+    background: var(--color-primary);
+    color: var(--color-white);
+    border-color: var(--color-primary);
+  }
+
+  .chip--readonly {
+    border-color: transparent;
+    background: color-mix(in oklab, var(--color-surface) 85%, black 15%);
+    cursor: default;
+  }
+
+  .chip-list {
+    list-style: none;
+    display: flex;
+    gap: var(--space-2);
+    padding: 0;
+    margin: var(--space-3) 0 0;
+  }
+
+  .featured-card h2 {
+    margin: 0;
+  }
+
+  .archive-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .archive-list li {
+    min-width: 180px;
+  }
+
+  .pagination {
+    margin-top: var(--space-4);
+  }
+</style>

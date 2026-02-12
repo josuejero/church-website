@@ -8,6 +8,7 @@ type Props = {
   primaryCtaHref?: string;
   secondaryCtaLabel?: string;
   secondaryCtaHref?: string;
+  className?: string;
 };
 
 const {
@@ -16,12 +17,14 @@ const {
   primaryCtaLabel,
   primaryCtaHref,
   secondaryCtaLabel,
-  secondaryCtaHref
-} = Astro.props;
+  secondaryCtaHref,
+  className = ""
+} = Astro.props as Props;
 const hasMeta = Boolean(Astro.slots?.meta);
+const rootClass = ["hero", "card", className].filter(Boolean).join(" ");
 ---
 
-<section class="hero card">
+<section class={rootClass}>
   <div class="hero__inner">
     <div>
       <h1 class="hero__title">{title}</h1>

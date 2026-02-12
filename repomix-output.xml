@@ -149,6 +149,7 @@ web/
       ministries/
         adult-sabbath-school.md
         adventist-community-services.md
+        adventurers.md
         bible-study.md
         board-meeting.md
         children.md
@@ -2672,6 +2673,26 @@ pdfUrl: "/bulletins/2025-12-20.pdf"
 ---
 </file>
 
+<file path="web/src/content/ministries/adventurers.md">
+---
+title: "Adventurers"
+summary: "A fun, faith-based club for children and their families."
+leaderName: "Adventurers Leaders"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "1st and 3rd Sabbath"
+category: "Children & Youth"
+tags: ["kids", "families", "faith"]
+---
+
+## Overview
+
+Adventurers helps kids grow in faith, friendships, and family involvement.
+
+## How to get involved
+
+Come to a meeting or contact the leaders to learn more.
+</file>
+
 <file path="web/src/content/ministries/womens-ministry.md">
 ---
 title: "Women's Ministry"
@@ -3922,40 +3943,6 @@ tags: ["worship", "sabbath"]
 ## Who can come?
 
 Everyone. Come as you are.
-</file>
-
-<file path="web/src/content/ministries/pathfinders.md">
----
-title: "Pathfinders & Adventurers"
-summary: "The Seventh-day Adventist Church’s Adventurers and Pathfinders Clubs are Christ-centered programs designed to nurture children and youth in their spiritual, mental, physical, and social development."
-leaderName: "Daunette Lemard-Reid"
-leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "First and Third Sabbath of each month, from 3:00 PM – 5:00 PM."
-category: "Children & Youth"
-tags: ["children", "teens", "family", "discipleship", "adventure"]
----
-
-## Overview
-
-“The Seventh-day Adventist Church’s Adventurers and Pathfinders Clubs are Christ-centered programs designed to nurture children and youth in their spiritual, mental, physical, and social development.”
-
-Pathfinders & Adventurers Club Director: Daunette Lemard-Reid
-
-Meeting Time: First and Third Sabbath of each month, from 3:00 PM – 5:00 PM.
-
-## Adventurers
-
-“The Adventurer Club is a fun, Christ-centered program for children ages 4–9 that helps them grow spiritually, socially, mentally, and physically. Through hands-on activities, Bible learning, games, and service projects, children build faith, character, confidence, friendships, and life skills in a supportive, family-focused environment while preparing for the Pathfinder journey ahead.”
-
-## Pathfinders
-
-“Pathfinders are a worldwide organization of young people sponsored by the Seventh-day Adventist Church, with nearly 2 million members around the globe. Young people of any religious persuasion, or none at all, are welcome and encouraged to join the organization.”
-
-• Pathfinders (ages 10–15) provides opportunities for youth to grow in leadership, teamwork, and personal responsibility through outdoor activities, community service, spiritual growth, and practical life skills.
-
-## Contact
-
-To learn more about our Pathfinders and Adventurers Clubs or to get involved, please click here for more information: [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) (link to contact us)
 </file>
 
 <file path="web/src/data/week-schedule.json">
@@ -5690,6 +5677,40 @@ function linkAttrs(item: { href: string; external?: boolean }) {
 </script>
 </file>
 
+<file path="web/src/content/ministries/pathfinders.md">
+---
+title: "Pathfinders & Adventurers"
+summary: "The Seventh-day Adventist Church’s Adventurers and Pathfinders Clubs are Christ-centered programs designed to nurture children and youth in their spiritual, mental, physical, and social development."
+leaderName: "Daunette Lemard-Reid"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "First and Third Sabbath of each month, from 3:00 PM – 5:00 PM."
+category: "Children & Youth"
+tags: ["children", "teens", "family", "discipleship", "adventure"]
+---
+
+## Overview
+
+“The Seventh-day Adventist Church’s Adventurers and Pathfinders Clubs are Christ-centered programs designed to nurture children and youth in their spiritual, mental, physical, and social development.”
+
+Pathfinders & Adventurers Club Director: Daunette Lemard-Reid
+
+Meeting Time: First and Third Sabbath of each month, from 3:00 PM – 5:00 PM.
+
+## Adventurers
+
+“The Adventurer Club is a fun, Christ-centered program for children ages 4–9 that helps them grow spiritually, socially, mentally, and physically. Through hands-on activities, Bible learning, games, and service projects, children build faith, character, confidence, friendships, and life skills in a supportive, family-focused environment while preparing for the Pathfinder journey ahead.”
+
+## Pathfinders
+
+“Pathfinders are a worldwide organization of young people sponsored by the Seventh-day Adventist Church, with nearly 2 million members around the globe. Young people of any religious persuasion, or none at all, are welcome and encouraged to join the organization.”
+
+• Pathfinders (ages 10–15) provides opportunities for youth to grow in leadership, teamwork, and personal responsibility through outdoor activities, community service, spiritual growth, and practical life skills.
+
+## Contact
+
+To learn more about our Pathfinders and Adventurers Clubs or to get involved, email [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) or visit our [Contact page](/connect/contact).
+</file>
+
 <file path="web/src/data/site-links.json">
 {
   "givingUrl": "https://adventistgiving.org/",
@@ -5977,102 +5998,6 @@ import { site } from "../../data/site";
         />
       </Grid>
     </section>
-  </div>
-</BaseLayout>
-</file>
-
-<file path="web/src/pages/ministries/[id].astro">
----
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import HeroSection from "../../components/sections/Hero.astro";
-import { getCollection, getEntry } from "astro:content";
-import { mailto } from "../../lib/links";
-
-export async function getStaticPaths() {
-  const ministries = await getCollection("ministries", ({ data }) =>
-    import.meta.env.PROD ? data.draft !== true : true
-  );
-  return ministries.map((m) => ({ params: { id: m.id } }));
-}
-
-const { id } = Astro.params;
-
-const ministry = await getEntry("ministries", id!);
-if (!ministry) throw new Error(`Ministry not found: ${id}`);
-
-const data: any = (ministry as any).data ?? {};
-const isFilled = (value?: string) => Boolean(value && value.trim() && value !== "TBD");
-const meetingTime = isFilled(data.meetingTime) ? data.meetingTime : "";
-const leaderName = isFilled(data.leaderName) ? data.leaderName : "";
-const leaderEmail = isFilled(data.leaderEmail)
-  ? data.leaderEmail
-  : isFilled(data.contactEmail)
-    ? data.contactEmail
-    : "";
-const fallbackMessage = "Contact us for current meeting details.";
-
-let Content: any = null;
-// Only Markdown/MDX entries have entry.render()
-if (typeof (ministry as any).render === "function") {
-  const rendered = await (ministry as any).render();
-  Content = rendered?.Content ?? null;
-}
-
-const title =
-  data.title ??
-  (typeof id === "string"
-    ? id.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
-    : "Ministry");
-
-const description =
-  data.description ?? data.summary ?? `Learn more about ${title}.`;
-const heroSubtitle = data.summary ?? description;
----
-
-<BaseLayout title={title} description={description}>
-  <div class="stack">
-    <HeroSection title={title} subtitle={heroSubtitle}>
-      {meetingTime ? (
-        <article slot="meta" class="hero__meta-item">
-          <p class="hero__meta-label">Meeting time</p>
-          <p class="hero__meta-value">{meetingTime}</p>
-        </article>
-      ) : (
-        <article slot="meta" class="hero__meta-item">
-          <p class="hero__meta-label">Meeting time</p>
-          <p class="hero__meta-value">
-            <a class="hero__meta-link" href="/connect/contact">{fallbackMessage}</a>
-          </p>
-        </article>
-      )}
-
-      <article slot="meta" class="hero__meta-item">
-        <p class="hero__meta-label">Contact</p>
-        {leaderName && <p class="hero__meta-leader">{leaderName}</p>}
-        {leaderEmail ? (
-          <a
-            class="hero__meta-link hero__meta-email"
-            href={mailto(leaderEmail, `${title} ministry`)}
-          >
-            {leaderEmail}
-          </a>
-        ) : (
-          <a class="hero__meta-link" href="/connect/contact">{fallbackMessage}</a>
-        )}
-      </article>
-    </HeroSection>
-
-    {Content ? (
-      <section class="card">
-        <div class="prose">
-          <Content />
-        </div>
-      </section>
-    ) : (
-      <section class="card stack--tight">
-        <p class="muted">{description}</p>
-      </section>
-    )}
   </div>
 </BaseLayout>
 </file>
@@ -6851,6 +6776,91 @@ import { site } from "../../../data/site";
 </BaseLayout>
 </file>
 
+<file path="web/src/pages/ministries/[id].astro">
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import HeroSection from "../../components/sections/Hero.astro";
+import { getCollection, getEntry, render } from "astro:content";
+import { mailto } from "../../lib/links";
+
+export async function getStaticPaths() {
+  const ministries = await getCollection("ministries", ({ data }) =>
+    import.meta.env.PROD ? data.draft !== true : true
+  );
+  return ministries.map((m) => ({ params: { id: m.id } }));
+}
+
+const { id } = Astro.params;
+
+const ministry = await getEntry("ministries", id!);
+if (!ministry) throw new Error(`Ministry not found: ${id}`);
+
+const data: any = (ministry as any).data ?? {};
+const isFilled = (value?: string) => Boolean(value && value.trim() && value !== "TBD");
+const meetingTime = isFilled(data.meetingTime) ? data.meetingTime : "";
+const leaderName = isFilled(data.leaderName) ? data.leaderName : "";
+const leaderEmail = isFilled(data.leaderEmail)
+  ? data.leaderEmail
+  : isFilled(data.contactEmail)
+    ? data.contactEmail
+    : "";
+const fallbackMessage = "Contact us for current meeting details.";
+
+const { Content } = await render(ministry);
+
+const title =
+  data.title ??
+  (typeof id === "string"
+    ? id.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    : "Ministry");
+
+const description =
+  data.description ?? data.summary ?? `Learn more about ${title}.`;
+const heroSubtitle = data.summary ?? description;
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="stack">
+    <HeroSection title={title} subtitle={heroSubtitle}>
+      {meetingTime ? (
+        <article slot="meta" class="hero__meta-item">
+          <p class="hero__meta-label">Meeting time</p>
+          <p class="hero__meta-value">{meetingTime}</p>
+        </article>
+      ) : (
+        <article slot="meta" class="hero__meta-item">
+          <p class="hero__meta-label">Meeting time</p>
+          <p class="hero__meta-value">
+            <a class="hero__meta-link" href="/connect/contact">{fallbackMessage}</a>
+          </p>
+        </article>
+      )}
+
+      <article slot="meta" class="hero__meta-item">
+        <p class="hero__meta-label">Contact</p>
+        {leaderName && <p class="hero__meta-leader">{leaderName}</p>}
+        {leaderEmail ? (
+          <a
+            class="hero__meta-link hero__meta-email"
+            href={mailto(leaderEmail, `${title} ministry`)}
+          >
+            {leaderEmail}
+          </a>
+        ) : (
+          <a class="hero__meta-link" href="/connect/contact">{fallbackMessage}</a>
+        )}
+      </article>
+    </HeroSection>
+
+    <section class="card">
+      <div class="prose">
+        <Content />
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+</file>
+
 <file path="web/src/pages/resources/index.astro">
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
@@ -6956,93 +6966,6 @@ Through these ministries, we aim to help children grow in faith, build friendshi
 - https://www.youtube.com/c/adventistchildrensministries
 - https://www.faithfinders.com/god-sent-his-son-to-be-my-friend-bible-study-guides
 - https://www.gracelink.net/podcast
-</file>
-
-<file path="web/src/layouts/BaseLayout.astro">
----
-import "../styles/global.css";
-import "../styles/a11y.css";
-
-import Header from "../components/global/Header.astro";
-import Footer from "../components/global/Footer.astro";
-import { site } from "../data/site";
-
-export type Props = {
-  title?: string;
-  description?: string;
-  noIndex?: boolean;
-  ogImagePath?: string; // e.g. "/og/default.png"
-  ogType?: "website" | "article";
-};
-
-const {
-  title,
-  description,
-  noIndex = false,
-  ogImagePath = "/og/default.png",
-  ogType = "website",
-} = Astro.props;
-
-const pageTitle = title ? `${title} · ${site.shortName}` : site.name;
-const pageDescription = description ?? site.description;
-
-const baseUrl = Astro.site ?? new URL(Astro.url.origin);
-const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
-const ogImageUrl = new URL(ogImagePath, baseUrl).href;
-const locale = site.locale ?? "en-US";
-const ogLocale = locale.replace("-", "_");
-const cfAnalyticsToken = import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN;
-const analyticsEnabled = Astro.env?.PROD && Boolean(cfAnalyticsToken);
----
-
-<!doctype html>
-<html lang={locale.split("-")[0]}>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <title>{pageTitle}</title>
-    <meta name="description" content={pageDescription} />
-
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="sitemap" href="/sitemap-index.xml" />
-
-    <link rel="canonical" href={canonicalUrl} />
-    <meta name="robots" content={noIndex ? "noindex,follow" : "index,follow"} />
-
-    <meta property="og:site_name" content={site.name} />
-    <meta property="og:title" content={pageTitle} />
-    <meta property="og:description" content={pageDescription} />
-    <meta property="og:type" content={ogType} />
-    <meta property="og:locale" content={ogLocale} />
-    <meta property="og:url" content={canonicalUrl} />
-    <meta property="og:image" content={ogImageUrl} />
-
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={pageTitle} />
-    <meta name="twitter:description" content={pageDescription} />
-    <meta name="twitter:image" content={ogImageUrl} />
-
-    <slot name="head" />
-  </head>
-  <body>
-    <a class="skip-link" href="#main">Skip to content</a>
-    <Header />
-    <main id="main" class="main">
-      <div class="container">
-        <slot />
-      </div>
-    </main>
-    <Footer />
-    {analyticsEnabled ? (
-      <script
-        defer
-        src="https://static.cloudflareinsights.com/beacon.min.js"
-        data-cf-beacon={`{"token": "${cfAnalyticsToken}"}`}
-      ></script>
-    ) : null}
-  </body>
-</html>
 </file>
 
 <file path="web/src/pages/connect/contact/index.astro">
@@ -7338,6 +7261,93 @@ Lighthouse category assertions operate on a 0–1 scale in CI configs, so 0.90 c
 
 - If Playwright fails locally, run `npx playwright install --with-deps` and consult Playwright’s docs on CI workflows/setup patterns.
 - If Lighthouse CI fails, inspect large images or heavyweight scripts, optimize them, and rerun `npm run lighthouse`; budgets guard performance, accessibility, best practices, and SEO.
+</file>
+
+<file path="web/src/layouts/BaseLayout.astro">
+---
+import "../styles/global.css";
+import "../styles/a11y.css";
+
+import Header from "../components/global/Header.astro";
+import Footer from "../components/global/Footer.astro";
+import { site } from "../data/site";
+
+export type Props = {
+  title?: string;
+  description?: string;
+  noIndex?: boolean;
+  ogImagePath?: string; // e.g. "/og/default.png"
+  ogType?: "website" | "article";
+};
+
+const {
+  title,
+  description,
+  noIndex = false,
+  ogImagePath = "/og/default.png",
+  ogType = "website",
+} = Astro.props;
+
+const pageTitle = title ? `${title} · ${site.shortName}` : site.name;
+const pageDescription = description ?? site.description;
+
+const baseUrl = Astro.site ?? new URL(Astro.url.origin);
+const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
+const ogImageUrl = new URL(ogImagePath, baseUrl).href;
+const locale = site.locale ?? "en-US";
+const ogLocale = locale.replace("-", "_");
+const cfAnalyticsToken = import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN;
+const analyticsEnabled = Astro.env?.PROD && Boolean(cfAnalyticsToken);
+---
+
+<!doctype html>
+<html lang={locale.split("-")[0]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <link rel="canonical" href={canonicalUrl} />
+    <meta name="robots" content={noIndex ? "noindex,follow" : "index,follow"} />
+
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header />
+    <main id="main" class="main">
+      <div class="container">
+        <slot />
+      </div>
+    </main>
+    <Footer />
+    {analyticsEnabled ? (
+      <script
+        defer
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon={`{"token": "${cfAnalyticsToken}"}`}
+      ></script>
+    ) : null}
+  </body>
+</html>
 </file>
 
 <file path="web/src/pages/index.astro">

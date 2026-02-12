@@ -1,0 +1,76 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Hero from "../../components/ui/Hero.astro";
+import { mailto, tel } from "../../lib/links";
+import { site } from "../../data/site";
+
+const reviewDate = "February 12, 2026";
+const contactPage = "/connect/contact";
+const contactEmailHref = mailto(site.contact.email);
+const contactPhoneHref = tel(site.contact.phone);
+---
+
+<BaseLayout
+  title="Accessibility"
+  description="Accessibility statement for the First Springfield SDA Church website."
+>
+  <div class="stack">
+    <Hero
+      title="Accessibility"
+      subtitle="We are committed to keeping this website welcoming for every guest."
+    />
+
+    <section class="card stack">
+      <h2>Our commitment</h2>
+      <p class="muted">
+        First Springfield Seventh-day Adventist Church strives to provide an accessible online experience for everyone,
+        including people with visual, hearing, mobility, or cognitive differences. We follow W3C WAI guidance when
+        designing new pages and maintaining existing content so you can find worship times, ministry updates, and
+        ways to connect without barriers.
+      </p>
+
+      <h2>Conformance target</h2>
+      <p class="muted">
+        The site is built with the goal of conforming to WCAG 2.2 Level AA success criteria. We rely on semantic HTML,
+        meaningful heading structure, descriptive alt text, high contrast palettes, focus-visible outlines, and
+        keyboard-friendly components to support broad accessibility. Every major update goes through accessibility
+        review before it goes live.
+      </p>
+
+      <h2>Known limitations</h2>
+      <p class="muted">
+        While we work toward full conformance, there are a few areas that remain in progress:
+      </p>
+      <ul class="muted">
+        <li>
+          Third-party giving, prayer, and volunteer tools are hosted on external platforms, and we cannot guarantee that their
+          entire workflow meets WCAG 2.2 AA.
+        </li>
+        <li>
+          Live streams and archived media rely on YouTube for playback and captions, so availability depends on the channel host.
+        </li>
+        <li>
+          Some downloadable PDFs and older documents shared on the site have not yet been remediated for assistive technologies.
+        </li>
+      </ul>
+
+      <h2>Feedback</h2>
+      <p class="muted">
+        If you encounter an accessibility barrier, please let us know. Email us at
+        <a href={contactEmailHref}>{site.contact.email}</a>, call
+        <a href={contactPhoneHref}>{site.contact.phone}</a>, or use our
+        <a href={contactPage}>contact form</a>. We aim to respond within two business days and will describe alternative
+        ways to access the information or service you need.
+      </p>
+
+      <h2>Assessment</h2>
+      <p class="muted">
+        We combine manual keyboard and screen reader testing with automated checks (for example: Lighthouse, axe, and contrast
+        analyzers) whenever we publish new content. After major feature releases we re-run these audits and invite volunteer
+        feedback so we can keep improving.
+      </p>
+
+      <p class="small muted">Statement last reviewed on {reviewDate}.</p>
+    </section>
+  </div>
+</BaseLayout>

@@ -1,0 +1,112 @@
+---
+import budget from "../../data/budget.json";
+
+const { goal = 0, received = 0, updatedAt } = budget;
+const normalizedGoal = Math.max(0, goal);
+const normalizedReceived = Math.max(0, received);
+const percentRaised = normalizedGoal
+  ? Math.min(100, Math.round((normalizedReceived / normalizedGoal) * 100))
+  : 0;
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "long",
+  day: "numeric",
+  year: "numeric",
+});
+
+const formattedGoal = currencyFormatter.format(normalizedGoal);
+const formattedReceived = currencyFormatter.format(normalizedReceived);
+const formattedUpdatedAt = updatedAt
+  ? dateFormatter.format(new Date(updatedAt))
+  : null;
+---
+
+<section class="budget-progress card" aria-label="Budget progress widget">
+  <div class="budget-progress__heading">
+    <p class="muted">Annual operating budget</p>
+    <h2>Budget progress</h2>
+  </div>
+
+  <div class="budget-progress__totals">
+    <div>
+      <p class="muted">Goal</p>
+      <p class="budget-progress__amount">{formattedGoal}</p>
+    </div>
+    <div>
+      <p class="muted">Received</p>
+      <p class="budget-progress__amount">{formattedReceived}</p>
+    </div>
+  </div>
+
+  <div
+    class="budget-progress__bar"
+    role="progressbar"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-valuenow={percentRaised}
+    aria-label={`${percentRaised}% of goal met`}
+  >
+    <span class="budget-progress__bar-fill" style={`width: ${percentRaised}%`}></span>
+  </div>
+
+  <p class="budget-progress__percent">{percentRaised}% of the goal met</p>
+  {formattedUpdatedAt && (
+    <p class="budget-progress__updated small muted">Updated {formattedUpdatedAt}</p>
+  )}
+</section>
+
+<style>
+  .budget-progress {
+    gap: var(--space-4);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .budget-progress__heading h2 {
+    margin: 0;
+    font-size: var(--font-size-3);
+  }
+
+  .budget-progress__totals {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .budget-progress__amount {
+    margin: 0;
+    font-size: var(--font-size-3);
+    font-weight: 700;
+  }
+
+  .budget-progress__bar {
+    position: relative;
+    height: 12px;
+    background: var(--color-surface-muted);
+    border-radius: var(--radius-4);
+    overflow: hidden;
+  }
+
+  .budget-progress__bar-fill {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary), #8c222b);
+    border-radius: var(--radius-4);
+    transition: width 220ms ease;
+  }
+
+  .budget-progress__percent {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .budget-progress__updated {
+    margin: 0;
+  }
+</style>

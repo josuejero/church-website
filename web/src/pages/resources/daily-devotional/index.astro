@@ -1,0 +1,145 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Hero from '../../../components/ui/Hero.astro';
+import { getCollection, render } from 'astro:content';
+import { site } from '../../../data/site';
+
+const devotionals = await getCollection('devotionals', ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+const sortedDevotionals = [...devotionals].sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const todayDevotional = sortedDevotionals[0];
+let TodayDevotionalContent = null;
+if (todayDevotional) {
+  const rendered = await render(todayDevotional);
+  TodayDevotionalContent = rendered.Content;
+}
+
+const moreReflections = sortedDevotionals.slice(1, 4);
+const fmt = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: 'full',
+  timeZone: site.timeZone,
+});
+
+const trustedLinks = [
+  {
+    label: 'Upper Room Daily Devotional',
+    href: 'https://www.upperroom.org/resources/daily-devotional',
+    description: 'A Spirit-led reflection with scripture, prayer, and a gentle nudge for the day ahead.',
+  },
+  {
+    label: 'Our Daily Bread',
+    href: 'https://odb.org/daily-devotional',
+    description: 'Classic devotionals that balance a Scripture, story, and application for everyday life.',
+  },
+  {
+    label: 'YouVersion Daily Devotional',
+    href: 'https://www.bible.com/reading-plans/1541',
+    description: 'Choose a plan, tap today&apos;s entry, and read it in your preferred translation or audio.',
+  },
+  {
+    label: 'BibleProject Daily Devotional',
+    href: 'https://bibleproject.com/daily-devotional/',
+    description: 'Short videos and reflections that bring biblical themes to life with beautiful storytelling.',
+  },
+];
+---
+
+<BaseLayout
+  title="Daily Devotional"
+  description="Curated reflections and prayer material for each day."
+>
+  <Hero
+    title="Daily Devotional"
+    subtitle="Curated reflections to center your heart on God every morning."
+  />
+
+  <section class="stack--loose">
+    <article class="card stack--tight">
+      <h2>Carefully curated, not auto-pulled</h2>
+      <p>
+        Instead of relying on automatic feeds, we gather trusted reflections, add local perspective, and
+        publish the freshest entry right here so the daily message is dependable and easy to share.
+      </p>
+    </article>
+
+    {todayDevotional ? (
+      <article class="card stack" aria-labelledby="today-devotional-title">
+        <div class="stack--tight">
+          <p class="muted small">
+            <strong>Today · </strong>
+            {fmt.format(todayDevotional.data.date)}
+          </p>
+          <h2 id="today-devotional-title">{todayDevotional.data.title}</h2>
+          <p>{todayDevotional.data.summary}</p>
+        </div>
+
+        {TodayDevotionalContent && (
+          <div class="prose">
+            <TodayDevotionalContent />
+          </div>
+        )}
+
+        {todayDevotional.data.link && (
+          <p>
+            <a
+              class="link"
+              href={todayDevotional.data.link}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Continue reading the source devotional
+            </a>
+          </p>
+        )}
+      </article>
+    ) : (
+      <article class="card">
+        <p class="muted">We haven’t published a devotional yet. Check back soon.</p>
+      </article>
+    )}
+
+    {moreReflections.length > 0 && (
+      <article class="card stack--tight">
+        <h3>Recent reflections (newest first)</h3>
+        <div class="grid--cards">
+          {moreReflections.map((entry) => (
+            <section class="card stack--tight">
+              <p class="muted small">{fmt.format(entry.data.date)}</p>
+              <h4>{entry.data.title}</h4>
+              <p class="muted">{entry.data.summary}</p>
+              {entry.data.link && (
+                <a
+                  class="link"
+                  href={entry.data.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Read the full reflection
+                </a>
+              )}
+            </section>
+          ))}
+        </div>
+      </article>
+    )}
+
+    <article class="card stack--tight">
+      <h3>Trusted links</h3>
+      <ul class="stack--tight">
+        {trustedLinks.map((link) => (
+          <li>
+            <a class="link" href={link.href} target="_blank" rel="noopener noreferrer">
+              {link.label}
+            </a>
+            <p class="muted small">{link.description}</p>
+          </li>
+        ))}
+      </ul>
+    </article>
+  </section>
+</BaseLayout>

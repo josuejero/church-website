@@ -1,5 +1,7 @@
 ---
+import { Image } from "astro:assets";
 import Button from "../ui/Button.astro";
+import churchLogo from "../../assets/photos/church-logo-primary.jpg";
 import { site } from "../../data/site";
 
 const pathname = Astro.url?.pathname ?? "/";
@@ -21,6 +23,15 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
 <header class="site-header">
   <div class="inner">
     <a class="brand" href="/" aria-label={site.name}>
+      <Image
+        src={churchLogo}
+        alt={`${site.name} logo`}
+        widths={[36, 44, 56]}
+        sizes="48px"
+        loading="eager"
+        decoding="async"
+        class="brand__logo"
+      />
       <span class="brand__title">{site.shortName}</span>
     </a>
 
@@ -153,6 +164,14 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     align-items: center;
     gap: var(--space-2);
     min-width: max-content;
+  }
+
+  .brand__logo {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-3);
+    object-fit: contain;
+    flex-shrink: 0;
   }
 
   .brand__title {

@@ -1,0 +1,299 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { site } from "../../../data/site";
+
+const formAction = import.meta.env.PUBLIC_CONNECT_CARD_FORM_ACTION ?? "";
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
+const pageOrigin = Astro.url?.origin;
+const thankYouPath = "/connect/connect-card/thank-you";
+const thankYouUrl = pageOrigin ? `${pageOrigin}${thankYouPath}` : thankYouPath;
+const interestOptions = [
+  { value: "plan-a-visit", label: "Plan a visit" },
+  { value: "service-info", label: "Worship or Sabbath School details" },
+  { value: "ministry", label: "Connect with a ministry" },
+  { value: "volunteer", label: "Volunteer opportunities" },
+  { value: "bible-study", label: "Bible study / small group" },
+];
+const connectionReasons = [
+  { value: "first-time-visit", label: "I am planning my first visit" },
+  { value: "moving-to-town", label: "We just moved to the area" },
+  { value: "prayer", label: "I’d like prayer or encouragement" },
+  { value: "questions", label: "I have a question about the church" },
+  { value: "other", label: "Other" },
+];
+const preferredContactOptions = [
+  { value: "email", label: "Email (fastest)" },
+  { value: "phone", label: "Phone call or text" },
+];
+const interestsId = (value: string) => `interest-${value}`;
+---
+
+<BaseLayout
+  title="Connect Card"
+  description="Submit a Connect Card to let the team know how to pray for you, follow up, or support your next steps."
+>
+  <script slot="head" src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+  <div class="stack connect-card">
+    <div class="connect-card__intro">
+      <h1>Connect Card</h1>
+      <p id="connect-card-summary" class="muted">
+        Share a little about yourself and how we can follow up. We’ll ask for your preferred contact method and
+        keep your information private unless you say otherwise.
+      </p>
+      {!formAction ? (
+        <div class="connect-card__warning" role="status">
+          <strong>Form not configured yet.</strong> Set <code>PUBLIC_CONNECT_CARD_FORM_ACTION</code> to your Google Apps Script
+          Web App URL before publishing.
+        </div>
+      ) : null}
+    </div>
+
+    <form
+      class="connect-card__form"
+      action={formAction || "#"}
+      method="POST"
+      accept-charset="UTF-8"
+      aria-describedby="connect-card-summary"
+    >
+      <div class="connect-card__grid">
+        <div class="form-field">
+          <label for="full-name">
+            Full name <span class="required" aria-hidden="true">*</span>
+          </label>
+          <input id="full-name" name="fullName" type="text" required autocomplete="name" placeholder="Jamie Rivera" />
+        </div>
+
+        <div class="form-field">
+          <label for="email">
+            Email <span class="required" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            autocomplete="email"
+            placeholder="name@example.com"
+          />
+        </div>
+
+        <div class="form-field">
+          <label for="phone">
+            Phone
+            <span class="form-helper">Calls/texts help us respond if email bounces.</span>
+          </label>
+          <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="(123) 456‑7890" />
+        </div>
+
+        <div class="form-field">
+          <label for="address">
+            Address
+            <span class="form-helper">Optional—useful when mailing resources or planning a visit.</span>
+          </label>
+          <textarea id="address" name="address" rows="2" placeholder="123 Main St, Springfield, MA"></textarea>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <label for="connection-reason">What best describes your reason for connecting?</label>
+        <select id="connection-reason" name="connectionReason" required>
+          <option value="">Choose one</option>
+          {connectionReasons.map((item) => (
+            <option value={item.value}>{item.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div class="form-section">
+        <p class="form-label">I’d like the team to follow up about:</p>
+        <div class="checkbox-grid">
+          {interestOptions.map((item) => (
+            <label class="checkbox" for={interestsId(item.value)}>
+              <input id={interestsId(item.value)} name="interests[]" value={item.value} type="checkbox" />
+              <span>{item.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div class="form-section">
+        <label for="preferred-contact">Preferred follow-up method <span class="required" aria-hidden="true">*</span></label>
+        <select id="preferred-contact" name="preferredContact" required>
+          <option value="">Select</option>
+          {preferredContactOptions.map((item) => (
+            <option value={item.value}>{item.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div class="form-section">
+        <label for="notes">Anything else we should know?</label>
+        <textarea
+          id="notes"
+          name="notes"
+          rows="4"
+          placeholder="Share a prayer request, questions about ministry, or a time to connect."
+        ></textarea>
+      </div>
+
+      <input type="hidden" name="redirectUrl" value={thankYouUrl} />
+      <input type="hidden" name="formSource" value="connect-card-web" />
+
+      <div class="form-section turnstile">
+        {turnstileSiteKey ? (
+          <div class="cf-turnstile" data-sitekey={turnstileSiteKey}></div>
+        ) : (
+          <p class="muted small">
+            For spam protection, set <code>PUBLIC_TURNSTILE_SITE_KEY</code> and <code>PRIVATE_TURNSTILE_SECRET_KEY</code> (used
+            server-side) so we can verify the widget before writing to the sheet.
+          </p>
+        )}
+      </div>
+
+      <p class="privacy-note small muted">
+        Privacy note: We ask for phone or address so the pastor or hospitality team can follow up personally and send you
+        relevant arrival details. We do not share your information outside the church family without permission.
+      </p>
+
+      <div class="form-actions">
+        <button type="submit" class="primary-action">
+          Submit a Connect Card
+        </button>
+        <a class="ghost-action" href="/connect/contact">Need help now?</a>
+      </div>
+    </form>
+  </div>
+</BaseLayout>
+
+<style>
+  .connect-card {
+    max-width: 52rem;
+  }
+
+  .connect-card__intro + .connect-card__form {
+    margin-top: var(--space-6);
+  }
+
+  .connect-card__warning {
+    border-left: 4px solid var(--color-primary);
+    padding: var(--space-3);
+    background: var(--color-surface-2);
+  }
+
+  .connect-card__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .connect-card__grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .connect-card__form .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .connect-card__form label {
+    font-weight: 700;
+  }
+
+  .connect-card__form input,
+  .connect-card__form select,
+  .connect-card__form textarea {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    padding: var(--space-3);
+    font: inherit;
+    background: var(--color-white);
+  }
+
+  .connect-card__form textarea {
+    resize: vertical;
+    min-height: 3rem;
+  }
+
+  .required {
+    margin-left: 0.25rem;
+    color: var(--color-secondary);
+  }
+
+  .form-helper {
+    display: block;
+    font-size: var(--font-size-0);
+    color: var(--color-text-muted);
+    font-weight: 400;
+  }
+
+  .connect-card__form .form-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .connect-card__form .checkbox-grid {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .connect-card__form .checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .connect-card__form .checkbox input {
+    margin: 0;
+    accent-color: var(--color-primary);
+  }
+
+  .connect-card__form .turnstile {
+    padding: var(--space-3);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-2);
+    background: var(--color-surface-2);
+  }
+
+  .connect-card__form .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-items: center;
+  }
+
+  .connect-card__form .primary-action {
+    background: var(--color-primary);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-3);
+    padding: var(--space-3) var(--space-5);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .connect-card__form .ghost-action {
+    color: var(--color-primary);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  .connect-card .privacy-note {
+    margin: 0;
+  }
+
+  @media (min-width: 720px) {
+    .connect-card__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .form-field:nth-child(odd) {
+      min-width: 0;
+    }
+  }
+</style>

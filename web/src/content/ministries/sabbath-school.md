@@ -12,7 +12,7 @@ tags: ["sabbath school", "fellowship", "discipleship", "mission"]
 
 Superintendent: Elder Paul Moulema
 
-Sabbath School Secretary: Carol Elliott
+Assistant Superintendent: Carol Elliott
 
 “Time: Sabbath 10 am”
 

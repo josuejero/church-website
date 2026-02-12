@@ -1,0 +1,150 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Button from "../../components/ui/Button.astro";
+import SiteAlert from "../../components/global/SiteAlert.astro";
+import { render } from "astro:content";
+import { site } from "../../data/site";
+import siteAlert from "../../data/site-alert.json";
+import { getSortedUpdates, getRecentUpdates, type UpdateEntry } from "../../lib/updates";
+
+const updates = await getSortedUpdates();
+const recent = getRecentUpdates(updates, 4);
+const renderedUpdates = await Promise.all(
+  recent.map(async (entry) => {
+    const { Content } = await render(entry);
+    return { entry, Content };
+  })
+);
+
+const metaFormatter = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "medium",
+  timeZone: site.timeZone,
+});
+
+const alertConfig = siteAlert as {
+  enabled?: boolean;
+  title?: string;
+  message?: string;
+  href?: string;
+  variant?: "info" | "warn";
+  updatedAt?: string;
+};
+const showAlert = Boolean(alertConfig.enabled && alertConfig.title && alertConfig.message);
+
+const categoryLabels: Record<UpdateEntry["data"]["category"], string> = {
+  weather: "Weather notice",
+  building: "Building/annex",
+  schedule: "Schedule change",
+};
+
+const announcementsUrl = "/resources/announcements";
+const rssUrl = "/resources/announcements/rss.xml";
+const contactHref = "/connect/contact";
+const submitDeadline = "Wednesday 5 PM";
+const clerkDestination = "Church Clerk (Church Office)";
+const contactEmail = site.contact.email;
+---
+
+<BaseLayout
+  title="Updates"
+  description="Emergency alerts, weather notices, and last-minute schedule changes for our church community."
+>
+  <div class="stack">
+    <section class="stack">
+      <h1>Updates</h1>
+      <p class="muted">
+        When the emergency banner appears, it lands here first. Check this page for cancellations, weather notices, and any last-minute announcements before heading to worship.
+      </p>
+    </section>
+
+    <section class="stack">
+      <h2>Current alert</h2>
+      {showAlert ? (
+        <SiteAlert
+          title={alertConfig.title ?? ""}
+          message={alertConfig.message ?? ""}
+          href={alertConfig.href}
+          variant={alertConfig.variant}
+          updatedAt={alertConfig.updatedAt}
+          announce={false}
+          hideCta
+        />
+      ) : (
+        <p class="muted">No emergency alerts right now.</p>
+      )}
+    </section>
+
+    <section class="stack">
+      <div class="cluster--between">
+        <div>
+          <h2 id="recent-updates">Recent updates</h2>
+          <p class="muted">
+            {recent.length === 0
+              ? "No updates have been published yet."
+              : `Showing ${recent.length} of ${updates.length} recent update${updates.length === 1 ? "" : "s"}.`}
+          </p>
+        </div>
+        <div class="cluster">
+          <Button href={announcementsUrl} variant="ghost">Browse announcements</Button>
+          <Button href={rssUrl} variant="ghost" size="sm">Subscribe via RSS</Button>
+        </div>
+      </div>
+
+      {renderedUpdates.length === 0 ? (
+        <p class="muted">We’ll publish updates here as soon as they’re needed.</p>
+      ) : (
+        <div class="stack">
+          {renderedUpdates.map(({ entry, Content }) => (
+            <article class="card stack--tight">
+              <div class="cluster--between">
+                <div>
+                  <p class="muted small">{categoryLabels[entry.data.category] ?? "Update"}</p>
+                  <h3>{entry.data.title}</h3>
+                </div>
+                <p class="muted small">{metaFormatter.format(entry.data.date)}</p>
+              </div>
+              <p class="muted">{entry.data.summary}</p>
+              <div class="prose">
+                <Content />
+              </div>
+              {entry.data.tags && entry.data.tags.length > 0 ? (
+                <ul class="chip-list">
+                  {entry.data.tags.map((tag) => (
+                    <li>
+                      <span class="chip chip--readonly">{tag}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+
+    <section class="card stack--tight">
+      <h2>Need to share something urgently?</h2>
+      <p class="muted">
+        Contact the {clerkDestination} by {submitDeadline} so we can publish updates before Saturday. Email {contactEmail} or use the Connect page below.
+      </p>
+      <div class="cluster">
+        <Button href={contactHref} variant="secondary">Contact Church Clerk</Button>
+        <Button href={announcementsUrl} variant="ghost">Submit an announcement</Button>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+.chip-list {
+  list-style: none;
+  display: flex;
+  gap: var(--space-2);
+  padding: 0;
+  margin: 0;
+}
+
+.chip-list li {
+  display: inline;
+}
+</style>

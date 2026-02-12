@@ -1,0 +1,95 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import Button from "../../../../components/ui/Button.astro";
+import ContentCard from "../../../../components/content/ContentCard.astro";
+import { site } from "../../../../data/site";
+import {
+  announcementTagLabels,
+  announcementTags,
+  type AnnouncementTagValue,
+} from "../../../../data/announcement-tags";
+import {
+  getArchiveMonths,
+  getSortedAnnouncements,
+} from "../../../../lib/announcements";
+
+export async function getStaticPaths() {
+  return announcementTags.map((tag) => ({ params: { tag: tag.value } }));
+}
+
+const tagParam = Astro.params.tag as AnnouncementTagValue;
+const tagInfo = announcementTags.find((tag) => tag.value === tagParam);
+if (!tagInfo) {
+  throw new Error(`Unknown announcement tag: ${tagParam}`);
+}
+
+const announcements = await getSortedAnnouncements();
+const filtered = announcements.filter((entry) => entry.data.tags?.includes(tagInfo.value));
+const metaFormatter = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "medium",
+  timeZone: site.timeZone,
+});
+const archiveMonths = getArchiveMonths(await getSortedAnnouncements({ includeExpired: true }));
+const updatesUrl = "/updates";
+const rssUrl = "/resources/announcements/rss.xml";
+---
+
+<BaseLayout title={`Announcements · ${tagInfo.label}`}>
+  <div class="stack">
+    <h1>{tagInfo.label} announcements</h1>
+    <p class="muted">{tagInfo.description}</p>
+    <div class="cluster">
+      <Button href="/resources/announcements" variant="ghost">All announcements</Button>
+      <Button href={updatesUrl} variant="ghost">Visit updates page</Button>
+      <Button href={rssUrl} variant="ghost" size="sm">Subscribe via RSS</Button>
+    </div>
+
+    {filtered.length === 0 ? (
+      <p class="muted">No announcements use this tag yet.</p>
+    ) : (
+      <div class="grid--cards">
+        {filtered.map((entry) => (
+          <ContentCard
+            href={`/resources/announcements/${entry.id}`}
+            title={entry.data.title}
+            summary={entry.data.summary}
+            meta={metaFormatter.format(entry.data.date)}
+            tags={entry.data.tags?.map((value) => announcementTagLabels[value] ?? value)}
+          />
+        ))}
+      </div>
+    )}
+
+    <section class="card stack--tight">
+      <h2>Archive by month</h2>
+      {archiveMonths.length === 0 ? (
+        <p class="muted">No archived months yet.</p>
+      ) : (
+        <ul class="archive-list">
+          {archiveMonths.map(({ year, month, label }) => (
+            <li>
+              <a class="link" href={`/resources/announcements/archive/${year}/${String(month).padStart(2, "0")}`}>
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .archive-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .archive-list li {
+    min-width: 180px;
+  }
+</style>

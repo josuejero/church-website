@@ -1,0 +1,181 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { site } from "../../data/site";
+import annualCalendar from "../../data/annual-calendar.json";
+
+type AnnualEvent = {
+  title: string;
+  start: string;
+  end?: string;
+  summary: string;
+  location: string;
+  category?: string;
+  highlight?: boolean;
+  closureNote?: string;
+  notes?: string;
+};
+
+type AnnualCalendar = {
+  updatedAt?: string;
+  subjectToChange?: string;
+  events?: AnnualEvent[];
+};
+
+const locale = site.locale ?? "en-US";
+const timeZone = site.timeZone ?? "UTC";
+
+const calendarData = annualCalendar as AnnualCalendar;
+const events = calendarData.events ?? [];
+const updatedDate =
+  calendarData.updatedAt && !Number.isNaN(new Date(calendarData.updatedAt).valueOf())
+    ? new Date(calendarData.updatedAt)
+    : null;
+
+const monthFormatter = new Intl.DateTimeFormat(locale, { month: "long", timeZone });
+const monthDayFormatter = new Intl.DateTimeFormat(locale, {
+  month: "long",
+  day: "numeric",
+  timeZone,
+});
+const yearFormatter = new Intl.DateTimeFormat(locale, { year: "numeric", timeZone });
+const updatedFormatter = new Intl.DateTimeFormat(locale, {
+  dateStyle: "medium",
+  timeZone,
+});
+
+const enrichedEvents = events
+  .map((event) => {
+    const startDate = new Date(event.start);
+    const endDate = event.end ? new Date(event.end) : startDate;
+    return {
+      ...event,
+      startDate,
+      endDate,
+    };
+  })
+  .filter((event) => !Number.isNaN(event.startDate.valueOf()))
+  .sort((a, b) => a.startDate.valueOf() - b.startDate.valueOf());
+
+const highlightEvent = enrichedEvents.find((entry) => entry.highlight);
+const calendarEvents = enrichedEvents.filter((entry) => entry !== highlightEvent);
+
+const formatDateRange = (start: Date, end?: Date) => {
+  if (!start || Number.isNaN(start.valueOf())) {
+    return "";
+  }
+
+  const actualEnd = end && !Number.isNaN(end.valueOf()) ? end : start;
+  const startYear = yearFormatter.format(start);
+  const endYear = yearFormatter.format(actualEnd);
+
+  if (start.valueOf() === actualEnd.valueOf()) {
+    return `${monthDayFormatter.format(start)}, ${startYear}`;
+  }
+
+  if (startYear === endYear) {
+    if (start.getMonth() === actualEnd.getMonth()) {
+      const monthName = monthFormatter.format(start);
+      return `${monthName} ${start.getDate()}–${actualEnd.getDate()}, ${startYear}`;
+    }
+    return `${monthDayFormatter.format(start)} – ${monthDayFormatter.format(actualEnd)}, ${startYear}`;
+  }
+
+  return `${monthDayFormatter.format(start)}, ${startYear} – ${monthDayFormatter.format(actualEnd)}, ${endYear}`;
+};
+
+const categoryLabels: Record<string, string> = {
+  worship: "Worship + praise",
+  camp: "Camp meeting",
+  community: "Community",
+};
+
+const subjectToChange = calendarData.subjectToChange ?? "Dates are subject to change.";
+---
+
+<BaseLayout title="Annual calendar" description="Seasonal events, highlights, and the Camp Meeting schedule for the year.">
+  <div class="stack">
+    <section class="stack">
+      <h1>Annual calendar</h1>
+      <p class="muted">
+        A quick glance at milestone dates, planning notes, and times the campus shifts gears across the season.
+      </p>
+      <p class="muted small">
+        {updatedDate ? `Last updated ${updatedFormatter.format(updatedDate)}` : "Last updated date coming soon."}
+        {" · "}
+        {subjectToChange}
+      </p>
+    </section>
+
+    {highlightEvent ? (
+      <section class="card stack--tight calendar-highlight">
+        <div class="cluster--between">
+          <div>
+            <p class="muted small">{categoryLabels[highlightEvent.category ?? "camp"] ?? "Camp meeting"}</p>
+            <h2>{highlightEvent.title}</h2>
+          </div>
+          <p class="muted small">{formatDateRange(highlightEvent.startDate, highlightEvent.endDate)}</p>
+        </div>
+        <p class="muted small">Location: {highlightEvent.location}</p>
+        <p>{highlightEvent.summary}</p>
+        {highlightEvent.closureNote ? (
+          <p class="calendar-closure">{highlightEvent.closureNote}</p>
+        ) : null}
+        {highlightEvent.notes ? (
+          <p class="muted small">{highlightEvent.notes}</p>
+        ) : null}
+      </section>
+    ) : null}
+
+    <section class="stack">
+      <div class="cluster--between">
+        <div>
+          <h2>Featured dates</h2>
+          <p class="muted">These dates help the community plan ahead for worship, service, and outreach.</p>
+        </div>
+      </div>
+
+      {calendarEvents.length === 0 ? (
+        <p class="muted">No additional dates are published yet.</p>
+      ) : (
+        <div class="stack">
+          {calendarEvents.map((entry) => (
+            <article class="card calendar-event">
+              <div class="cluster--between calendar-event__header">
+                <p class="muted small">
+                  {categoryLabels[entry.category ?? "community"] ?? "Event"}
+                </p>
+                <p class="muted small">{formatDateRange(entry.startDate, entry.endDate)}</p>
+              </div>
+              <h3>{entry.title}</h3>
+              <p class="muted">{entry.summary}</p>
+              <p class="muted small">Location: {entry.location}</p>
+              {entry.notes ? <p class="muted small">{entry.notes}</p> : null}
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .calendar-highlight {
+    border-color: var(--color-primary);
+    background: var(--color-surface-2);
+  }
+
+  .calendar-closure {
+    margin: 0;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .calendar-event__header {
+    gap: var(--space-2);
+  }
+
+  .calendar-event {
+    display: grid;
+    gap: var(--space-3);
+  }
+</style>

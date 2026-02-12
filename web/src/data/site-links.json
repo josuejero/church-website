@@ -2,9 +2,11 @@
   "givingUrl": "https://adventistgiving.org/",
   "youtubeChannelUrl": "https://www.youtube.com/@1stspringfieldsdama74",
   "youtubeLiveEmbedUrl": "https://www.youtube.com/embed/live_stream?channel=UCkmryvqlHb3JIwVLc07FZwA",
-  "facebookUrl": "",
+  "facebookUrl": "https://www.facebook.com/firstspringfieldsda/",
   "prayerFormUrl": "",
   "contactFormUrl": "",
   "volunteerFormUrl": "",
+  "bulletinsUrl": "/resources/bulletins",
+  "announcementsUrl": "/resources/announcements",
   "oldWebsiteUrl": "https://firstspringfieldma.adventistchurch.org/"
 }

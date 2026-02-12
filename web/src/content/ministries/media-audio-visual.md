@@ -12,4 +12,4 @@ The Media & Audio Visual team keeps the gospel in focus with live streaming, ser
 ### Online presence
 
 - https://www.youtube.com/@1stspringfieldsdama74
-- “Facebook: First Springfield SDA Church”
+- “Facebook: [First Springfield SDA Church](https://www.facebook.com/firstspringfieldsda/)”

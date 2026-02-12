@@ -1,0 +1,109 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import Button from "../../../../components/ui/Button.astro";
+import { getEntry, render } from "astro:content";
+import { site } from "../../../../data/site";
+import { announcementTagLabels } from "../../../../data/announcement-tags";
+import { getArchiveMonths, getSortedAnnouncements } from "../../../../lib/announcements";
+
+export async function getStaticPaths() {
+  const announcements = await getSortedAnnouncements();
+  return announcements.map((entry) => ({ params: { id: entry.id } }));
+}
+
+const { id } = Astro.params;
+const announcement = await getEntry("announcements", id);
+if (!announcement) {
+  throw new Error(`Announcement not found: ${id}`);
+}
+
+const { Content } = await render(announcement);
+const dateFormatter = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "full",
+  timeZone: site.timeZone,
+});
+const monthPath = `/resources/announcements/archive/${announcement.data.date.getFullYear()}/${String(
+  announcement.data.date.getMonth() + 1
+).padStart(2, "0")}`;
+const archiveMonths = getArchiveMonths(await getSortedAnnouncements({ includeExpired: true }));
+const updatesUrl = "/updates";
+const rssUrl = "/resources/announcements/rss.xml";
+const tags = announcement.data.tags?.map((value) => announcementTagLabels[value] ?? value) ?? [];
+---
+
+<BaseLayout title={announcement.data.title} description={announcement.data.summary}>
+  <div class="stack">
+    <h1>{announcement.data.title}</h1>
+    <p class="muted">{announcement.data.summary}</p>
+    <p class="muted">
+      {dateFormatter.format(announcement.data.date)} ·{" "}
+      <a class="link" href={monthPath}>View this month</a>
+    </p>
+    {tags.length > 0 && (
+      <ul class="chip-list">
+        {tags.map((tag) => (
+          <li>
+            <span class="chip chip--readonly">{tag}</span>
+          </li>
+        ))}
+      </ul>
+    )}
+
+    <section class="card">
+      <div class="prose">
+        <Content />
+      </div>
+    </section>
+
+    <div class="cluster">
+      <Button href="/resources/announcements" variant="ghost">Back to announcements</Button>
+      <Button href={updatesUrl} variant="ghost">Visit updates page</Button>
+      <Button href={rssUrl} variant="ghost" size="sm">Subscribe via RSS</Button>
+    </div>
+
+    <section class="card stack--tight">
+      <h2>Archive by month</h2>
+      {archiveMonths.length === 0 ? (
+        <p class="muted">No archived months yet.</p>
+      ) : (
+        <ul class="archive-list">
+          {archiveMonths.map(({ year, month, label }) => (
+            <li>
+              <a class="link" href={`/resources/announcements/archive/${year}/${String(month).padStart(2, "0")}`}>
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .chip-list {
+    list-style: none;
+    display: flex;
+    gap: var(--space-2);
+    padding: 0;
+    margin: 0;
+  }
+
+  .chip--readonly {
+    border-color: transparent;
+    background: color-mix(in oklab, var(--color-surface) 85%, black 15%);
+  }
+
+  .archive-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .archive-list li {
+    min-width: 180px;
+  }
+</style>

@@ -1,0 +1,39 @@
+{
+  "updatedAt": "2026-02-11T12:00:00Z",
+  "subjectToChange": "Dates are subject to change; check back before making plans.",
+  "events": [
+    {
+      "title": "Spring prayer walk",
+      "start": "2026-03-14",
+      "summary": "A neighborhood prayer walk and potluck to bless nearby homes and welcome neighbors.",
+      "location": "Campus grounds + local streets",
+      "category": "community"
+    },
+    {
+      "title": "Easter worship celebration",
+      "start": "2026-04-05",
+      "end": "2026-04-05",
+      "summary": "One service at 10 AM with children’s choir, followed by a brunch in the fellowship hall.",
+      "location": "Main sanctuary",
+      "category": "worship"
+    },
+    {
+      "title": "Camp Meeting: Atlantic Union",
+      "start": "2026-06-19",
+      "end": "2026-06-27",
+      "summary": "Annual camp meeting with youth gatherings, evening worship, and ministry workshops at the Atlantic Union Conference grounds.",
+      "location": "Atlantic Union Conference grounds",
+      "category": "camp",
+      "highlight": true,
+      "closureNote": "Church campus closed on the Sabbaths (June 20 & 27) while staff and volunteers attend Camp Meeting.",
+      "notes": "Traveling groups depart Friday, June 19, and return Monday, June 29."
+    },
+    {
+      "title": "Back-to-school blessing",
+      "start": "2026-08-30",
+      "summary": "Blessing for students and educators before the fall semester begins, with resources for parents.",
+      "location": "Sanctuary",
+      "category": "community"
+    }
+  ]
+}

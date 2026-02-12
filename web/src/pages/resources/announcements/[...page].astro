@@ -1,0 +1,108 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import Button from "../../../../components/ui/Button.astro";
+import ContentCard from "../../../../components/content/ContentCard.astro";
+import { site } from "../../../../data/site";
+import { announcementTagLabels } from "../../../../data/announcement-tags";
+import {
+  announcementsPerPage,
+  getArchiveMonths,
+  getSortedAnnouncements,
+  paginateAnnouncements,
+} from "../../../../lib/announcements";
+
+const announcements = await getSortedAnnouncements();
+const segments = (Astro.params.page ?? []) as string[];
+const requestedPage = Number(segments[segments.length - 1] ?? 1);
+const totalPages = Math.max(1, Math.ceil(announcements.length / announcementsPerPage));
+const page = Math.min(Math.max(1, Number.isNaN(requestedPage) ? 1 : requestedPage), totalPages);
+const pagination = paginateAnnouncements(announcements, page);
+const metaFormatter = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "medium",
+  timeZone: site.timeZone,
+});
+const archiveMonths = getArchiveMonths(await getSortedAnnouncements({ includeExpired: true }));
+const showPrev = page > 1;
+const showNext = page < totalPages;
+const prevHref = page === 2 ? "/resources/announcements" : `/resources/announcements/page/${page - 1}`;
+const nextHref = `/resources/announcements/page/${page + 1}`;
+const hasAnnouncements = announcements.length > 0;
+const rangeStart = hasAnnouncements ? (page - 1) * announcementsPerPage + 1 : 0;
+const rangeEnd = hasAnnouncements ? Math.min(announcements.length, page * announcementsPerPage) : 0;
+const updatesUrl = "/updates";
+const rssUrl = "/resources/announcements/rss.xml";
+---
+
+<BaseLayout title={`Announcements · page ${page}`}>
+  <div class="stack">
+    <h1>Announcements · page {page}</h1>
+    <p class="muted">
+      {hasAnnouncements
+        ? `Showing ${rangeStart}–${rangeEnd} of ${announcements.length} announcements.`
+        : "No announcements have been published yet."}{" "}
+      <a class="link" href={rssUrl}>Subscribe via RSS</a>.
+    </p>
+
+    {pagination.results.length === 0 ? (
+      <p class="muted">No announcements published for this page.</p>
+    ) : (
+      <div class="grid--cards">
+        {pagination.results.map((entry) => (
+          <ContentCard
+            href={`/resources/announcements/${entry.id}`}
+            title={entry.data.title}
+            summary={entry.data.summary}
+            meta={metaFormatter.format(entry.data.date)}
+            tags={entry.data.tags?.map((value) => announcementTagLabels[value] ?? value)}
+          />
+        ))}
+      </div>
+    )}
+
+    <div class="cluster--between pagination">
+      {showPrev ? <Button href={prevHref} variant="ghost">Newer announcements</Button> : <span />}
+      {showNext ? <Button href={nextHref} variant="ghost">Older announcements</Button> : null}
+    </div>
+
+    <section class="card stack--tight">
+      <h2>Archive by month</h2>
+      {archiveMonths.length === 0 ? (
+        <p class="muted">No archived months yet.</p>
+      ) : (
+        <ul class="archive-list">
+          {archiveMonths.map(({ year, month, label }) => (
+            <li>
+              <a class="link" href={`/resources/announcements/archive/${year}/${String(month).padStart(2, "0")}`}>
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+
+    <div class="cluster">
+      <Button href="/resources/announcements" variant="secondary">Back to current announcements</Button>
+      <Button href={updatesUrl} variant="ghost">Visit updates page</Button>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .archive-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .archive-list li {
+    min-width: 180px;
+  }
+
+  .pagination {
+    margin-top: var(--space-4);
+  }
+</style>

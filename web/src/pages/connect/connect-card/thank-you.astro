@@ -1,0 +1,34 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Button from "../../../components/ui/Button.astro";
+import { site } from "../../../data/site";
+---
+
+<BaseLayout title="Thank you" description="Thank you for submitting a Connect Card. First Springfield SDA will reach out soon.">
+  <div class="stack thank-you">
+    <h1>Thank you for connecting</h1>
+    <p class="muted">
+      We received your Connect Card and a member of our team will follow up within a business day (or sooner if you asked).
+    </p>
+    <p class="muted">
+      If you need help right now, call us at <a href={`tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`}>{site.contact.phone}</a>
+      or email <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>.
+    </p>
+    <div class="button-row">
+      <Button href="/" variant="ghost">Return home</Button>
+      <Button href="/connect/contact" variant="secondary">Contact page</Button>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .thank-you {
+    max-width: 48rem;
+  }
+
+  .button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+</style>

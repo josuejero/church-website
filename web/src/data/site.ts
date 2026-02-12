@@ -1,5 +1,5 @@
 import siteLinks from "./site-links.json";
-import weekScheduleData from "./week-schedule.json";
+import { recurringActivities } from "./activities";
 
 export type NavItem = {
   label: string;
@@ -22,6 +22,8 @@ export type PortalLinks = {
   contactFormUrl: string;
   volunteerFormUrl: string;
   oldWebsiteUrl: string;
+  bulletinsUrl?: string;
+  announcementsUrl?: string;
 };
 
 export type TeamMember = {
@@ -77,8 +79,17 @@ const MISSION = {
 // Official portal links live in `site-links.json` so teams have a single editable file.
 const portals: PortalLinks = siteLinks as PortalLinks;
 
-// Weekly service times are defined in `week-schedule.json`.
-const weekSchedule: ScheduleItem[] = weekScheduleData as ScheduleItem[];
+const serviceSchedule: ScheduleItem[] = recurringActivities
+  .filter(
+    (activity) =>
+      activity.category === "service" &&
+      (activity.day || activity.time || activity.cadence)
+  )
+  .map((activity) => ({
+    label: activity.title,
+    day: activity.day ?? "",
+    time: activity.time ?? activity.cadence ?? "",
+  }));
 
 const leadershipTeam: TeamMember[] = [
   { role: "Pastor", name: PASTOR_NAME, email: PUBLIC_EMAIL },
@@ -107,6 +118,17 @@ const ministryLeads: TeamMember[] = [
 const hasVolunteerForm =
   portals.volunteerFormUrl && portals.volunteerFormUrl !== "TBD";
 const hasPrayerForm = portals.prayerFormUrl && portals.prayerFormUrl !== "TBD";
+const bulletinsLink =
+  portals.bulletinsUrl && portals.bulletinsUrl !== "TBD"
+    ? portals.bulletinsUrl
+    : "/resources/bulletins";
+const announcementsLink =
+  portals.announcementsUrl && portals.announcementsUrl !== "TBD"
+    ? portals.announcementsUrl
+    : "/resources/announcements";
+const prayerLink = hasPrayerForm ? portals.prayerFormUrl ?? "/connect/prayer" : "/connect/prayer";
+const volunteerLink = hasVolunteerForm ? portals.volunteerFormUrl ?? "/serve" : "/serve";
+const isExternalUrl = (href: string) => /^https?:\/\//.test(href);
 
 const contactTopics: ContactTopic[] = [
   {
@@ -156,6 +178,7 @@ const contactTopics: ContactTopic[] = [
 const nav: NavItem[] = [
   { label: "Visit", href: "/connect/plan-a-visit" },
   { label: "Contact", href: "/connect/contact" },
+  { label: "Connect Card", href: "/connect/connect-card" },
   { label: "About Us", href: "/connect/about" },
   { label: "Our Team", href: "/connect/team" },
   { label: "Ministries", href: "/ministries" },
@@ -167,10 +190,22 @@ const nav: NavItem[] = [
 const quickActions: NavItem[] = [
   { label: "Watch Live", href: "/media/live" },
   { label: "Give", href: "/give" },
-  { label: "Prayer Request", href: "/connect/prayer" },
-  { label: "Bulletins", href: "/resources/bulletins" },
-  { label: "Announcements", href: "/resources/announcements" },
-  { label: "Volunteer", href: "/serve" },
+  {
+    label: "Prayer Request",
+    href: prayerLink,
+    external: isExternalUrl(prayerLink),
+  },
+  { label: "Bulletins", href: bulletinsLink, external: isExternalUrl(bulletinsLink) },
+  {
+    label: "Announcements",
+    href: announcementsLink,
+    external: isExternalUrl(announcementsLink),
+  },
+  {
+    label: "Volunteer",
+    href: volunteerLink,
+    external: isExternalUrl(volunteerLink),
+  },
 ];
 
 // Social links used in the legacy footer component
@@ -228,7 +263,7 @@ export const site = {
     ],
   },
 
-  schedule: weekSchedule,
+  schedule: serviceSchedule,
   portals,
 
   nav,

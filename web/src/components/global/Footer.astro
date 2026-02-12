@@ -1,6 +1,8 @@
 ---
+import { Image } from "astro:assets";
 import { site } from "../../data/site";
 import { tel } from "../../lib/links";
+import churchLogo from "../../assets/photos/church-logo-primary.jpg";
 
 const year = new Date().getFullYear();
 const churchPhoneHref = tel(site.contact.phone);
@@ -26,19 +28,36 @@ const primaryLinks = [
   findNav("Contact")
 ].filter(isDefined);
 
-const secondaryNav = site.nav.filter((item) => !primaryNavLabels.includes(item.label));
+const footerNav = site.nav.filter(
+  (item) => !primaryNavLabels.includes(item.label) && item.label !== "Privacy"
+);
 const secondaryActions = site.quickActions.filter((item) => !primaryActionLabels.includes(item.label));
+const privacyNavItem = site.nav.find((item) => item.label === "Privacy");
+const privacyHref = privacyNavItem?.href ?? "/privacy";
+const accessibilityHref = "/accessibility";
 ---
 
 <footer class="site-footer">
   <div class="inner">
     <div class="left">
-      <strong>{site.name}</strong>
-
-      <div class="muted">
-        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">
-          {site.contact.address}
-        </a>
+      <div class="footer-brand">
+        <Image
+          src={churchLogo}
+          alt={`${site.name} logo`}
+          widths={[48, 64, 80]}
+          sizes="48px"
+          loading="lazy"
+          decoding="async"
+          class="footer-brand__logo"
+        />
+        <div>
+          <strong>{site.name}</strong>
+          <div class="muted footer-brand__address">
+            <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">
+              {site.contact.address}
+            </a>
+          </div>
+        </div>
       </div>
 
       {hasMailing ? (
@@ -81,11 +100,15 @@ const secondaryActions = site.quickActions.filter((item) => !primaryActionLabels
       <div class="col">
         <div class="col-title">Explore</div>
         <div class="col-body links">
-          {secondaryNav.map((item) => (
+          {footerNav.map((item) => (
             <a href={item.href} {...linkAttrs(item)}>
               {item.label}
             </a>
           ))}
+        </div>
+        <div class="footer-policy-links">
+          <a href={privacyHref}>Privacy</a>
+          <a href={accessibilityHref}>Accessibility</a>
         </div>
       </div>
 
@@ -133,6 +156,23 @@ const secondaryActions = site.quickActions.filter((item) => !primaryActionLabels
   .site-footer {
     border-top: 1px solid var(--color-border);
     background: var(--color-white);
+  }
+
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .footer-brand__logo {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-3);
+    object-fit: contain;
+  }
+
+  .footer-brand__address {
+    margin-top: var(--space-1);
   }
 
   .inner {
@@ -218,6 +258,13 @@ const secondaryActions = site.quickActions.filter((item) => !primaryActionLabels
   .links a:hover {
     opacity: 1;
     text-decoration: underline;
+  }
+
+  .footer-policy-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-1);
   }
 
   @media (max-width: 520px) {
