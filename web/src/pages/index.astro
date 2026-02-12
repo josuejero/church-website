@@ -15,6 +15,44 @@ import bridgeDusk from "../assets/photos/bridge-dusk.jpg";
 import churchLogo from "../assets/photos/church-logo-primary.jpg";
 import { prayerMeetingDetails } from "../data/activities";
 import Button from "../components/ui/Button.astro";
+const ministryCards = [
+  {
+    title: "Children’s Ministry",
+    description:
+      "Storytelling, worship, choir, and family-focused programs that welcome every child and invite them to grow in Jesus.",
+    href: "/ministries/children"
+  },
+  {
+    title: "Pathfinders & Adventurers",
+    description:
+      "Two vibrant clubs filled with faith, service, and outdoor adventures for children and youth ready to discover purpose together.",
+    href: "/ministries/pathfinders"
+  },
+  {
+    title: "Adventist Community Services (ACS)",
+    description:
+      "Compassionate care, monthly meals, and community outreach that meet the whole person in Springfield and beyond.",
+    href: "/ministries/adventist-community-services"
+  },
+  {
+    title: "Music Ministry",
+    description:
+      "Choirs, praise teams, and instrumental ensembles that lead our worship with heartfelt, multicultural music.",
+    href: "/ministries/music-ministry"
+  },
+  {
+    title: "Social Ministry",
+    description:
+      "Hospitality, fellowship meals, and celebration events that help members and neighbors build deeper relationships.",
+    href: "/ministries/social-ministry"
+  },
+  {
+    title: "Sabbath School",
+    description:
+      "Classes for every age, grounded in Bible study and conversation—our final tile celebrates intentional discipleship each Sabbath.",
+    href: "/ministries/sabbath-school"
+  }
+];
 ---
 
 <BaseLayout title={site.name} description={site.description}>
@@ -51,6 +89,11 @@ import Button from "../components/ui/Button.astro";
 
   <PrayerMeetingCallout meeting={prayerMeetingDetails} />
   <HighlightsScroller />
+  <CardGrid
+    title="Ministries"
+    subtitle="Find a place to serve, grow, and celebrate with your church family."
+    cards={ministryCards}
+  />
   <section class="home-budget">
     <BudgetProgress />
   </section>

@@ -2,9 +2,40 @@
 
 ### What’s live
 
-- `web/src/pages/connect/connect-card/index.astro` renders the form and posts to a configurable endpoint.
+- `web/src/pages/connect/connect-card/index.astro` renders the Connect Card, complete with the photo gallery, gallery captions, and the refreshed specification described below.
 - `web/src/pages/connect/connect-card/thank-you.astro` is the post-submit landing page.
 - Header navigation and the hero banner now highlight the new page.
+
+### Connect Card spec
+
+- **This is your church family** – a 3–6 image gallery near the top of the page shows worship, fellowship, service, and welcome moments so visitors see the mix of people and gatherings before they hit the form.
+- **Required fields & flow** – the Connect Card is intentionally narrower than a generic contact form: email is optional, phone, a preferred visit date, the “Visited before?” radio, and a structured address block are all required so the hospitality team can respond with confidence.
+- **Interest list** – the checkbox set now matches the canonical list: Worship service or Sabbath School; Fellowship classes & small groups; Children, youth, or family ministry; Volunteer & outreach opportunities; Using our facility for a gathering; Prayer, pastoral care, or counseling. At least one option must be selected, and the hidden `address` input (supported by the client-side address summary script) ensures the data schema stays compatible with the Google Sheet columns below.
+- **Deliverability / spam handling** – Cloudflare Turnstile remains on the form, but every submission is verified server-side (see the Apps Script snippet below). Do not write to the sheet until `cf-turnstile-response` is validated.
+
+### Field & data mapping
+
+| Field | Input name | Notes |
+| --- | --- | --- |
+| Full Name | `fullName` | Required |
+| Email | `email` | Optional |
+| Phone | `phone` | Required so we can follow up when email bounces |
+| Preferred visit date | `visitDate` | Required to plan hospitality |
+| Visited before? | `visitedBefore` | Required radio (yes/no) |
+| Street address | `addressStreet` | Required |
+| Address line 2 | `addressLine2` | Optional (apt, suite, etc.) |
+| City | `addressCity` | Required |
+| State | `addressState` | Required |
+| ZIP | `addressZip` | Required |
+| Address (formatted) | `address` | Hidden input populated by the client-side script |
+| Reason for connecting | `connectionReason` | Required |
+| Interests | `interests[]` | Required checkbox set (select at least one from the canonical list) |
+| Preferred follow-up | `preferredContact` | Required |
+| Notes | `notes` | Optional free text |
+| Redirect URL | `redirectUrl` | Defaults to `/connect/connect-card/thank-you` |
+| Source | `formSource` | `connect-card-web` (static form identifier) |
+
+The front-end script also ensures at least one `interests[]` checkbox is checked before submission and keeps the hidden `address` field in sync with the structured address inputs.
 
 ### Option A: Google Sheet + Web App (static-friendly, recommended)
 
@@ -15,13 +46,22 @@
    | `Full Name` | `fullName` |
    | `Email` | `email` |
    | `Phone` | `phone` |
-   | `Address` | `address` |
+   | `Preferred visit date` | `visitDate` |
+   | `Visited before?` | `visitedBefore` |
+   | `Street address` | `addressStreet` |
+   | `Address line 2` | `addressLine2` |
+   | `City` | `addressCity` |
+   | `State` | `addressState` |
+   | `ZIP` | `addressZip` |
+   | `Address line (formatted)` | `address` |
    | `Reason` | `connectionReason` |
    | `Interests` | `interests` (comma-separated, from checkboxes) |
    | `Preferred Contact` | `preferredContact` |
    | `Notes` | `notes` |
    | `Source` | `formSource` |
    | `Submitted At` | you can add a timestamp column |
+
+   The form script constructs the `address` column from the street/city/state/ZIP parts so you can use the formatted version in mailings while still keeping the discrete parts for logistics.
 
 2. Open **Extensions > Apps Script**:
 
@@ -44,6 +84,13 @@
        e.parameter.fullName,
        e.parameter.email,
        e.parameter.phone,
+       e.parameter.visitDate,
+       e.parameter.visitedBefore,
+       e.parameter.addressStreet,
+       e.parameter.addressLine2,
+       e.parameter.addressCity,
+       e.parameter.addressState,
+       e.parameter.addressZip,
        e.parameter.address,
        e.parameter.connectionReason,
        (Array.isArray(e.parameter.interests) ? e.parameter.interests : [e.parameter.interests])

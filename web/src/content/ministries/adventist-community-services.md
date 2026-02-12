@@ -10,7 +10,19 @@ tags: ["community", "outreach", "service", "holistic ministry"]
 
 ## Adventist Community Services (ACS)
 
-“Team: Brenda St George, Belinda Behnava, Donald Moore, Gabriele Moore, Carolyn Mutcherson, Pastor Abankwa Amoakohene”
+## Team
+
+Our Adventist Community Services ministry is led by a dedicated team of volunteers from First Springfield.
+
+- Brenda St George
+- Belinda Behnava
+- Donald Moore
+- Gabriele Moore
+- Carolyn Mutcherson
+- Ray Mutcherson
+- Pastor Abankwa Amoakohene
+
+Pastor Abankwa Amoakohene provides pastoral support and advocacy as the team serves the community.
 
 “At First Springfield Seventh-day Adventist Church, our mission is to humbly and lovingly serve the residents of the Pioneer Valley, the City of Springfield, and surrounding cities and towns. We seek to share the message of Jesus in tangible and meaningful ways by serving the whole person, a Christ-centered approach known as holistic ministry.”
 

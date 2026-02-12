@@ -21,12 +21,12 @@ Meeting Time: First and Third Sabbath of each month, from 3:00 PM – 5:00 PM.
 We proudly display both club insignias so families can recognize the young people’s ministry that speaks to them.
 
 <figure>
-  <img src="../../assets/ministries/pathfinders/adventurers-logo.svg" alt="Adventurers Club badge" width="220" loading="lazy" />
+  <img src="../../assets/photos/club-adventurers-logo.png" alt="Adventurers Club badge" width="220" loading="lazy" />
   <figcaption>Adventurers Club (ages 4–9)</figcaption>
 </figure>
 
 <figure>
-  <img src="../../assets/ministries/pathfinders/pathfinders-logo.svg" alt="Pathfinders Club badge" width="220" loading="lazy" />
+  <img src="../../assets/photos/club-pathfinders-logo.png" alt="Pathfinders Club badge" width="220" loading="lazy" />
   <figcaption>Pathfinders Club (ages 10–15)</figcaption>
 </figure>
 

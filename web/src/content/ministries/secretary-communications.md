@@ -12,7 +12,7 @@ tags: ["communications", "administration", "office"]
 
 Church Clerk: Myrna L Leiper
 
-Assistance Bulletin Secretary: Loreli Gaetki
+Assistant Bulletin Secretary: Loreli Gaetki
 
 This team keeps office records straight, shepherds member communication, and stewards the weekly bulletin that links congregants to worship plans, volunteer needs, and outreach invites. We coordinate with pastors, ministry leads, and volunteers so every voice is represented in print and online.
 

@@ -4,9 +4,9 @@ date: 2026-02-07
 tags:
   - events
   - volunteers
-summary: "Celebrate new Pathfinders, share a short ceremony, and lend a hand with hospitality as we launch the 2026 season."
+summary: "Pathfinder induction happens during the Divine Service on Sabbath, Feb 7, as we welcome 2026 Pathfinders."
 featured: true
 ---
-Join the Pathfinders & Adventurers Club for our induction ceremony and spring kickoff on Friday, February 7, at 6:30 PM in the fellowship hall. We'll recognize new members, share a brief devotion, and close with fellowship snacks so families can meet the leaders before the upcoming camping season.
+Join the Pathfinders & Adventurers Club for its 2026 induction ceremony during the Divine Service on Sabbath, February 7. We will pause the main worship midway through the service to officially welcome new Pathfinders, celebrate the leaders, and bless the year of camping, community service, and spiritual growth ahead.
 
-Volunteers are especially welcome to serve as greeters, prep the refreshment tables, and help with badge ribboning. If you can lend a hand, reply to <firstspringfieldsda@gmail.com> by Wednesday, February 5, so we can coordinate setup and childcare for the youngest guests.
+Volunteers are especially welcome to help with hospitality, coordinating the ceremony, and keeping the children's corner calm so families can stay focused on fellowship. Reply to <firstspringfieldsda@gmail.com> by Wednesday, February 5, with the roles you can cover, and we will follow up about greeter assignments and refreshments for the reception that follows.

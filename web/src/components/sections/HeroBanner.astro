@@ -44,21 +44,20 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
   </div>
 
   <div class="heroBanner__content">
-    <div class="heroBanner__container">
-      <HeroUI {...heroProps} className="hero-card">
-        {hasMetaSlot ? <slot name="meta" slot="meta" /> : null}
-      </HeroUI>
-    </div>
+    <HeroUI {...heroProps} className="hero-card">
+      {hasMetaSlot ? <slot name="meta" slot="meta" /> : null}
+    </HeroUI>
   </div>
 </section>
 
 <style>
   .heroBanner {
     position: relative;
-    padding: var(--space-12) 0;
+    min-height: clamp(62vh, 70vh, 80vh);
     border-bottom: 1px solid var(--color-border);
     overflow: hidden;
-    --hero-content-offset: clamp(var(--space-4), 3vw, var(--space-6));
+    --hero-content-offset-x: clamp(var(--space-4), 3vw, var(--space-7));
+    --hero-content-offset-y: clamp(var(--space-5), 5vw, var(--space-7));
   }
 
   .heroBanner__media {
@@ -90,13 +89,9 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
     z-index: 1;
     display: flex;
     justify-content: flex-start;
-  }
-
-  /* Match BaseLayout container sizing without nesting issues */
-  .heroBanner__container {
-    width: min(var(--container-max), calc(100% - var(--hero-content-offset)));
-    margin: 0;
-    padding-left: var(--hero-content-offset);
+    align-items: flex-start;
+    width: 100%;
+    padding: var(--hero-content-offset-y) 0 0 var(--hero-content-offset-x);
   }
 
   /* Keep the existing “card” look, but make it sit nicely on the photo */
@@ -104,12 +99,15 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(10px);
     border-color: rgba(255, 255, 255, 0.35);
+    max-width: min(440px, 100%);
+    padding: clamp(1rem, 0.9rem + 0.3vw, 1.25rem);
   }
 
   @media (max-width: 720px) {
     .heroBanner {
-      padding: var(--space-8) 0;
-      --hero-content-offset: var(--space-4);
+      min-height: 55vh;
+      --hero-content-offset-x: var(--space-4);
+      --hero-content-offset-y: var(--space-4);
       --hero-object-position: 50% 50%;
     }
   }

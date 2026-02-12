@@ -1,18 +1,62 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
+import churchExterior from "../../../assets/photos/first-springfield-exterior.png";
+import bridgeDusk from "../../../assets/photos/bridge-dusk.jpg";
 
 const formAction = import.meta.env.PUBLIC_CONNECT_CARD_FORM_ACTION ?? "";
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
 const pageOrigin = Astro.url?.origin;
 const thankYouPath = "/connect/connect-card/thank-you";
 const thankYouUrl = pageOrigin ? `${pageOrigin}${thankYouPath}` : thankYouPath;
-const interestOptions = [
-  { value: "plan-a-visit", label: "Plan a visit" },
-  { value: "service-info", label: "Worship or Sabbath School details" },
-  { value: "ministry", label: "Connect with a ministry" },
-  { value: "volunteer", label: "Volunteer opportunities" },
-  { value: "bible-study", label: "Bible study / small group" },
+
+const galleryPhotos = [
+  {
+    src: bridgeDusk,
+    alt: "Evening light on the bridge that leads toward our campus.",
+    caption: "Neighborhood welcomes before you even cross the bridge.",
+    tag: "Community",
+  },
+  {
+    src: churchExterior,
+    alt: "First Springfield SDA Church building and welcome sign.",
+    caption: "Our sanctuary is open for worship, fellowship, and hospitality.",
+    tag: "Welcome",
+  },
+  {
+    src: "https://source.unsplash.com/1200x900/?church,worship",
+    alt: "Community gathered for worship inside a sanctuary.",
+    caption: "Sabbath worship as a shared, joyful rhythm.",
+    tag: "Worship",
+  },
+  {
+    src: "https://source.unsplash.com/1200x900/?church,fellowship",
+    alt: "Friends sharing conversation and coffee after service.",
+    caption: "Fellowship over a warm drink and good news.",
+    tag: "Fellowship",
+  },
+  {
+    src: "https://source.unsplash.com/1200x900/?community-service",
+    alt: "Volunteers working together to serve their neighbors.",
+    caption: "Service projects that show love in action.",
+    tag: "Service",
+  },
+  {
+    src: "https://source.unsplash.com/1200x900/?church,children",
+    alt: "Children and leaders collaborating during a ministry activity.",
+    caption: "Kids, youth, and family ministries that celebrate every age.",
+    tag: "Family",
+  },
 ];
+
+const interestOptions = [
+  { value: "worship-service", label: "Worship service or Sabbath School" },
+  { value: "fellowship-groups", label: "Fellowship classes & small groups" },
+  { value: "children-family", label: "Children, youth, or family ministry" },
+  { value: "volunteer-service", label: "Volunteer & outreach opportunities" },
+  { value: "facility-use", label: "Using our facility for a gathering" },
+  { value: "prayer-care", label: "Prayer, pastoral care, or counseling" },
+];
+
 const connectionReasons = [
   { value: "first-time-visit", label: "I am planning my first visit" },
   { value: "moving-to-town", label: "We just moved to the area" },
@@ -20,11 +64,14 @@ const connectionReasons = [
   { value: "questions", label: "I have a question about the church" },
   { value: "other", label: "Other" },
 ];
+
 const preferredContactOptions = [
   { value: "email", label: "Email (fastest)" },
   { value: "phone", label: "Phone call or text" },
 ];
+
 const interestsId = (value: string) => `interest-${value}`;
+const interestValidationMessage = "Select at least one interest so we can best support you.";
 ---
 
 <BaseLayout
@@ -37,16 +84,37 @@ const interestsId = (value: string) => `interest-${value}`;
     <div class="connect-card__intro">
       <h1>Connect Card</h1>
       <p id="connect-card-summary" class="muted">
-        Share a little about yourself and how we can follow up. We’ll ask for your preferred contact method and
-        keep your information private unless you say otherwise.
+        Tell us about your visit window, how we can pray for you, and which ministries you’d like to explore.
+        We’ll ask for your preferred follow-up method and keep your information private unless you say otherwise.
       </p>
       {!formAction ? (
         <div class="connect-card__warning" role="status">
-          <strong>Form not configured yet.</strong> Set <code>PUBLIC_CONNECT_CARD_FORM_ACTION</code> to your Google Apps Script
-          Web App URL before publishing.
+          <strong>Form not configured yet.</strong> Set <code>PUBLIC_CONNECT_CARD_FORM_ACTION</code> to your
+          Google Apps Script Web App URL before publishing.
         </div>
       ) : null}
     </div>
+
+    <section class="connect-card__gallery" aria-labelledby="connect-card-gallery-title">
+      <div class="connect-card__gallery-head">
+        <p class="muted small">This is your church family</p>
+        <h2 id="connect-card-gallery-title">This is your church family</h2>
+        <p class="muted">
+          Worship, fellowship, and service all intersect in the people you’ll meet when you visit First Springfield.
+        </p>
+      </div>
+      <div class="connect-card__gallery-grid">
+        {galleryPhotos.map((photo) => (
+          <figure class="connect-card__photo">
+            <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
+            <figcaption>
+              <span class="connect-card__photo-tag">{photo.tag}</span>
+              <p>{photo.caption}</p>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
 
     <form
       class="connect-card__form"
@@ -64,34 +132,113 @@ const interestsId = (value: string) => `interest-${value}`;
         </div>
 
         <div class="form-field">
-          <label for="email">
-            Email <span class="required" aria-hidden="true">*</span>
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            autocomplete="email"
-            placeholder="name@example.com"
-          />
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="name@example.com" />
         </div>
 
         <div class="form-field">
           <label for="phone">
-            Phone
+            Phone <span class="required" aria-hidden="true">*</span>
             <span class="form-helper">Calls/texts help us respond if email bounces.</span>
           </label>
-          <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="(123) 456‑7890" />
+          <input id="phone" name="phone" type="tel" required autocomplete="tel" placeholder="(123) 456‑7890" />
         </div>
 
         <div class="form-field">
-          <label for="address">
-            Address
-            <span class="form-helper">Optional—useful when mailing resources or planning a visit.</span>
+          <label for="visit-date">
+            Preferred visit date <span class="required" aria-hidden="true">*</span>
+            <span class="form-helper">Let us know when you hope to visit so we can plan hospitality.</span>
           </label>
-          <textarea id="address" name="address" rows="2" placeholder="123 Main St, Springfield, MA"></textarea>
+          <input id="visit-date" name="visitDate" type="date" required />
         </div>
+      </div>
+
+      <div class="form-section connect-card__visited">
+        <fieldset>
+          <legend>Have you visited First Springfield before?</legend>
+          <p class="form-helper">Knowing your familiarity helps us tailor your welcome.</p>
+          <div class="radio-group">
+            <label class="radio" for="visited-before-yes">
+              <input id="visited-before-yes" name="visitedBefore" type="radio" value="yes" required />
+              <span>Yes</span>
+            </label>
+            <label class="radio" for="visited-before-no">
+              <input id="visited-before-no" name="visitedBefore" type="radio" value="no" required />
+              <span>No</span>
+            </label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="form-section connect-card__address">
+        <div class="connect-card__section-heading">
+          <p class="form-label">
+            Address <span class="required" aria-hidden="true">*</span>
+          </p>
+          <span class="form-helper">Needed for arrival info, mailings, or hospitality follow-up.</span>
+        </div>
+        <div class="address-grid">
+          <div class="form-field">
+            <label for="address-street">Street address <span class="required" aria-hidden="true">*</span></label>
+            <input
+              id="address-street"
+              data-address-part
+              name="addressStreet"
+              type="text"
+              required
+              placeholder="123 Main St"
+              autocomplete="address-line1"
+            />
+          </div>
+          <div class="form-field form-field--wide">
+            <label for="address-line2">Line 2 (apt, suite, etc.)</label>
+            <input
+              id="address-line2"
+              data-address-part
+              name="addressLine2"
+              type="text"
+              placeholder="Suite 4"
+              autocomplete="address-line2"
+            />
+          </div>
+          <div class="form-field">
+            <label for="address-city">City <span class="required" aria-hidden="true">*</span></label>
+            <input
+              id="address-city"
+              data-address-part
+              name="addressCity"
+              type="text"
+              required
+              placeholder="Springfield"
+              autocomplete="address-level2"
+            />
+          </div>
+          <div class="form-field">
+            <label for="address-state">State <span class="required" aria-hidden="true">*</span></label>
+            <input
+              id="address-state"
+              data-address-part
+              name="addressState"
+              type="text"
+              required
+              placeholder="MA"
+              autocomplete="address-level1"
+            />
+          </div>
+          <div class="form-field">
+            <label for="address-zip">ZIP code <span class="required" aria-hidden="true">*</span></label>
+            <input
+              id="address-zip"
+              data-address-part
+              name="addressZip"
+              type="text"
+              required
+              placeholder="01118"
+              autocomplete="postal-code"
+            />
+          </div>
+        </div>
+        <input type="hidden" id="address-summary" name="address" required />
       </div>
 
       <div class="form-section">
@@ -104,9 +251,13 @@ const interestsId = (value: string) => `interest-${value}`;
         </select>
       </div>
 
-      <div class="form-section">
-        <p class="form-label">I’d like the team to follow up about:</p>
-        <div class="checkbox-grid">
+      <div class="form-section connect-card__interests">
+        <p id="interests-label" class="form-label">
+          I’d like the team to follow up about:
+          <span class="required" aria-hidden="true">*</span>
+        </p>
+        <p class="form-helper">Choose all that apply so we can match you with the right team.</p>
+        <div class="checkbox-grid" role="group" aria-labelledby="interests-label">
           {interestOptions.map((item) => (
             <label class="checkbox" for={interestsId(item.value)}>
               <input id={interestsId(item.value)} name="interests[]" value={item.value} type="checkbox" />
@@ -151,8 +302,9 @@ const interestsId = (value: string) => `interest-${value}`;
       </div>
 
       <p class="privacy-note small muted">
-        Privacy note: We ask for phone or address so the pastor or hospitality team can follow up personally and send you
-        relevant arrival details. We do not share your information outside the church family without permission.
+        Privacy note: We ask for phone, visit details, and address so the pastor, hospitality, or children’s team can respond
+        with arrival information, ministry invitations, or resources you request. We will not share personal data outside the house
+        of worship without permission.
       </p>
 
       <div class="form-actions">
@@ -165,19 +317,106 @@ const interestsId = (value: string) => `interest-${value}`;
   </div>
 </BaseLayout>
 
+<script is:inline>
+(() => {
+  const init = () => {
+    const form = document.querySelector(".connect-card__form");
+    if (!form) return;
+
+    const addressInputs = Array.from(form.querySelectorAll("[data-address-part]"));
+    const addressSummary = form.querySelector("#address-summary");
+
+    const updateAddressSummary = () => {
+      if (!addressSummary) return;
+      const parts = addressInputs.map((input) => input.value.trim()).filter(Boolean);
+      addressSummary.value = parts.join(", ");
+    };
+
+    addressInputs.forEach((input) => input.addEventListener("input", updateAddressSummary));
+    updateAddressSummary();
+
+    const interestInputs = Array.from(form.querySelectorAll('input[name="interests[]"]'));
+    if (interestInputs.length) {
+      const interestErrorMessage = ${JSON.stringify(interestValidationMessage)};
+      const clearValidity = () => interestInputs[0].setCustomValidity("");
+
+      interestInputs.forEach((input) => input.addEventListener("change", clearValidity));
+
+      form.addEventListener("submit", (event) => {
+        const hasAny = interestInputs.some((input) => input.checked);
+        if (!hasAny) {
+          interestInputs[0].setCustomValidity(interestErrorMessage);
+          if (typeof form.reportValidity === "function") {
+            form.reportValidity();
+          }
+          event.preventDefault();
+        }
+      });
+    }
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+
 <style>
   .connect-card {
     max-width: 52rem;
   }
 
-  .connect-card__intro + .connect-card__form {
+  .connect-card__intro + .connect-card__gallery,
+  .connect-card__gallery + .connect-card__form {
     margin-top: var(--space-6);
   }
 
-  .connect-card__warning {
-    border-left: 4px solid var(--color-primary);
-    padding: var(--space-3);
+  .connect-card__gallery {
     background: var(--color-surface-2);
+    border-radius: var(--radius-3);
+    padding: var(--space-4) var(--space-5);
+    border: 1px solid var(--color-border);
+  }
+
+  .connect-card__gallery-head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+
+  .connect-card__gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-3);
+  }
+
+  .connect-card__photo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .connect-card__photo img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: var(--radius-2);
+    display: block;
+  }
+
+  .connect-card__photo-tag {
+    text-transform: uppercase;
+    font-size: var(--font-size-0);
+    color: var(--color-primary);
+    letter-spacing: 0.08em;
+  }
+
+  .connect-card__photo figcaption p {
+    margin: 0;
   }
 
   .connect-card__form {
@@ -191,10 +430,14 @@ const interestsId = (value: string) => `interest-${value}`;
     gap: var(--space-4);
   }
 
-  .connect-card__form .form-field {
+  .form-field {
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
+  }
+
+  .form-field--wide {
+    grid-column: span 2;
   }
 
   .connect-card__form label {
@@ -228,45 +471,96 @@ const interestsId = (value: string) => `interest-${value}`;
     font-weight: 400;
   }
 
-  .connect-card__form .form-section {
+  .form-section {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
   }
 
-  .connect-card__form .checkbox-grid {
-    display: grid;
-    gap: var(--space-2);
+  .connect-card__visited fieldset {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    padding: var(--space-3);
+    margin: 0;
   }
 
-  .connect-card__form .checkbox {
+  .connect-card__visited legend {
+    font-weight: 700;
+  }
+
+  .radio-group {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .radio {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .radio input {
+    margin: 0;
+    accent-color: var(--color-primary);
+  }
+
+  .connect-card__address {
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-3);
+    padding: var(--space-4);
+    background: var(--color-surface);
+  }
+
+  .connect-card__section-heading {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .address-grid {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+
+  .connect-card__interests .checkbox-grid {
+    display: grid;
+    gap: var(--space-2);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .checkbox {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
     font-weight: 500;
     font-size: 0.95rem;
+    cursor: pointer;
   }
 
-  .connect-card__form .checkbox input {
+  .checkbox input {
     margin: 0;
     accent-color: var(--color-primary);
   }
 
-  .connect-card__form .turnstile {
+  .turnstile {
     padding: var(--space-3);
     border: 1px dashed var(--color-border);
     border-radius: var(--radius-2);
     background: var(--color-surface-2);
   }
 
-  .connect-card__form .form-actions {
+  .form-actions {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-3);
     align-items: center;
   }
 
-  .connect-card__form .primary-action {
+  .primary-action {
     background: var(--color-primary);
     color: var(--color-white);
     border: none;
@@ -276,7 +570,7 @@ const interestsId = (value: string) => `interest-${value}`;
     cursor: pointer;
   }
 
-  .connect-card__form .ghost-action {
+  .ghost-action {
     color: var(--color-primary);
     font-weight: 600;
     text-decoration: underline;

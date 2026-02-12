@@ -20,23 +20,24 @@ const weeklyHighlights: WeeklyHighlight[] = [
   },
   {
     activityId: "nar-anon",
-    text: "Nar-Anon · Mondays at 7:00 PM in the fellowship hall",
+    text: "Nar-Anon · Thursdays at 7:00 PM – 8:30 PM in the Mother’s room",
     badge: "Support",
   },
   {
     activityId: "table-talk",
-    text: "Table Talk · Friday small groups over supper",
+    text: "Table Talk · Second Sabbath of every month · Youth conversations after worship",
     badge: "Table Talk",
+    href: "/ministries/youth-young-adults",
   },
   {
     activityId: "pathfinders",
-    text: "Pathfinders & Adventurers · 1st & 3rd Sabbaths bring youth together",
+    text: "Pathfinders & Adventurers · 1st & 3rd Sabbaths · 3:00 PM – 5:00 PM",
     href: "/ministries/pathfinders",
   },
   {
-    activityId: "mens-ministry",
-    text: "Men's group · Fridays at 7:00 PM · Fellowship & discussion",
-    href: "/ministries/mens-ministry",
+    activityId: "mens-fellowship",
+    text: "Men's Fellowship · Fridays at 7:00 PM for Bible study, prayer, and brotherhood",
+    badge: "Men's Fellowship",
   },
   {
     activityId: "bible-study",
