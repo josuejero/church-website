@@ -36,7 +36,7 @@ const weeklyHighlights: WeeklyHighlight[] = [
   },
   {
     activityId: "mens-fellowship",
-    text: "Men's Fellowship · Fridays at 7:00 PM for Bible study, prayer, and brotherhood",
+    text: "Men's Fellowship · Fridays at 7:00 PM in the church annex for Bible study, prayer, and brotherhood",
     badge: "Men's Fellowship",
   },
   {

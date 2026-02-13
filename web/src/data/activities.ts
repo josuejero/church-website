@@ -85,13 +85,13 @@ export const recurringActivities: RecurringActivity[] = [
     category: "event",
   },
   {
-    id: "mens-ministry",
-    title: "Men's ministry",
-    cadence: "Weekly Friday fellowship",
+    id: "mens-fellowship",
+    title: "Men's fellowship",
+    cadence: "Fridays · 7:00 PM",
+    day: "Friday",
     time: "7:00 PM",
-    link: "/ministries/mens-ministry",
-    note: "Public",
-    category: "ministry",
+    note: "Bible study, prayer, and brotherhood",
+    category: "service",
   },
   {
     id: "womens-ministry",
@@ -132,13 +132,16 @@ export type PrayerMeetingDetails = {
   passcode: string;
 };
 
+const PRAYER_MEETING_ZOOM_URL =
+  import.meta.env.PUBLIC_PRAYER_MEETING_ZOOM_URL ??
+  "https://us02web.zoom.us/j/87430121210?pwd=QVNCRUlXcDdtU2dUSUdrbFdVdDlMUT09";
+
 export const prayerMeetingDetails: PrayerMeetingDetails = {
   title: "Midweek Prayer Meeting",
   day: "Wednesday",
   time: "7:00 PM",
   location: "Church annex",
-  zoomUrl:
-    "https://us02web.zoom.us/j/87430121210?pwd=QVNCRUlXcDdtU2dUSUdrbFdVdDlMUT09",
+  zoomUrl: PRAYER_MEETING_ZOOM_URL,
   dialIn: "(646) 558-8656",
   meetingId: "874 3012 1210",
   passcode: "487844",

@@ -91,62 +91,77 @@ const serviceSchedule: ScheduleItem[] = recurringActivities
     time: activity.time ?? activity.cadence ?? "",
   }));
 
-const leadershipTeam: TeamMember[] = [
-  { role: "Pastor", name: PASTOR_NAME, email: PUBLIC_EMAIL },
-  { role: "Head Elder", name: "Elder Trevor Crossfield", email: PUBLIC_EMAIL },
-  { role: "Head Deacon", name: "Church Office", email: PUBLIC_EMAIL },
-  { role: "Head Deaconess", name: "Melinda Lajoie", email: PUBLIC_EMAIL },
-  { role: "Church Clerk", name: "Myrna L Leiper", email: PUBLIC_EMAIL },
-  { role: "Assistant Bulletin Secretary", name: "Loreli Gaetki", email: PUBLIC_EMAIL },
-  { role: "Sabbath School Superintendent", name: "Elder Paul Moulema", email: PUBLIC_EMAIL },
-  { role: "Stewardship", name: "Dan Hayes", email: PUBLIC_EMAIL },
-  { role: "Communications", name: "Belinda Behnava · David McKenzie", email: PUBLIC_EMAIL },
-  { role: "Audiovisual", name: "Josue Marrero", email: PUBLIC_EMAIL },
-  { role: "Music Director", name: "Berline Guirand", email: PUBLIC_EMAIL },
-  { role: "Health Ministry", name: "Gary Peiffer", email: PUBLIC_EMAIL },
-  { role: "Prayer Ministry", name: "Bernice McKenzie", email: PUBLIC_EMAIL },
-  { role: "Social Committee", name: "Teddy Williamson", email: PUBLIC_EMAIL },
-  { role: "Treasurer", name: "Church Office", email: PUBLIC_EMAIL },
-];
+type TeamSection = "leadership" | "ministries";
 
-const ministryLeads: TeamMember[] = [
+type RosterMember = TeamMember & { section: TeamSection };
+
+const teamRoster: RosterMember[] = [
+  { role: "Pastor", name: PASTOR_NAME, email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Head Elder", name: "Elder Paul Moulema", email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Head Deacon", name: "Elder Trevor Crossfield", email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Head Deaconess", name: "Belinda Behnava", email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Church Clerk", name: "Myrna L Leiper", email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Assistant Bulletin Secretary", name: "Loreli Gaetki", email: PUBLIC_EMAIL, section: "leadership" },
+  {
+    role: "Sabbath School Superintendent",
+    name: "Elder Paul Moulema",
+    email: PUBLIC_EMAIL,
+    section: "leadership",
+  },
+  { role: "Stewardship", name: "Melinda Lajoie", email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Treasurer", name: "Dan Hayes", email: PUBLIC_EMAIL, section: "leadership" },
   {
     role: "Children’s Ministry",
     name: "Giselle Davey",
     email: PUBLIC_EMAIL,
+    section: "ministries",
   },
   {
     role: "Youth & Young Adults Ministry",
-    name: "Anthia Elliott (AY Director) · Yolann Guirand (AY Assistance Director)",
+    name: "Anthia Elliott (AY Director) · Yolann Guirand (AY Assistant Director)",
     email: PUBLIC_EMAIL,
+    section: "ministries",
   },
   {
     role: "Women’s Ministry",
     name: "Yejide Bell · Ada Durand · Maxine Griffiths · Sharon Luszcz",
     email: PUBLIC_EMAIL,
+    section: "ministries",
   },
-  { role: "Men’s Ministry", name: "Men’s Ministry Team", email: PUBLIC_EMAIL },
   {
     role: "Adventist Community Services (ACS)",
     name: "Brenda St George · Belinda Behnava · Donald Moore · Gabriele Moore · Carolyn Mutcherson · Pastor Abankwa Amoakohene",
     email: PUBLIC_EMAIL,
+    section: "ministries",
   },
-  { role: "Pathfinders & Adventurers", name: "Daunette Lemard-Reid", email: PUBLIC_EMAIL },
+  { role: "Pathfinders & Adventurers", name: "Daunette Lemard-Reid", email: PUBLIC_EMAIL, section: "ministries" },
   {
     role: "Sabbath School",
     name: "Elder Paul Moulema · Carol Elliott",
     email: PUBLIC_EMAIL,
+    section: "ministries",
   },
   {
     role: "Secretary / Communications",
     name: "Myrna L Leiper · Loreli Gaetki",
     email: PUBLIC_EMAIL,
+    section: "ministries",
   },
-  { role: "Media & Audio Visual", name: "Josue Marrero", email: PUBLIC_EMAIL },
-  { role: "Prayer Ministry", name: "Bernice McKenzie", email: PUBLIC_EMAIL },
-  { role: "Health Ministry", name: "Gary Peiffer", email: PUBLIC_EMAIL },
-  { role: "Social Committee", name: "Teddy Williamson · David McKenzie", email: PUBLIC_EMAIL },
+  { role: "Audiovisual", name: "Josue Marrero", email: PUBLIC_EMAIL, section: "ministries" },
+  { role: "Prayer Ministry", name: "Anthia Elliott", email: PUBLIC_EMAIL, section: "ministries" },
+  {
+    role: "Social Committee",
+    name: "Belinda Behnava",
+    email: PUBLIC_EMAIL,
+    section: "ministries",
+  },
+  { role: "Health Ministry", name: "Gary Peiffer", email: PUBLIC_EMAIL, section: "ministries" },
+  { role: "Communications", name: "Belinda Behnava", email: PUBLIC_EMAIL, section: "ministries" },
+  { role: "Music Director", name: "Berline Guirand", email: PUBLIC_EMAIL, section: "ministries" },
 ];
+
+const leadershipTeam = teamRoster.filter((member) => member.section === "leadership");
+const ministryLeads = teamRoster.filter((member) => member.section === "ministries");
 
 const hasVolunteerForm =
   portals.volunteerFormUrl && portals.volunteerFormUrl !== "TBD";

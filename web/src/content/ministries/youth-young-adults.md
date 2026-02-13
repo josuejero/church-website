@@ -16,7 +16,7 @@ tags: ["youth", "young adults", "discipleship", "community"]
 
 AY Director: Anthia Elliott
 
-AY Assistance Director: Yolann Guirand
+AY Assistant Director: Yolann Guirand
 
 ### Programs & Events
 

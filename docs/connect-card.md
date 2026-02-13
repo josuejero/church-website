@@ -9,9 +9,9 @@
 ### Connect Card spec
 
 - **This is your church family** – a 3–6 image gallery near the top of the page shows worship, fellowship, service, and welcome moments so visitors see the mix of people and gatherings before they hit the form.
-- **Required fields & flow** – the Connect Card is intentionally narrower than a generic contact form: email is optional, phone, a preferred visit date, the “Visited before?” radio, and a structured address block are all required so the hospitality team can respond with confidence.
-- **Interest list** – the checkbox set now matches the canonical list: Worship service or Sabbath School; Fellowship classes & small groups; Children, youth, or family ministry; Volunteer & outreach opportunities; Using our facility for a gathering; Prayer, pastoral care, or counseling. At least one option must be selected, and the hidden `address` input (supported by the client-side address summary script) ensures the data schema stays compatible with the Google Sheet columns below.
-- **Deliverability / spam handling** – Cloudflare Turnstile remains on the form, but every submission is verified server-side (see the Apps Script snippet below). Do not write to the sheet until `cf-turnstile-response` is validated.
+- **Required fields & flow** – the Connect Card is intentionally narrower than a generic contact form: email is optional, phone, a preferred visit date, the “Visited before?” radio, and a structured address block for street, line 2, city, state, ZIP, and country are all required so the hospitality team can respond with confidence.
+- **Interest list** – the checkbox set now follows the outreach categories you requested: Prayer; Bible study; Visitation; Conversion; Baptism; Transfer; Facility use. At least one option must be selected, and the hidden `address` input (supported by the client-side address summary script) keeps the submission schema aligned with your destination sheet.
+- **Deliverability / spam handling** – Cloudflare Turnstile stays on the form. The built-in `/api/connect-card` endpoint verifies each `cf-turnstile-response` with `PRIVATE_TURNSTILE_SECRET_KEY` before forwarding the submission to `PRIVATE_CONNECT_CARD_FORWARD_URL` (your Apps Script, SheetMonkey hook, etc.). You can also configure `CONNECT_CARD_NOTIFY_EMAILS`, `CONNECT_CARD_NOTIFY_FROM`, and `CONNECT_CARD_SENDGRID_API_KEY` to send inbox alerts via SendGrid. If you prefer to post directly to your script, set `PUBLIC_CONNECT_CARD_FORM_ACTION` to that URL instead.
 
 ### Field & data mapping
 
@@ -27,6 +27,7 @@
 | City | `addressCity` | Required |
 | State | `addressState` | Required |
 | ZIP | `addressZip` | Required |
+| Country | `addressCountry` | Optional unless you are visiting from outside the United States; helps the hospitality team prepare travel directions or mailings. |
 | Address (formatted) | `address` | Hidden input populated by the client-side script |
 | Reason for connecting | `connectionReason` | Required |
 | Interests | `interests[]` | Required checkbox set (select at least one from the canonical list) |
@@ -65,8 +66,8 @@ The front-end script also ensures at least one `interests[]` checkbox is checked
 
 2. Open **Extensions > Apps Script**:
 
-   ```javascript
-   const SPREADSHEET_ID = "…"; // readable from the sheet URL
+  ```javascript
+  const SPREADSHEET_ID = "…"; // readable from the sheet URL
    const SHEET_NAME = "ConnectCards";
    const TURNSTILE_SECRET = PropertiesService.getScriptProperties().getProperty(
      "PRIVATE_TURNSTILE_SECRET_KEY"
@@ -110,18 +111,20 @@ The front-end script also ensures at least one `interests[]` checkbox is checked
      ).setMimeType(ContentService.MimeType.TEXT);
    }
 
-   function verifyTurnstile(token, secret) {
-     if (!token || !secret) return false;
-     const response = UrlFetchApp.fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-       method: "post",
-       payload: {
-         secret,
-         response: token,
-       },
-     });
-     return JSON.parse(response.getContentText()).success === true;
-   }
-   ```
+  function verifyTurnstile(token, secret) {
+    if (!token || !secret) return false;
+    const response = UrlFetchApp.fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "post",
+      payload: {
+        secret,
+        response: token,
+      },
+    });
+    return JSON.parse(response.getContentText()).success === true;
+  }
+  ```
+
+   Use this script as the destination pointed to by `PRIVATE_CONNECT_CARD_FORWARD_URL` so the built-in `/api/connect-card` proxy can append rows on your behalf. You can also deploy the script alone and set `PUBLIC_CONNECT_CARD_FORM_ACTION` directly to its URL if you prefer.
 
    - Store `PRIVATE_TURNSTILE_SECRET_KEY` in **Script Properties**.
    - Deploy as **Web App**: execute as yourself, access “Anyone with the link.”
@@ -147,3 +150,9 @@ The front-end script also ensures at least one `interests[]` checkbox is checked
 2. Fill the form in the staging site and verify a row is added to the sheet within seconds.
 3. Confirm the browser lands on `/connect/connect-card/thank-you` after submit.
 4. Keep `PRIVATE_TURNSTILE_SECRET_KEY` secret (Apps Script only).
+
+### Environment & protections
+
+- The built-in `/api/connect-card` route fails closed if any of the required secrets (`PRIVATE_TURNSTILE_SECRET_KEY`, `PRIVATE_CONNECT_CARD_FORWARD_URL`, `PUBLIC_TURNSTILE_SITE_KEY`) are missing, so make sure your hosting environment defines them before going live.
+- Use `CONNECT_CARD_NOTIFY_EMAILS` (comma-separated list) and `CONNECT_CARD_NOTIFY_FROM` to route email alerts via SendGrid, or set `CONNECT_CARD_NOTIFY_EMAILS` empty if you prefer forwarding only to your script.
+- Rate limiting is not enforced inside the handler itself; protect the endpoint with your host’s edge rules (Cloudflare rate limiting, a WAF, or platform throttling) to guard against automated abuse before submissions reach the Turnstile check.

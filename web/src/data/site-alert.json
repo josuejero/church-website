@@ -1,8 +1,8 @@
 {
-  "enabled": false,
-  "title": "Weather & schedule updates",
-  "message": "Weather and schedule updates are published on the updates page when the banner appears.",
-  "href": "/updates",
+  "enabled": true,
+  "title": "Annex access paused for safety review",
+  "message": "The annex is temporarily closed while engineers finish a safety inspection and repairs; check the update for details.",
+  "href": "/updates/annex-access-paused-for-safety",
   "variant": "warn",
-  "updatedAt": "2026-02-09T16:00:00Z"
+  "updatedAt": "2026-02-12T15:00:00Z"
 }

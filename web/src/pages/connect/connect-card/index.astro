@@ -2,8 +2,15 @@
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import churchExterior from "../../../assets/photos/first-springfield-exterior.png";
 import bridgeDusk from "../../../assets/photos/bridge-dusk.jpg";
+import adventistCommunityServicesLogo from "../../../assets/photos/ministries-adventist-community-services-logo.png";
+import childrensMinistryBanner from "../../../assets/photos/ministries-childrens-ministry-banner.png";
+import youthLogo from "../../../assets/photos/ministries-youth-young-adults-ay-logo.png";
+import pathfindersLogo from "../../../assets/photos/club-pathfinders-logo.png";
 
-const formAction = import.meta.env.PUBLIC_CONNECT_CARD_FORM_ACTION ?? "";
+const customFormAction = import.meta.env.PUBLIC_CONNECT_CARD_FORM_ACTION;
+const defaultFormAction = "/api/connect-card";
+const formAction = customFormAction || defaultFormAction;
+const usesCustomFormAction = Boolean(customFormAction);
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
 const pageOrigin = Astro.url?.origin;
 const thankYouPath = "/connect/connect-card/thank-you";
@@ -11,50 +18,51 @@ const thankYouUrl = pageOrigin ? `${pageOrigin}${thankYouPath}` : thankYouPath;
 
 const galleryPhotos = [
   {
-    src: bridgeDusk,
+    src: bridgeDusk.src,
     alt: "Evening light on the bridge that leads toward our campus.",
     caption: "Neighborhood welcomes before you even cross the bridge.",
     tag: "Community",
   },
   {
-    src: churchExterior,
+    src: churchExterior.src,
     alt: "First Springfield SDA Church building and welcome sign.",
     caption: "Our sanctuary is open for worship, fellowship, and hospitality.",
     tag: "Welcome",
   },
   {
-    src: "https://source.unsplash.com/1200x900/?church,worship",
-    alt: "Community gathered for worship inside a sanctuary.",
-    caption: "Sabbath worship as a shared, joyful rhythm.",
-    tag: "Worship",
+    src: childrensMinistryBanner.src,
+    alt: "A colorful banner announcing Children’s Ministry programming.",
+    caption: "Children’s Ministry storytelling, music, and hugs make every visitor feel known.",
+    tag: "Children",
   },
   {
-    src: "https://source.unsplash.com/1200x900/?church,fellowship",
-    alt: "Friends sharing conversation and coffee after service.",
-    caption: "Fellowship over a warm drink and good news.",
-    tag: "Fellowship",
+    src: pathfindersLogo.src,
+    alt: "Pathfinders & Adventurers club crest.",
+    caption: "Pathfinders & Adventurers gather for service, camping, and faith-building adventures.",
+    tag: "Pathfinders",
   },
   {
-    src: "https://source.unsplash.com/1200x900/?community-service",
-    alt: "Volunteers working together to serve their neighbors.",
-    caption: "Service projects that show love in action.",
+    src: adventistCommunityServicesLogo.src,
+    alt: "Adventist Community Services logo.",
+    caption: "ACS outreach brings meals, care, and compassion to Springfield neighbors.",
     tag: "Service",
   },
   {
-    src: "https://source.unsplash.com/1200x900/?church,children",
-    alt: "Children and leaders collaborating during a ministry activity.",
-    caption: "Kids, youth, and family ministries that celebrate every age.",
-    tag: "Family",
+    src: youthLogo.src,
+    alt: "Youth & Young Adults ministry emblem.",
+    caption: "AY conversations, prayer, and mentorship keep young people connected.",
+    tag: "Youth",
   },
 ];
 
 const interestOptions = [
-  { value: "worship-service", label: "Worship service or Sabbath School" },
-  { value: "fellowship-groups", label: "Fellowship classes & small groups" },
-  { value: "children-family", label: "Children, youth, or family ministry" },
-  { value: "volunteer-service", label: "Volunteer & outreach opportunities" },
-  { value: "facility-use", label: "Using our facility for a gathering" },
-  { value: "prayer-care", label: "Prayer, pastoral care, or counseling" },
+  { value: "prayer", label: "Prayer" },
+  { value: "bible-study", label: "Bible study" },
+  { value: "visitation", label: "Visitation" },
+  { value: "conversion", label: "Conversion" },
+  { value: "baptism", label: "Baptism" },
+  { value: "transfer", label: "Transfer" },
+  { value: "facility-use", label: "Facility use" },
 ];
 
 const connectionReasons = [
@@ -71,7 +79,6 @@ const preferredContactOptions = [
 ];
 
 const interestsId = (value: string) => `interest-${value}`;
-const interestValidationMessage = "Select at least one interest so we can best support you.";
 ---
 
 <BaseLayout
@@ -87,10 +94,11 @@ const interestValidationMessage = "Select at least one interest so we can best s
         Tell us about your visit window, how we can pray for you, and which ministries you’d like to explore.
         We’ll ask for your preferred follow-up method and keep your information private unless you say otherwise.
       </p>
-      {!formAction ? (
+      {!usesCustomFormAction ? (
         <div class="connect-card__warning" role="status">
-          <strong>Form not configured yet.</strong> Set <code>PUBLIC_CONNECT_CARD_FORM_ACTION</code> to your
-          Google Apps Script Web App URL before publishing.
+          <strong>Built-in Connect Card backend is active.</strong> Before publishing, configure
+          <code>PRIVATE_CONNECT_CARD_FORWARD_URL</code> and <code>PRIVATE_TURNSTILE_SECRET_KEY</code>
+          (and optionally <code>CONNECT_CARD_NOTIFY_EMAILS</code>) so submissions forward and trigger alerts.
         </div>
       ) : null}
     </div>
@@ -237,6 +245,18 @@ const interestValidationMessage = "Select at least one interest so we can best s
               autocomplete="postal-code"
             />
           </div>
+          <div class="form-field">
+            <label for="address-country">Country</label>
+            <span class="form-helper">Optional unless you are visiting from outside the U.S.</span>
+            <input
+              id="address-country"
+              data-address-part
+              name="addressCountry"
+              type="text"
+              placeholder="United States"
+              autocomplete="country"
+            />
+          </div>
         </div>
         <input type="hidden" id="address-summary" name="address" required />
       </div>
@@ -257,7 +277,12 @@ const interestValidationMessage = "Select at least one interest so we can best s
           <span class="required" aria-hidden="true">*</span>
         </p>
         <p class="form-helper">Choose all that apply so we can match you with the right team.</p>
-        <div class="checkbox-grid" role="group" aria-labelledby="interests-label">
+        <div
+          class="checkbox-grid"
+          role="group"
+          aria-labelledby="interests-label"
+          aria-describedby="interests-error"
+        >
           {interestOptions.map((item) => (
             <label class="checkbox" for={interestsId(item.value)}>
               <input id={interestsId(item.value)} name="interests[]" value={item.value} type="checkbox" />
@@ -265,6 +290,7 @@ const interestValidationMessage = "Select at least one interest so we can best s
             </label>
           ))}
         </div>
+        <p id="interests-error" class="form-error" role="alert" aria-live="assertive" hidden></p>
       </div>
 
       <div class="form-section">
@@ -318,7 +344,14 @@ const interestValidationMessage = "Select at least one interest so we can best s
 </BaseLayout>
 
 <script is:inline>
-(() => {
+(function () {
+  const focusFirstInvalidField = (form) => {
+    const firstInvalid = form.querySelector(":invalid");
+    if (firstInvalid instanceof HTMLElement && document.activeElement !== firstInvalid) {
+      firstInvalid.focus();
+    }
+  };
+
   const init = () => {
     const form = document.querySelector(".connect-card__form");
     if (!form) return;
@@ -336,23 +369,51 @@ const interestValidationMessage = "Select at least one interest so we can best s
     updateAddressSummary();
 
     const interestInputs = Array.from(form.querySelectorAll('input[name="interests[]"]'));
-    if (interestInputs.length) {
-      const interestErrorMessage = ${JSON.stringify(interestValidationMessage)};
-      const clearValidity = () => interestInputs[0].setCustomValidity("");
+    const interestErrorElement = form.querySelector("#interests-error");
 
-      interestInputs.forEach((input) => input.addEventListener("change", clearValidity));
+    const showInterestError = (message) => {
+      if (!interestErrorElement) return;
+      interestErrorElement.textContent = message;
+      interestErrorElement.hidden = false;
+    };
+
+    const hideInterestError = () => {
+      if (!interestErrorElement) return;
+      interestErrorElement.textContent = "";
+      interestErrorElement.hidden = true;
+    };
+
+    if (interestInputs.length) {
+      const interestErrorMessage = "Select at least one interest so we can best support you.";
+
+      const resetInterestValidation = () => {
+        interestInputs.forEach((input) => input.setCustomValidity(""));
+        hideInterestError();
+      };
+
+      interestInputs.forEach((input) => {
+        input.setAttribute("aria-describedby", "interests-error");
+        input.addEventListener("change", resetInterestValidation);
+      });
 
       form.addEventListener("submit", (event) => {
         const hasAny = interestInputs.some((input) => input.checked);
         if (!hasAny) {
           interestInputs[0].setCustomValidity(interestErrorMessage);
+          showInterestError(interestErrorMessage);
           if (typeof form.reportValidity === "function") {
             form.reportValidity();
           }
+          interestInputs[0].focus();
           event.preventDefault();
+          return;
         }
       });
     }
+
+    form.addEventListener("submit", () => {
+      setTimeout(() => focusFirstInvalidField(form), 0);
+    });
   };
 
   if (document.readyState === "loading") {
@@ -469,6 +530,12 @@ const interestValidationMessage = "Select at least one interest so we can best s
     font-size: var(--font-size-0);
     color: var(--color-text-muted);
     font-weight: 400;
+  }
+
+  .form-error {
+    margin: 0;
+    font-size: var(--font-size-0);
+    color: #b00020;
   }
 
   .form-section {

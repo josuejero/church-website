@@ -153,6 +153,19 @@ web/
         2026-02-05-worship-adjustments.md
         2026-02-07-pathfinder-induction.md
         2026-02-10-board-meeting.md
+        2026-02-12-annex-safety-notice.md
+        2026-02-12-greeters-needed.md
+        2026-02-12-nar-anon-update.md
+        2026-02-13-anchored-together-retreat.md
+        2026-02-14-table-talk.md
+        2026-02-14-youth-sabbath.md
+        2026-02-28-matthew-5-bible-study.md
+        2026-03-21-guest-speaker.md
+        2026-03-28-trivia-night.md
+        2026-04-04-he-has-risen.md
+        2026-06-19-camp-meeting-closure.md
+        2026-07-28-vacation-bible-school.md
+        2026-12-19-christmas-program.md
       bulletins/
         2025-12-13.md
         2025-12-20.md
@@ -178,10 +191,11 @@ web/
         children.md
         community-meal-spaghetti.md
         media-audio-visual.md
-        mens-ministry.md
+        music-ministry.md
         pathfinders.md
         sabbath-school.md
         secretary-communications.md
+        social-ministry.md
         womens-ministry.md
         youth-young-adults.md
       resources/
@@ -191,7 +205,10 @@ web/
               welcome-packet.md
       updates/
         _building-annex-closed.md
+        _email-update-template.md
         _schedule-change.md
+        _sms-opt-in-template.md
+        _social-voicemail-template.md
         _weather-cancellation.md
       verses/
         2026/
@@ -220,6 +237,8 @@ web/
     pages/
       accessibility/
         index.astro
+      api/
+        connect-card.ts
       calendar/
         index.astro
       connect/
@@ -339,6 +358,165 @@ SECURITY.md
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="web/src/pages/api/connect-card.ts">
+import type { APIRoute } from "astro";
+import { site } from "../../data/site";
+
+const THANK_YOU_PATH = "/connect/connect-card/thank-you";
+const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+const SENDGRID_ENDPOINT = "https://api.sendgrid.com/v3/mail/send";
+
+const verifyTurnstile = async (token: string, secret: string) => {
+  try {
+    const response = await fetch(TURNSTILE_VERIFY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ secret, response: token }),
+    });
+    const payload = await response.json();
+    return payload.success === true;
+  } catch (error) {
+    console.error("Turnstile verification error", error);
+    return false;
+  }
+};
+
+const buildSummary = (entries: [string, FormDataEntryValue][]) => {
+  const summary: Record<string, string> = {};
+
+  for (const [key, value] of entries) {
+    if (key === "cf-turnstile-response" || value instanceof File) {
+      continue;
+    }
+
+    const normalizedKey = key.replace(/\[\]$/, "");
+    const textValue = String(value).trim();
+    if (!textValue) {
+      continue;
+    }
+
+    summary[normalizedKey] = summary[normalizedKey]
+      ? `${summary[normalizedKey]}, ${textValue}`
+      : textValue;
+  }
+
+  return summary;
+};
+
+const formatSummaryText = (summary: Record<string, string>) =>
+  Object.entries(summary)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join("\n");
+
+const sendNotificationEmail = async (
+  recipients: string[],
+  fromEmail: string,
+  apiKey: string,
+  summaryText: string
+) => {
+  if (!recipients.length) return;
+
+  const payload = {
+    personalizations: [
+      {
+        to: recipients.map((email) => ({ email })),
+        subject: `Connect Card · ${site.shortName}`,
+      },
+    ],
+    from: { email: fromEmail },
+    content: [{ type: "text/plain", value: summaryText }],
+  };
+
+  const response = await fetch(SENDGRID_ENDPOINT, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`SendGrid error ${response.status}: ${errorText}`);
+  }
+};
+
+export const prerender = false;
+
+export const post: APIRoute = async ({ request }) => {
+  const turnstileSecret = process.env.PRIVATE_TURNSTILE_SECRET_KEY;
+  if (!turnstileSecret) {
+    return new Response("Turnstile secret is not configured.", { status: 503 });
+  }
+
+  const formData = await request.formData();
+  const tokenValue = formData.get("cf-turnstile-response");
+  if (!tokenValue) {
+    return new Response("Turnstile token missing.", { status: 400 });
+  }
+
+  const token = String(tokenValue);
+  const authenticated = await verifyTurnstile(token, turnstileSecret);
+  if (!authenticated) {
+    return new Response("Turnstile verification failed.", { status: 400 });
+  }
+
+  const forwardUrl = process.env.PRIVATE_CONNECT_CARD_FORWARD_URL;
+  if (!forwardUrl) {
+    return new Response("Connect Card destination is not configured.", { status: 503 });
+  }
+
+  const entries = Array.from(formData.entries());
+  const payload = new URLSearchParams();
+
+  for (const [key, value] of entries) {
+    if (value instanceof File || key === "cf-turnstile-response") {
+      continue;
+    }
+    payload.append(key, String(value));
+  }
+
+  const forwardResponse = await fetch(forwardUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: payload,
+  });
+
+  if (!forwardResponse.ok) {
+    const errorText = await forwardResponse.text();
+    console.error("Connect Card forward failed", errorText);
+    return new Response("Unable to deliver the Connect Card submission.", { status: 502 });
+  }
+
+  const summary = buildSummary(entries);
+  summary["Submitted At"] = new Date().toISOString();
+
+  const notifyEmails = (process.env.CONNECT_CARD_NOTIFY_EMAILS ?? "")
+    .split(",")
+    .map((email) => email.trim())
+    .filter(Boolean);
+  const sendgridKey = process.env.CONNECT_CARD_SENDGRID_API_KEY;
+  const summaryText = formatSummaryText(summary);
+
+  if (sendgridKey && notifyEmails.length) {
+    const fromEmail = process.env.CONNECT_CARD_NOTIFY_FROM?.trim() || site.contact.email;
+    try {
+      await sendNotificationEmail(notifyEmails, fromEmail, sendgridKey, summaryText);
+    } catch (error) {
+      console.error("Connect Card notification failed", error);
+    }
+  }
+
+  const redirectValue = formData.get("redirectUrl");
+  const redirectUrl = typeof redirectValue === "string" && redirectValue.trim()
+    ? redirectValue
+    : THANK_YOU_PATH;
+
+  return Response.redirect(redirectUrl, 303);
+};
+</file>
 
 <file path=".github/ISSUE_TEMPLATE/content-update.md">
 ---
@@ -1030,111 +1208,6 @@ A task is ready when:
 - acceptance criteria exist
 - content (or placeholder) exists
 - owner/approver is known
-</file>
-
-<file path="docs/connect-card.md">
-## Connect Card / Connect Card (Static)
-
-### What’s live
-
-- `web/src/pages/connect/connect-card/index.astro` renders the form and posts to a configurable endpoint.
-- `web/src/pages/connect/connect-card/thank-you.astro` is the post-submit landing page.
-- Header navigation and the hero banner now highlight the new page.
-
-### Option A: Google Sheet + Web App (static-friendly, recommended)
-
-1. In Google Sheets, create a tab called **ConnectCards**. Add columns that match the form `name` attributes:
-
-   | Column | Field name |
-   | --- | --- |
-   | `Full Name` | `fullName` |
-   | `Email` | `email` |
-   | `Phone` | `phone` |
-   | `Address` | `address` |
-   | `Reason` | `connectionReason` |
-   | `Interests` | `interests` (comma-separated, from checkboxes) |
-   | `Preferred Contact` | `preferredContact` |
-   | `Notes` | `notes` |
-   | `Source` | `formSource` |
-   | `Submitted At` | you can add a timestamp column |
-
-2. Open **Extensions > Apps Script**:
-
-   ```javascript
-   const SPREADSHEET_ID = "…"; // readable from the sheet URL
-   const SHEET_NAME = "ConnectCards";
-   const TURNSTILE_SECRET = PropertiesService.getScriptProperties().getProperty(
-     "PRIVATE_TURNSTILE_SECRET_KEY"
-   );
-
-   function doPost(e) {
-     const token = e.parameter["cf-turnstile-response"];
-     if (!verifyTurnstile(token, TURNSTILE_SECRET)) {
-       return ContentService.createTextOutput("Bot check failed").setMimeType(
-         ContentService.MimeType.TEXT
-       );
-     }
-
-     const row = [
-       e.parameter.fullName,
-       e.parameter.email,
-       e.parameter.phone,
-       e.parameter.address,
-       e.parameter.connectionReason,
-       (Array.isArray(e.parameter.interests) ? e.parameter.interests : [e.parameter.interests])
-         .filter(Boolean)
-         .join(", "),
-       e.parameter.preferredContact,
-       e.parameter.notes,
-       e.parameter.formSource,
-       new Date().toISOString(),
-     ];
-
-     SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME).appendRow(row);
-
-     const redirectUrl = e.parameter.redirectUrl || "/connect/connect-card/thank-you";
-     return ContentService.createTextOutput(
-       `<script>location.replace("${redirectUrl}")</script>`
-     ).setMimeType(ContentService.MimeType.TEXT);
-   }
-
-   function verifyTurnstile(token, secret) {
-     if (!token || !secret) return false;
-     const response = UrlFetchApp.fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-       method: "post",
-       payload: {
-         secret,
-         response: token,
-       },
-     });
-     return JSON.parse(response.getContentText()).success === true;
-   }
-   ```
-
-   - Store `PRIVATE_TURNSTILE_SECRET_KEY` in **Script Properties**.
-   - Deploy as **Web App**: execute as yourself, access “Anyone with the link.”
-
-3. Copy the Web App URL into your `.env` / environment as:
-
-   ```
-   PUBLIC_CONNECT_CARD_FORM_ACTION=https://script.google.com/macros/s/…/exec
-   PUBLIC_TURNSTILE_SITE_KEY=… (same site key shown by Cloudflare)
-   PRIVATE_TURNSTILE_SECRET_KEY=… (only in Apps Script)
-   ```
-
-4. Turnstile requires server-side verification. The script above checks `cf-turnstile-response` before writing and redirects users to `redirectUrl` (defaults to `/connect/connect-card/thank-you`).
-
-### Optional: provider-based backend (Option B) or SSR
-
-- If you prefer Formspree/Basin/etc., point `PUBLIC_CONNECT_CARD_FORM_ACTION` to the provider’s URL instead. Keep the same field names for consistent columns (you can use hidden inputs to rename if needed).
-- When you later enable SSR hosting, implement `web/src/pages/api/connect-card.ts` to accept the form via `request.formData()`, validate Turnstile with `fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", ...)`, append to your backend datastore, and respond with a redirect/JSON success.
-
-### Deploy checklist
-
-1. Confirm the form page renders the Turnstile widget (requires `PUBLIC_TURNSTILE_SITE_KEY`).
-2. Fill the form in the staging site and verify a row is added to the sheet within seconds.
-3. Confirm the browser lands on `/connect/connect-card/thank-you` after submit.
-4. Keep `PRIVATE_TURNSTILE_SECRET_KEY` secret (Apps Script only).
 </file>
 
 <file path="docs/deploy.md">
@@ -1985,33 +2058,199 @@ Our sanctuary host team is finishing a short series of upgrades, so Sabbath wors
 The youth choir will still lead the first hymn, and the sermon will follow the welcome at 11:00 AM.
 </file>
 
-<file path="web/src/content/announcements/2026-02-07-pathfinder-induction.md">
+<file path="web/src/content/announcements/2026-02-12-annex-safety-notice.md">
 ---
-title: "Pathfinder induction and spring kickoff"
-date: 2026-02-07
+title: "Annex safety notice"
+date: 2026-02-12
 tags:
-  - events
-  - volunteers
-summary: "Celebrate new Pathfinders, share a short ceremony, and lend a hand with hospitality as we launch the 2026 season."
-featured: true
+  - cancellations
+summary: "The annex is paused while we confirm the space is safe."
 ---
-Join the Pathfinders & Adventurers Club for our induction ceremony and spring kickoff on Friday, February 7, at 6:30 PM in the fellowship hall. We'll recognize new members, share a brief devotion, and close with fellowship snacks so families can meet the leaders before the upcoming camping season.
+We are keeping the annex closed while our safety team confirms the building is secure following a recent incident. There is no indication of ongoing danger, but we are pausing access until inspectors finish their report and any repairs are completed.
 
-Volunteers are especially welcome to serve as greeters, prep the refreshment tables, and help with badge ribboning. If you can lend a hand, reply to <firstspringfieldsda@gmail.com> by Wednesday, February 5, so we can coordinate setup and childcare for the youngest guests.
+We will publish a full update as soon as the safety review is complete so families and ministry leaders can plan ahead. Until then, please avoid scheduling meetings or dropping items in the annex.
+
+Questions may be directed to <firstspringfieldsda@gmail.com>, and the welcome team will help route those requests once we have a confirmed reopening date.
 </file>
 
-<file path="web/src/content/announcements/2026-02-10-board-meeting.md">
+<file path="web/src/content/announcements/2026-02-12-greeters-needed.md">
 ---
-title: "Church board meeting"
-date: 2026-02-10
+title: "Greeters needed for worship welcome"
+date: 2026-02-12
+tags:
+  - volunteers
+summary: "Volunteers are needed to welcome worshipers on upcoming Sabbaths."
+---
+We are assembling a welcome team for the next few Sabbaths and need greeters who can arrive by 9:30 AM to open doors, hand out bulletins, and help guests find seating and children's programs.
+
+Our official greeter coordinator is still being confirmed, so for now just reply to <firstspringfieldsda@gmail.com> with "Greeter volunteer" in the subject and list the Sabbaths you are available. We will host a short orientation before your first shift so you feel confident in the role.
+
+This is a perfect opportunity for people who smile easily, love meeting new neighbors, and want to share the warmth of First Springfield every week.
+</file>
+
+<file path="web/src/content/announcements/2026-02-12-nar-anon-update.md">
+---
+title: "Nar-Anon meets Monday nights"
+date: 2026-02-12
 tags:
   - events
-summary: "Board members meet to finalize the quarterly budget, calendar, and volunteer needs; observers welcome with prior notice."
-featured: true
+summary: "Nar-Anon now gathers Mondays at 7:00 PM in the fellowship hall."
 ---
-The Church Board meets Tuesday, February 10, at 7:30 PM in the church office conference room. We will review the current quarter's budget, approve the spring outreach calendar, and identify volunteer needs for upcoming ministries.
+Nar-Anon now meets Monday evenings at 7:00 PM in the fellowship hall. The gathering lasts about 90 minutes and offers a safe space for families and friends affected by addiction.
 
-Board members and ministry leaders are asked to confirm their attendance by replying to <firstspringfieldsda@gmail.com>, and a livestream link will be shared for those who cannot join in person. Observers with a ministry update are welcome; just let the clerk know ahead of time so we can reserve time on the agenda.
+The meeting format mixes short readings, reflection, and open sharing, and all are welcome to join whether you are new to Nar-Anon or returning. There is no cost, and confidentiality is respected by the hosts.
+
+For more information, email <firstspringfieldsda@gmail.com> with "Nar-Anon" in the subject and the volunteer hosts will connect you with the right resources.
+</file>
+
+<file path="web/src/content/announcements/2026-02-13-anchored-together-retreat.md">
+---
+title: "Anchored Together couples retreat"
+date: 2026-02-13
+tags:
+  - events
+summary: "Anchored Together couples retreat runs Feb 13-14 to refresh marriages."
+---
+"Anchored Together" is a couples retreat that runs Friday evening through Saturday afternoon, February 13-14, at a nearby retreat center. It blends worship, guided conversation, and restful space so married and engaged couples can reconnect with each other and with Christ.
+
+Friday night begins with supper, a devotion, and small-group conversation. Saturday includes breakfast check-in, worship, practical breakout sessions on communication and mission partnership, and time for prayer before returning home for Sabbath rest.
+
+Space is limited to twelve couples, so register by Tuesday, February 4, by emailing <firstspringfieldsda@gmail.com> with your names and any dietary needs. A modest love offering will help cover meals and materials.
+</file>
+
+<file path="web/src/content/announcements/2026-02-14-table-talk.md">
+---
+title: "Table Talk - February 14"
+date: 2026-02-14
+tags:
+  - events
+summary: "Table Talk returns after the Divine Service on Feb 14 for youth and young adults."
+---
+Table Talk is back on Saturday, February 14, immediately after the Divine Service in the fellowship hall. This monthly conversation gives youth, young adults, and their friends a safe place to ask questions about faith, mission, relationships, and everyday choices.
+
+A short devotion kicks off the evening, followed by small-group conversations while we enjoy light refreshments shared by the youth team. Bring a question, a listening ear, or a friend who is exploring faith.
+
+Questions or topic suggestions can be sent to <firstspringfieldsda@gmail.com> with "Table Talk" in the subject.
+</file>
+
+<file path="web/src/content/announcements/2026-02-14-youth-sabbath.md">
+---
+title: "Youth Sabbath celebration"
+date: 2026-02-14
+tags:
+  - events
+summary: "Youth and young adults lead worship during Youth Sabbath on Feb 14."
+---
+Join us for Youth Sabbath on Saturday, February 14, when the Youth & Young Adults Ministry team leads the Divine Service. Youth musicians, testimony teams, and a message from our young leaders will highlight how they are living out their faith in school, work, and community.
+
+We will also pause for a short moment of gratitude, and the youth hospitality crew will host a simple fellowship lunch after worship so everyone can continue the conversation.
+
+Want to support the youth team or share a prayer? Email <firstspringfieldsda@gmail.com> and the youth ministry leaders will connect with you.
+</file>
+
+<file path="web/src/content/announcements/2026-02-28-matthew-5-bible-study.md">
+---
+title: "Matthew 5 Bible study"
+date: 2026-02-28
+tags:
+  - events
+summary: "Study Jesus' Sermon on the Mount right after the Divine Service on Feb 28."
+---
+Stick around after the Divine Service on Saturday, February 28, for a Matthew 5 Bible study in the fellowship hall. We'll read the Beatitudes together, ask what Jesus' message means for our neighborhoods, and pray for the courage to live the Sermon on the Mount.
+
+The discussion will include guided questions, a short historical note, and space for prayer requests. Bring a Bible, a notebook, and your curiosity.
+
+Questions or ideas for future passages? Reply to <firstspringfieldsda@gmail.com> and the discipleship team will follow up.
+</file>
+
+<file path="web/src/content/announcements/2026-03-21-guest-speaker.md">
+---
+title: "Guest Speaker Sabbath"
+date: 2026-03-21
+tags:
+  - events
+summary: "Guest Speaker Sabbath on March 21 welcomes a visiting speaker and devotional conversation."
+---
+Join us for Guest Speaker Sabbath on Saturday, March 21, at 11:15 AM in the sanctuary. We will welcome a visiting speaker from our conference who will encourage us in discipleship, community engagement, and faithful witness in Springfield.
+
+After the message, the guest will stay for a short conversation time where you can ask questions and hear how God is leading our wider union. We'll also invite the congregation to share prayer requests for the speaker's ministry.
+
+If you have questions you'd like to pass along in advance, reply to <firstspringfieldsda@gmail.com> with "Guest Speaker" in the subject.
+</file>
+
+<file path="web/src/content/announcements/2026-03-28-trivia-night.md">
+---
+title: "Trivia Night"
+date: 2026-03-28
+tags:
+  - events
+summary: "Trivia Night on March 28 is a fellowship-driven evening of teams, snacks, and missions."
+---
+Trivia Night is Saturday, March 28, at 6:30 PM in the fellowship hall. Teams of four to six will face off on Bible stories, Adventist history, pop culture, and lighthearted surprises while we take short breaks for prayer and a surprise devotion.
+
+Bring a snack to share, and we will host a potluck-style table with beverages between rounds. Entry is free, but a small donation will support Youth & Young Adults Ministry outreach and missions.
+
+Reserve your table by emailing <firstspringfieldsda@gmail.com> with "Trivia Night" in the subject and the names on your team.
+</file>
+
+<file path="web/src/content/announcements/2026-04-04-he-has-risen.md">
+---
+title: "He Has Risen worship celebration"
+date: 2026-04-04
+tags:
+  - events
+summary: "He Has Risen special worship on Easter Sabbath, April 4."
+---
+Celebrate "He Has Risen" on Sabbath, April 4, at 11:15 AM in the sanctuary. The worship service will feature the choir, youth drama, and an Easter message that explores the hope of the resurrection for every season.
+
+The music and drama teams will lead fresh arrangements of beloved hymns, and we will close with a candlelight benediction and the congregation singing together. Fellowship refreshments will follow in the foyer so visitors can stay and connect.
+
+Plan to invite friends and neighbors, and if you have a musical gift to share, email <firstspringfieldsda@gmail.com> with "He Has Risen" in the subject.
+</file>
+
+<file path="web/src/content/announcements/2026-06-19-camp-meeting-closure.md">
+---
+title: "Camp Meeting and campus closure"
+date: 2026-06-19
+tags:
+  - events
+summary: "Campus closed on Sabbaths June 20 and 27 while the church family attends Atlantic Union Camp Meeting."
+---
+Our church family plans to attend the Atlantic Union Camp Meeting June 19-27, 2026, so campus activities will pause while we gather there. The campus will be closed on Sabbath, June 20, and Sabbath, June 27, while staff, volunteers, and ministry leaders worship and connect at camp.
+
+Members who can't travel are invited to watch the online services (link to be shared closer to the date) or join the small fellowship group that will host a prayer gathering on the campus bridge during those Sabbaths.
+
+We expect to reopen the campus on Sunday, June 28. Questions about the closure or prayer requests can be sent to <firstspringfieldsda@gmail.com>.
+</file>
+
+<file path="web/src/content/announcements/2026-07-28-vacation-bible-school.md">
+---
+title: "Vacation Bible School 2026"
+date: 2026-07-28
+tags:
+  - events
+summary: "VBS July 28-30 welcomes kids ages 4-12 for stories, crafts, and worship."
+---
+Vacation Bible School (VBS) returns Tuesday-Thursday, July 28-30, from 6:00 to 7:15 PM each evening. Children ages 4-12 are invited to dive into Bible stories, crafts, worship songs, and service projects that celebrate Jesus' love.
+
+Registration is open now; families can sign up by replying to <firstspringfieldsda@gmail.com> with "VBS registration" in the subject and listing child names, ages, and any allergies.
+
+We also need adult and teen volunteers to shepherd groups, lead stations, and bless kids with snacks. If you can help, reply to the same email and share your availability.
+</file>
+
+<file path="web/src/content/announcements/2026-12-19-christmas-program.md">
+---
+title: "Christmas program 2026"
+date: 2026-12-19
+tags:
+  - events
+summary: "Christmas program with music, drama, and candlelight on Dec 19."
+---
+Save the date for our Christmas program on Saturday, December 19, at 5:00 PM in the sanctuary. We will present music, drama, and candlelight reflections that tell the story of Jesus' birth.
+
+Choirs, youth ensembles, and drama teams will share seasonal favorites, and we will conclude with a community candlelighting and the final chorus of "O Holy Night." Guests are welcome, so bring neighbors and family.
+
+After the program, the foyer will host a cookie reception; if you can bring a tray or help greet visitors, email <firstspringfieldsda@gmail.com> with "Christmas program" in the subject.
 </file>
 
 <file path="web/src/content/bulletins/2025-12-13.md">
@@ -2163,60 +2402,6 @@ The Mission of the Adult Sabbath School Department of the First Springfield Seve
 </div>
 </file>
 
-<file path="web/src/content/ministries/adventist-community-services.md">
----
-title: "Adventist Community Services (ACS)"
-summary: "Holistic ministry serving the Pioneer Valley and Springfield through compassion and practical care."
-leaderName: "Adventist Community Services Team"
-leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "Monthly programs (see details below)."
-category: "Outreach"
-tags: ["community", "outreach", "service", "holistic ministry"]
----
-
-## Adventist Community Services (ACS)
-
-“Team: Brenda St George, Belinda Behnava, Donald Moore, Gabriele Moore, Carolyn Mutcherson, Pastor Abankwa Amoakohene”
-
-“At First Springfield Seventh-day Adventist Church, our mission is to humbly and lovingly serve the residents of the Pioneer Valley, the City of Springfield, and surrounding cities and towns. We seek to share the message of Jesus in tangible and meaningful ways by serving the whole person, a Christ-centered approach known as holistic ministry.”
-
-“Throughout Jesus’ earthly ministry, He consistently modeled a holistic approach to caring for humanity, especially those who were marginalized, disadvantaged, and disenfranchised. He met people where they were, addressed their physical, emotional, and spiritual needs, and offered hope, dignity, and restoration.”
-
-“As Ellen G. White beautifully wrote: “Christ’s method alone will give true success in reaching the people. The Savior mingled with men as one who desired their good. He showed His sympathy for them, ministered to their needs, and won their confidence. Then He bade them, ‘Follow Me.’””
-
-“Through our Community Services ministry, we strive to follow Christ’s example, serving with humility, compassion, and love, and reflecting God’s grace to all.”
-
-“Monthly Activities: Our community service programs are open to the public, and volunteers are always welcome to join us in serving others.”
-
-“• Adventist Community Services (ACS) Meeting – Held on the second Wednesday of each month from 5:30–6:45 PM. All are welcome to participate and learn how to serve the community.”
-
-“• Homeless Outreach Lunch – Prepared and delivered on the first Tuesday of each month in coordination with South Congregational Church in Springfield, MA.”
-
-“• Taylor Street Men’s Shelter Dinner – Prepared and delivered on the second Tuesday of each month, providing warm meals and fellowship to those in need.”
-
-“• Community Spaghetti Dinner – Held on the last Wednesday of each month from 5:00–6:00 PM, offering a free, welcoming meal to our neighbors.”
-</file>
-
-<file path="web/src/content/ministries/bible-study.md">
----
-title: "Bible Study"
-summary: "Interactive study and discussion of Scripture."
-leaderName: "Bible Study Facilitator"
-leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "4th Sabbath"
-category: "Bible Study"
-tags: ["bible", "study", "growth"]
----
-
-## Overview
-
-We read the Bible together and talk about how to live it out.
-
-## How to get involved
-
-Bring your Bible and join the discussion.
-</file>
-
 <file path="web/src/content/ministries/board-meeting.md">
 ---
 title: "Board Meeting"
@@ -2258,51 +2443,55 @@ Neighbors are welcome to a warm meal and friendly conversation.
 Volunteer or invite a friend to join us.
 </file>
 
-<file path="web/src/content/ministries/mens-ministry.md">
+<file path="web/src/content/ministries/music-ministry.md">
 ---
-title: "Men's Ministry"
-summary: "Brotherhood, prayer, and service to strengthen men of faith."
-leaderName: "Men's Ministry Team"
+title: "Music Ministry"
+summary: "Leading worship through choir, praise teams, and congregational music that reflects our multicultural story."
+leaderName: "Berline Guirand"
 leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "Fridays at 7:00 PM"
-category: "Men"
-tags: ["men", "fellowship", "service"]
+meetingTime: "Choir rehearsals Thursdays at 7:00 PM, with weekly preparation for Sabbath worship."
+category: "Other"
+tags: ["music", "worship", "choir", "praise"]
 ---
 
-## Overview
+## Music Ministry
 
-We gather for encouragement, prayer, and practical ways to serve families and the church.
+Our Music Ministry invites voices, instruments, and hearts of every age to lift Jesus in worship. We celebrate a variety of musical traditions that reflect Springfield’s diverse congregational family—from gospel choirs and praise teams to orchestral and acoustic specials.
 
-## How to get involved
+### Choirs & Ensembles
 
-Reach out to the leader or show up on a Friday night.
+• Adults, youth, and children rehearse together and separately during the week so each Sabbath service includes a thoughtful blend of voices, instrumental praise, and moments for congregational singing.
+• Special music is coordinated for holidays, communion weekends, evangelism events, and community outreach services.
+
+### Participation & Contact
+
+Everyone is welcome to join, whether you read music or simply love to sing. Reach out to Music Director Berline Guirand at [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) to learn which ensemble is a good fit, discover rehearsal schedules, or request a piece for an upcoming worship service.
 </file>
 
-<file path="web/src/content/ministries/secretary-communications.md">
+<file path="web/src/content/ministries/social-ministry.md">
 ---
-title: "Secretary/Communications"
-summary: "Keeps the church informed through weekly publications, office records, and member communication."
-leaderName: "Secretary/Communications Team"
+title: "Social Ministry"
+summary: "Hospitality, fellowship, and celebration events that help our people and neighbors feel known."
+leaderName: "Teddy Williamson · David McKenzie"
 leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "Produce weekly bulletin and announcements"
-category: "Leadership"
-tags: ["communications", "administration", "office"]
+meetingTime: "Social events align with the church calendar and are announced in the weekly bulletin."
+category: "Outreach"
+tags: ["community", "fellowship", "hospitality", "events"]
 ---
 
-## Secretary/Communications
+## Social Ministry
 
-Church Clerk: Myrna L Leiper
+Our Social Ministry brings intentional hospitality to First Springfield—creating meals, fellowship nights, celebrations, and shared meals that welcome members and neighbors alike.
 
-Assistance Bulletin Secretary: Loreli Gaetki
+### Events & Fellowship
 
-This team keeps office records straight, shepherds member communication, and stewards the weekly bulletin that links congregants to worship plans, volunteer needs, and outreach invites. We coordinate with pastors, ministry leads, and volunteers so every voice is represented in print and online.
+• Community-friendly potlucks, seasonal celebrations, and dessert socials help us stay connected after worship and during special seasons.
+• Hospitality is also woven into milestone events such as graduations, anniversaries, and fellowship after memorials or outreach programs.
+• The Social Committee partners with other ministries (like Adventist Community Services and Vacation Bible School) to make sure every gathering feels warm and well-planned.
 
-### Weekly updates
+### Join the Committee
 
-- [Add weekly bulletin (link)](/resources/bulletins)
-- [Add weekly announcements (link)](/resources/announcements)
-
-Need to send an announcement, update attendance, or ask a question about the bulletin? Reach out at the church office email above and we will walk you through the submission window for the coming Sabbath.
+To suggest a gathering, bring a recipe, or help serve, email the Social Committee (Teddy Williamson · David McKenzie) at [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com). Volunteers are welcome for setup, clean-up, decorating, and hospitality teams.
 </file>
 
 <file path="web/src/content/ministries/youth-young-adults.md">
@@ -2324,7 +2513,7 @@ tags: ["youth", "young adults", "discipleship", "community"]
 
 AY Director: Anthia Elliott
 
-AY Assistance Director: Yolann Guirand
+AY Assistant Director: Yolann Guirand
 
 ### Programs & Events
 
@@ -2349,6 +2538,27 @@ draft: true
 Replace this copy with the reason for the closure (maintenance, staff meeting, etc.), which doors or annex spaces are affected, and what alternate rooms or services are still available if applicable.
 </file>
 
+<file path="web/src/content/updates/_email-update-template.md">
+---
+title: "Email update template"
+date: 2026-02-12
+summary: "Reuse this layout to announce cancellations, schedule shifts, or closures via email."
+category: "communications"
+draft: true
+---
+**Subject line:** lead with the action (cancellation, time change, closure) plus the program and date so it scrolls into inboxes quickly.
+
+**Preview text:** add the brightest detail (new time, safety reminder, follow-up plan) so people who skim the message know why it matters.
+
+**Body:** open with a single sentence that names the impacted gathering or service, states the new state of play, and points people to the updates page for full context. Follow with a short “Quick details” list:
+1. What: decision (e.g., “KidZone is postponed” or “Worship service moves online”).
+2. When/where: new time, virtual link, or closed doorway.
+3. What you need: confirm RSVP, bring a mask, park in Lot B, etc.
+4. How we’ll keep you posted: updates page link, text alerts, voicemail line.
+
+**Closing:** remind readers who to email/text if they still have questions, mention the banner/updates page, and add the multi-channel kit note (“This note goes out with the SMS + social/voicemail copy below so everyone sees the change.”).
+</file>
+
 <file path="web/src/content/updates/_schedule-change.md">
 ---
 title: "Schedule change template"
@@ -2358,6 +2568,49 @@ category: "schedule"
 draft: true
 ---
 Describe which lineup (worship, rehearsal, children’s programming) moved, list the new date/time, and note whether volunteers or attendees should arrive earlier or bring anything specific.
+</file>
+
+<file path="web/src/content/updates/_sms-opt-in-template.md">
+---
+title: "SMS opt-in template"
+date: 2026-02-12
+summary: "Short, opt-in-friendly text alerts that echo the email + updates page messaging."
+category: "communications"
+draft: true
+---
+Keep the message under 160 characters, mention the quick change, and include the updates page URL (or short-code) so everyone can read the full details.
+
+Example structure:
+- Line 1: “UPDATED: [service or space] [action] [new time or status].”
+- Line 2: “Details & opt-out: [short link to updates page].”
+
+Because this is opt-in only, add “Reply STOP to cancel” or similar at the end of line 2, along with the time you expect to send the next update if the situation evolves.
+
+Pair this text with the email message above and the social/voicemail draft below so the same language runs across every channel.
+</file>
+
+<file path="web/src/content/updates/_social-voicemail-template.md">
+---
+title: "Social post / voicemail template"
+date: 2026-02-12
+summary: "Copy you can tweak for social media and outgoing voicemail so every channel mirrors the update."
+category: "communications"
+draft: true
+---
+## Social posts
+- Start with the most important fact (“Sunday service switches to 10:00 AM,” “Youth rehearsal is postponed,” etc.).
+- Mention how people can stay in the loop (“See the updates page,” “Click the link in bio,” or “Mute notifications? we’ll text you too”).
+- Add a note on why the change happened (weather, maintenance, volunteer shortage) plus any quick instructions (bring an umbrella, plan for parking).
+- Finish with a CTA (“Tap for the latest update,” “Share with your small group,” “Hashtag #FirstSpringfieldUpdates”).
+
+Keep each caption/tagline short enough for the platform (Instagram/Facebook caption vs. X/Twitter) and use the same link you included in the email/SMS so readers land on the updates page.
+
+## Voicemail script
+1. “Hi, you’ve reached First Springfield [customize role], we wanted to let you know that [service/event] is [new status].”
+2. “The full note is on the updates page, we’ll also text/email you the details, and you can call [office/volunteer line] if you need anything right away.”
+3. “Thanks for staying connected—we hope to see you on [next service or plan].”
+
+Use the voicemail script for outgoing desk calls or auto-attendants so visitors hear the same tone as the email/SMS/social post. The shared updates page link keeps everyone pointed to one source of truth.
 </file>
 
 <file path="web/src/content/updates/_weather-cancellation.md">
@@ -2456,57 +2709,6 @@ God promises to carry us when unease creeps in, so we can rest knowing His faith
   "variant": "warn",
   "updatedAt": "2026-02-09T16:00:00Z"
 }
-</file>
-
-<file path="web/src/data/weekly-highlights.ts">
-export type WeeklyHighlight = {
-  activityId?: string;
-  text: string;
-  href?: string;
-  badge?: string;
-  tag?: string;
-  title?: string;
-  description?: string;
-  ctaHref?: string;
-  ctaLabel?: string;
-  external?: boolean;
-};
-
-const weeklyHighlights: WeeklyHighlight[] = [
-  {
-    activityId: "prayer-meeting",
-    text: "Prayer Meeting · Wednesdays at 7:00 PM · Church annex + Zoom",
-    href: "/connect/prayer",
-    badge: "This week",
-  },
-  {
-    activityId: "nar-anon",
-    text: "Nar-Anon · Mondays at 7:00 PM in the fellowship hall",
-    badge: "Support",
-  },
-  {
-    activityId: "table-talk",
-    text: "Table Talk · Friday small groups over supper",
-    badge: "Table Talk",
-  },
-  {
-    activityId: "pathfinders",
-    text: "Pathfinders & Adventurers · 1st & 3rd Sabbaths bring youth together",
-    href: "/ministries/pathfinders",
-  },
-  {
-    activityId: "mens-ministry",
-    text: "Men's group · Fridays at 7:00 PM · Fellowship & discussion",
-    href: "/ministries/mens-ministry",
-  },
-  {
-    activityId: "bible-study",
-    text: "Bible Study · Fourth Sabbath deeper dive for all ages",
-    href: "/ministries/bible-study",
-  },
-];
-
-export default weeklyHighlights;
 </file>
 
 <file path="web/src/layouts/Layout.astro">
@@ -2832,82 +3034,6 @@ import { site } from "../../../data/site";
     gap: var(--space-3);
   }
 </style>
-</file>
-
-<file path="web/src/pages/connect/facilities/index.astro">
----
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import NoticeBanner from "../../../components/ui/NoticeBanner.astro";
-import { site } from "../../../data/site";
-import { mailto, tel } from "../../../lib/links";
-
-const emailHref = mailto(site.contact.email);
-const phoneHref = tel(site.contact.phone);
----
-
-<BaseLayout
-  title="Facilities"
-  description="Learn how to request and schedule space at First Springfield SDA."
->
-  <div class="stack">
-    <h1>Facilities use</h1>
-
-    <NoticeBanner variant="urgent">
-      <strong>Temporary suspension:</strong> Use of the Annex (fellowship hall, classrooms, and adjoining restrooms) is suspended until repairs finish. Please reach out to the church office before planning an event to confirm whether any spaces are currently available.
-    </NoticeBanner>
-
-    <section class="card stack" aria-labelledby="facilities-request-heading">
-      <h2 id="facilities-request-heading">How to request use</h2>
-      <p>
-        Share the basics of your event: what rooms you need, how many people you expect, and any equipment (sound, tables, audiovisual) you will be using. Email the church office at
-        <a href={emailHref}>{site.contact.email}</a> or call <a href={phoneHref}>{site.contact.phone}</a> and include "Facility request" in the subject line.
-      </p>
-      <div class="prose">
-        <ol>
-          <li>Confirm the preferred date(s) and time range, including setup and teardown windows.</li>
-          <li>Mention whether you need support from our media/AV volunteers, custodial crew, or parking volunteers.</li>
-          <li>Let us know if your group carries its own insurance or needs a certificate of insurance.</li>
-        </ol>
-      </div>
-    </section>
-
-    <section class="card stack" aria-labelledby="facilities-approval-heading">
-      <h2 id="facilities-approval-heading">Who approves &amp; schedules</h2>
-      <p>
-        The Pastor, Head Elder, and church office team review every request to avoid calendar conflicts and make sure ministry priorities stay in step with our mission. Once everyone signs off, the office will confirm the room assignment and email you a reservation summary with any follow-up items.
-      </p>
-      <p class="muted">
-        Please do not assume a space is reserved until you receive an approval email. Approval may include instructions for additional ministry oversight depending on the type of event.
-      </p>
-    </section>
-
-    <section class="card stack" aria-labelledby="facilities-lead-time-heading">
-      <h2 id="facilities-lead-time-heading">Expected lead time</h2>
-      <p>
-        Standard events require at least four weeks notice so we can review the calendar, verify staffing, and align insurance coverage. Large receptions, off-site retreats, or anything requiring extra custodial support should be submitted six weeks ahead. Smaller meetings may be considered with two weeks' notice but are subject to available space.
-      </p>
-      <p class="muted">
-        When possible, confirm recurring meetings for the next quarter before the last Sunday of the current month so we can hold the rooms you rely on.
-      </p>
-    </section>
-
-    <section class="card stack" aria-labelledby="facilities-rules-heading">
-      <h2 id="facilities-rules-heading">Basic rules</h2>
-      <div class="prose">
-        <ul>
-          <li>Leave every space as you found it—wipe down tables, sweep floors, return chairs and equipment to the storage closet, and remove all trash. Extra trash bags are available in the janitor closet; please bag and haul trash to the dumpster behind the building.</li>
-          <li>Keys for classrooms, the main sanctuary, or the Annex must be picked up and returned at the church office during business hours. Report any missing keys immediately so we can re-key locks if needed.</li>
-          <li>Protect carpets and wood floors by using spill guards, liners, or trays when serving food or beverages. No confetti, helium balloons, or permanent adhesives on walls.</li>
-          <li>Keep exterior doors locked when you are not escorting guests, and make sure everyone exits before the building is secured. Immediately report any maintenance or safety issues to the office.</li>
-          <li>If your group needs parking assistance, we can supply cones or volunteers. Please set up signage only with office approval so we do not block emergency routes.</li>
-        </ul>
-      </div>
-      <p class="small muted">
-        Failure to follow these guidelines may result in loss of future facility privileges. If your plans change, let us know as soon as possible so we can free up the space for another group.
-      </p>
-    </section>
-  </div>
-</BaseLayout>
 </file>
 
 <file path="web/src/pages/resources/announcements/tags/[tag].astro">
@@ -3864,6 +3990,161 @@ This repo runs on the latest dependencies pinned in `web/package-lock.json`. Sec
 - Document security implications of large changes in both the PR body and `docs/ui-reliability.md` when relevant.
 </file>
 
+<file path="docs/connect-card.md">
+## Connect Card / Connect Card (Static)
+
+### What’s live
+
+- `web/src/pages/connect/connect-card/index.astro` renders the Connect Card, complete with the photo gallery, gallery captions, and the refreshed specification described below.
+- `web/src/pages/connect/connect-card/thank-you.astro` is the post-submit landing page.
+- Header navigation and the hero banner now highlight the new page.
+
+### Connect Card spec
+
+- **This is your church family** – a 3–6 image gallery near the top of the page shows worship, fellowship, service, and welcome moments so visitors see the mix of people and gatherings before they hit the form.
+- **Required fields & flow** – the Connect Card is intentionally narrower than a generic contact form: email is optional, phone, a preferred visit date, the “Visited before?” radio, and a structured address block for street, line 2, city, state, ZIP, and country are all required so the hospitality team can respond with confidence.
+- **Interest list** – the checkbox set now follows the outreach categories you requested: Prayer; Bible study; Visitation; Conversion; Baptism; Transfer; Facility use. At least one option must be selected, and the hidden `address` input (supported by the client-side address summary script) keeps the submission schema aligned with your destination sheet.
+- **Deliverability / spam handling** – Cloudflare Turnstile stays on the form. The built-in `/api/connect-card` endpoint verifies each `cf-turnstile-response` with `PRIVATE_TURNSTILE_SECRET_KEY` before forwarding the submission to `PRIVATE_CONNECT_CARD_FORWARD_URL` (your Apps Script, SheetMonkey hook, etc.). You can also configure `CONNECT_CARD_NOTIFY_EMAILS`, `CONNECT_CARD_NOTIFY_FROM`, and `CONNECT_CARD_SENDGRID_API_KEY` to send inbox alerts via SendGrid. If you prefer to post directly to your script, set `PUBLIC_CONNECT_CARD_FORM_ACTION` to that URL instead.
+
+### Field & data mapping
+
+| Field | Input name | Notes |
+| --- | --- | --- |
+| Full Name | `fullName` | Required |
+| Email | `email` | Optional |
+| Phone | `phone` | Required so we can follow up when email bounces |
+| Preferred visit date | `visitDate` | Required to plan hospitality |
+| Visited before? | `visitedBefore` | Required radio (yes/no) |
+| Street address | `addressStreet` | Required |
+| Address line 2 | `addressLine2` | Optional (apt, suite, etc.) |
+| City | `addressCity` | Required |
+| State | `addressState` | Required |
+| ZIP | `addressZip` | Required |
+| Country | `addressCountry` | Optional unless you are visiting from outside the United States; helps the hospitality team prepare travel directions or mailings. |
+| Address (formatted) | `address` | Hidden input populated by the client-side script |
+| Reason for connecting | `connectionReason` | Required |
+| Interests | `interests[]` | Required checkbox set (select at least one from the canonical list) |
+| Preferred follow-up | `preferredContact` | Required |
+| Notes | `notes` | Optional free text |
+| Redirect URL | `redirectUrl` | Defaults to `/connect/connect-card/thank-you` |
+| Source | `formSource` | `connect-card-web` (static form identifier) |
+
+The front-end script also ensures at least one `interests[]` checkbox is checked before submission and keeps the hidden `address` field in sync with the structured address inputs.
+
+### Option A: Google Sheet + Web App (static-friendly, recommended)
+
+1. In Google Sheets, create a tab called **ConnectCards**. Add columns that match the form `name` attributes:
+
+   | Column | Field name |
+   | --- | --- |
+   | `Full Name` | `fullName` |
+   | `Email` | `email` |
+   | `Phone` | `phone` |
+   | `Preferred visit date` | `visitDate` |
+   | `Visited before?` | `visitedBefore` |
+   | `Street address` | `addressStreet` |
+   | `Address line 2` | `addressLine2` |
+   | `City` | `addressCity` |
+   | `State` | `addressState` |
+   | `ZIP` | `addressZip` |
+   | `Address line (formatted)` | `address` |
+   | `Reason` | `connectionReason` |
+   | `Interests` | `interests` (comma-separated, from checkboxes) |
+   | `Preferred Contact` | `preferredContact` |
+   | `Notes` | `notes` |
+   | `Source` | `formSource` |
+   | `Submitted At` | you can add a timestamp column |
+
+   The form script constructs the `address` column from the street/city/state/ZIP parts so you can use the formatted version in mailings while still keeping the discrete parts for logistics.
+
+2. Open **Extensions > Apps Script**:
+
+  ```javascript
+  const SPREADSHEET_ID = "…"; // readable from the sheet URL
+   const SHEET_NAME = "ConnectCards";
+   const TURNSTILE_SECRET = PropertiesService.getScriptProperties().getProperty(
+     "PRIVATE_TURNSTILE_SECRET_KEY"
+   );
+
+   function doPost(e) {
+     const token = e.parameter["cf-turnstile-response"];
+     if (!verifyTurnstile(token, TURNSTILE_SECRET)) {
+       return ContentService.createTextOutput("Bot check failed").setMimeType(
+         ContentService.MimeType.TEXT
+       );
+     }
+
+     const row = [
+       e.parameter.fullName,
+       e.parameter.email,
+       e.parameter.phone,
+       e.parameter.visitDate,
+       e.parameter.visitedBefore,
+       e.parameter.addressStreet,
+       e.parameter.addressLine2,
+       e.parameter.addressCity,
+       e.parameter.addressState,
+       e.parameter.addressZip,
+       e.parameter.address,
+       e.parameter.connectionReason,
+       (Array.isArray(e.parameter.interests) ? e.parameter.interests : [e.parameter.interests])
+         .filter(Boolean)
+         .join(", "),
+       e.parameter.preferredContact,
+       e.parameter.notes,
+       e.parameter.formSource,
+       new Date().toISOString(),
+     ];
+
+     SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME).appendRow(row);
+
+     const redirectUrl = e.parameter.redirectUrl || "/connect/connect-card/thank-you";
+     return ContentService.createTextOutput(
+       `<script>location.replace("${redirectUrl}")</script>`
+     ).setMimeType(ContentService.MimeType.TEXT);
+   }
+
+  function verifyTurnstile(token, secret) {
+    if (!token || !secret) return false;
+    const response = UrlFetchApp.fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "post",
+      payload: {
+        secret,
+        response: token,
+      },
+    });
+    return JSON.parse(response.getContentText()).success === true;
+  }
+  ```
+
+   Use this script as the destination pointed to by `PRIVATE_CONNECT_CARD_FORWARD_URL` so the built-in `/api/connect-card` proxy can append rows on your behalf. You can also deploy the script alone and set `PUBLIC_CONNECT_CARD_FORM_ACTION` directly to its URL if you prefer.
+
+   - Store `PRIVATE_TURNSTILE_SECRET_KEY` in **Script Properties**.
+   - Deploy as **Web App**: execute as yourself, access “Anyone with the link.”
+
+3. Copy the Web App URL into your `.env` / environment as:
+
+   ```
+   PUBLIC_CONNECT_CARD_FORM_ACTION=https://script.google.com/macros/s/…/exec
+   PUBLIC_TURNSTILE_SITE_KEY=… (same site key shown by Cloudflare)
+   PRIVATE_TURNSTILE_SECRET_KEY=… (only in Apps Script)
+   ```
+
+4. Turnstile requires server-side verification. The script above checks `cf-turnstile-response` before writing and redirects users to `redirectUrl` (defaults to `/connect/connect-card/thank-you`).
+
+### Optional: provider-based backend (Option B) or SSR
+
+- If you prefer Formspree/Basin/etc., point `PUBLIC_CONNECT_CARD_FORM_ACTION` to the provider’s URL instead. Keep the same field names for consistent columns (you can use hidden inputs to rename if needed).
+- When you later enable SSR hosting, implement `web/src/pages/api/connect-card.ts` to accept the form via `request.formData()`, validate Turnstile with `fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", ...)`, append to your backend datastore, and respond with a redirect/JSON success.
+
+### Deploy checklist
+
+1. Confirm the form page renders the Turnstile widget (requires `PUBLIC_TURNSTILE_SITE_KEY`).
+2. Fill the form in the staging site and verify a row is added to the sheet within seconds.
+3. Confirm the browser lands on `/connect/connect-card/thank-you` after submit.
+4. Keep `PRIVATE_TURNSTILE_SECRET_KEY` secret (Apps Script only).
+</file>
+
 <file path="web/src/components/content/ContentCard.astro">
 ---
 export interface Props {
@@ -4748,6 +5029,36 @@ const { title, message } = Astro.props;
 </section>
 </file>
 
+<file path="web/src/content/announcements/2026-02-07-pathfinder-induction.md">
+---
+title: "Pathfinder induction and spring kickoff"
+date: 2026-02-07
+tags:
+  - events
+  - volunteers
+summary: "Pathfinder induction happens during the Divine Service on Sabbath, Feb 7, as we welcome 2026 Pathfinders."
+featured: true
+---
+Join the Pathfinders & Adventurers Club for its 2026 induction ceremony during the Divine Service on Sabbath, February 7. We will pause the main worship midway through the service to officially welcome new Pathfinders, celebrate the leaders, and bless the year of camping, community service, and spiritual growth ahead.
+
+Volunteers are especially welcome to help with hospitality, coordinating the ceremony, and keeping the children's corner calm so families can stay focused on fellowship. Reply to <firstspringfieldsda@gmail.com> by Wednesday, February 5, with the roles you can cover, and we will follow up about greeter assignments and refreshments for the reception that follows.
+</file>
+
+<file path="web/src/content/announcements/2026-02-10-board-meeting.md">
+---
+title: "Church board meeting"
+date: 2026-02-10
+tags:
+  - events
+  - ministries
+summary: "Board meets Tuesday, Feb 10 at 7:00 PM; agenda items due Feb 8."
+featured: true
+---
+The Church Board meets Tuesday, February 10, at 7:00 PM in the church office conference room. We will finalize the quarterly budget, review the spring outreach calendar, and identify volunteer needs for upcoming ministries.
+
+Board members and ministry leaders should confirm their attendance by replying to <firstspringfieldsda@gmail.com>. Please submit agenda items by Saturday, February 8, so the clerk can distribute a balanced schedule, and observers with a ministry update may request time by letting the clerk know ahead of the meeting. A livestream link will be shared with anyone who cannot join in person.
+</file>
+
 <file path="web/src/content/bulletins/2025-12-20.md">
 ---
 title: "Sabbath Bulletin"
@@ -4755,6 +5066,79 @@ date: "2025-12-20"
 summary: "Order of service, announcements, and weekly schedule."
 pdfUrl: "/bulletins/2025-12-20.pdf"
 ---
+</file>
+
+<file path="web/src/content/ministries/adventist-community-services.md">
+---
+title: "Adventist Community Services (ACS)"
+summary: "Holistic ministry serving the Pioneer Valley and Springfield through compassion and practical care."
+leaderName: "Adventist Community Services Team"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "Monthly programs (see details below)."
+category: "Outreach"
+tags: ["community", "outreach", "service", "holistic ministry"]
+---
+
+## Adventist Community Services (ACS)
+
+## Team
+
+Our Adventist Community Services ministry is led by a dedicated team of volunteers from First Springfield.
+
+- Brenda St George
+- Belinda Behnava
+- Donald Moore
+- Gabriele Moore
+- Carolyn Mutcherson
+- Ray Mutcherson
+- Pastor Abankwa Amoakohene
+
+Pastor Abankwa Amoakohene provides pastoral support and advocacy as the team serves the community.
+
+“At First Springfield Seventh-day Adventist Church, our mission is to humbly and lovingly serve the residents of the Pioneer Valley, the City of Springfield, and surrounding cities and towns. We seek to share the message of Jesus in tangible and meaningful ways by serving the whole person, a Christ-centered approach known as holistic ministry.”
+
+“Throughout Jesus’ earthly ministry, He consistently modeled a holistic approach to caring for humanity, especially those who were marginalized, disadvantaged, and disenfranchised. He met people where they were, addressed their physical, emotional, and spiritual needs, and offered hope, dignity, and restoration.”
+
+“As Ellen G. White beautifully wrote: “Christ’s method alone will give true success in reaching the people. The Savior mingled with men as one who desired their good. He showed His sympathy for them, ministered to their needs, and won their confidence. Then He bade them, ‘Follow Me.’””
+
+“Through our Community Services ministry, we strive to follow Christ’s example, serving with humility, compassion, and love, and reflecting God’s grace to all.”
+
+“Monthly Activities: Our community service programs are open to the public, and volunteers are always welcome to join us in serving others.”
+
+“• Adventist Community Services (ACS) Meeting – Held on the second Wednesday of each month from 5:30–6:45 PM. All are welcome to participate and learn how to serve the community.”
+
+“• Homeless Outreach Lunch – Prepared and delivered on the first Tuesday of each month in coordination with South Congregational Church in Springfield, MA.”
+
+“• Taylor Street Men’s Shelter Dinner – Prepared and delivered on the second Tuesday of each month, providing warm meals and fellowship to those in need.”
+
+“• Community Spaghetti Dinner – Held on the last Wednesday of each month from 5:00–6:00 PM, offering a free, welcoming meal to our neighbors.”
+</file>
+
+<file path="web/src/content/ministries/bible-study.md">
+---
+title: "Bible Study"
+summary: "Interactive study and discussion of Scripture."
+leaderName: "Bible Study Facilitator"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "4th Sabbath"
+category: "Bible Study"
+tags: ["bible", "study", "growth"]
+---
+
+## Overview
+
+We read the Bible together and talk about how to live it out.
+
+## How to get involved
+
+Bring your Bible and join the discussion.
+
+## Daily encouragement
+
+Our Bible Study ministry also curates short-form resources you can open from home. The
+[Daily Devotional](/resources/daily-devotional) highlights a thoughtful reflection each day, and the
+[Daily Bible Verse](/resources/daily-bible-verse) pairs a single Scripture passage with a brief meditation.
+Both are updated regularly to keep your personal Bible study fresh even when you cannot join a group session.
 </file>
 
 <file path="web/src/content/ministries/media-audio-visual.md">
@@ -4812,6 +5196,38 @@ Assistant Superintendent: Carol Elliott
 
 - https://michigansspm.org/talking_points/
 - https://3abnsabbathschoolpanel.com/
+</file>
+
+<file path="web/src/content/ministries/secretary-communications.md">
+---
+title: "Secretary/Communications"
+summary: "Keeps the church informed through weekly publications, office records, and member communication."
+leaderName: "Secretary/Communications Team"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "Produce weekly bulletin and announcements"
+category: "Leadership"
+tags: ["communications", "administration", "office"]
+---
+
+## Secretary/Communications
+
+Church Clerk: Myrna L Leiper
+
+Assistant Bulletin Secretary: Loreli Gaetki
+
+This team keeps office records straight, shepherds member communication, and stewards the weekly bulletin that links congregants to worship plans, volunteer needs, and outreach invites. We coordinate with pastors, ministry leads, and volunteers so every voice is represented in print and online.
+
+### Weekly updates
+
+- [Add weekly bulletin (link)](/resources/bulletins)
+- [Add weekly announcements (link)](/resources/announcements)
+
+Need to send an announcement, update attendance, or ask a question about the bulletin? Reach out at the church office email above and we will walk you through the submission window for the coming Sabbath.
+
+### Secretary page upgrade (paid add-on)
+
+- TODO: Document the planned secretary page upgrade requirements so the paid add-on work stays visible to the vendor.
+- This placeholder tracks the additional scope we discussed for the secretary area until design artifacts land.
 </file>
 
 <file path="web/src/content/ministries/womens-ministry.md">
@@ -4945,6 +5361,58 @@ export function getAnnouncementTag(value?: string) {
 ]
 </file>
 
+<file path="web/src/data/weekly-highlights.ts">
+export type WeeklyHighlight = {
+  activityId?: string;
+  text: string;
+  href?: string;
+  badge?: string;
+  tag?: string;
+  title?: string;
+  description?: string;
+  ctaHref?: string;
+  ctaLabel?: string;
+  external?: boolean;
+};
+
+const weeklyHighlights: WeeklyHighlight[] = [
+  {
+    activityId: "prayer-meeting",
+    text: "Prayer Meeting · Wednesdays at 7:00 PM · Church annex + Zoom",
+    href: "/connect/prayer",
+    badge: "This week",
+  },
+  {
+    activityId: "nar-anon",
+    text: "Nar-Anon · Thursdays at 7:00 PM – 8:30 PM in the Mother’s room",
+    badge: "Support",
+  },
+  {
+    activityId: "table-talk",
+    text: "Table Talk · Second Sabbath of every month · Youth conversations after worship",
+    badge: "Table Talk",
+    href: "/ministries/youth-young-adults",
+  },
+  {
+    activityId: "pathfinders",
+    text: "Pathfinders & Adventurers · 1st & 3rd Sabbaths · 3:00 PM – 5:00 PM",
+    href: "/ministries/pathfinders",
+  },
+  {
+    activityId: "mens-fellowship",
+    text: "Men's Fellowship · Fridays at 7:00 PM in the church annex for Bible study, prayer, and brotherhood",
+    badge: "Men's Fellowship",
+  },
+  {
+    activityId: "bible-study",
+    text: "Bible Study · Fourth Sabbath deeper dive for all ages",
+    href: "/ministries/bible-study",
+  },
+];
+
+export default weeklyHighlights;
+</file>
+
 <file path="web/src/lib/announcements.ts">
 import { getCollection } from "astro:content";
 import type { CollectionEntry } from "astro:content";
@@ -5045,305 +5513,83 @@ export function getRecentUpdates(entries: UpdateEntry[], limit = 4) {
 }
 </file>
 
-<file path="web/src/pages/connect/connect-card/index.astro">
+<file path="web/src/pages/connect/facilities/index.astro">
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
+import NoticeBanner from "../../../components/ui/NoticeBanner.astro";
+import { site } from "../../../data/site";
+import { mailto, tel } from "../../../lib/links";
 
-const formAction = import.meta.env.PUBLIC_CONNECT_CARD_FORM_ACTION ?? "";
-const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
-const pageOrigin = Astro.url?.origin;
-const thankYouPath = "/connect/connect-card/thank-you";
-const thankYouUrl = pageOrigin ? `${pageOrigin}${thankYouPath}` : thankYouPath;
-const interestOptions = [
-  { value: "plan-a-visit", label: "Plan a visit" },
-  { value: "service-info", label: "Worship or Sabbath School details" },
-  { value: "ministry", label: "Connect with a ministry" },
-  { value: "volunteer", label: "Volunteer opportunities" },
-  { value: "bible-study", label: "Bible study / small group" },
-];
-const connectionReasons = [
-  { value: "first-time-visit", label: "I am planning my first visit" },
-  { value: "moving-to-town", label: "We just moved to the area" },
-  { value: "prayer", label: "I’d like prayer or encouragement" },
-  { value: "questions", label: "I have a question about the church" },
-  { value: "other", label: "Other" },
-];
-const preferredContactOptions = [
-  { value: "email", label: "Email (fastest)" },
-  { value: "phone", label: "Phone call or text" },
-];
-const interestsId = (value: string) => `interest-${value}`;
+const emailHref = mailto(site.contact.email);
+const phoneHref = tel(site.contact.phone);
 ---
 
 <BaseLayout
-  title="Connect Card"
-  description="Submit a Connect Card to let the team know how to pray for you, follow up, or support your next steps."
+  title="Facilities"
+  description="Learn how to request and schedule space at First Springfield SDA."
 >
-  <script slot="head" is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <div class="stack">
+    <h1>Facilities use</h1>
 
-  <div class="stack connect-card">
-    <div class="connect-card__intro">
-      <h1>Connect Card</h1>
-      <p id="connect-card-summary" class="muted">
-        Share a little about yourself and how we can follow up. We’ll ask for your preferred contact method and
-        keep your information private unless you say otherwise.
+    <NoticeBanner variant="urgent">
+      <strong>Temporary suspension:</strong> Use of the Annex (fellowship hall, classrooms, and adjoining restrooms) is suspended until repairs finish. Please reach out to the church office before planning an event to confirm whether any spaces are currently available.
+    </NoticeBanner>
+
+    <section class="card stack" aria-labelledby="facilities-request-heading">
+      <h2 id="facilities-request-heading">How to request use</h2>
+      <p>
+        Share the basics of your event: what rooms you need, how many people you expect, and any equipment (sound, tables, audiovisual) you will be using. Email the church office at
+        <a href={emailHref}>{site.contact.email}</a> or call <a href={phoneHref}>{site.contact.phone}</a> and include "Facility request" in the subject line.
       </p>
-      {!formAction ? (
-        <div class="connect-card__warning" role="status">
-          <strong>Form not configured yet.</strong> Set <code>PUBLIC_CONNECT_CARD_FORM_ACTION</code> to your Google Apps Script
-          Web App URL before publishing.
-        </div>
-      ) : null}
-    </div>
-
-    <form
-      class="connect-card__form"
-      action={formAction || "#"}
-      method="POST"
-      accept-charset="UTF-8"
-      aria-describedby="connect-card-summary"
-    >
-      <div class="connect-card__grid">
-        <div class="form-field">
-          <label for="full-name">
-            Full name <span class="required" aria-hidden="true">*</span>
-          </label>
-          <input id="full-name" name="fullName" type="text" required autocomplete="name" placeholder="Jamie Rivera" />
-        </div>
-
-        <div class="form-field">
-          <label for="email">
-            Email <span class="required" aria-hidden="true">*</span>
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            autocomplete="email"
-            placeholder="name@example.com"
-          />
-        </div>
-
-        <div class="form-field">
-          <label for="phone">
-            Phone
-            <span class="form-helper">Calls/texts help us respond if email bounces.</span>
-          </label>
-          <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="(123) 456‑7890" />
-        </div>
-
-        <div class="form-field">
-          <label for="address">
-            Address
-            <span class="form-helper">Optional—useful when mailing resources or planning a visit.</span>
-          </label>
-          <textarea id="address" name="address" rows="2" placeholder="123 Main St, Springfield, MA"></textarea>
-        </div>
+      <div class="prose">
+        <ol>
+          <li>Confirm the preferred date(s) and time range, including setup and teardown windows.</li>
+          <li>Mention whether you need support from our media/AV volunteers, custodial crew, or parking volunteers.</li>
+          <li>Let us know if your group carries its own insurance or needs a certificate of insurance.</li>
+        </ol>
       </div>
+    </section>
 
-      <div class="form-section">
-        <label for="connection-reason">What best describes your reason for connecting?</label>
-        <select id="connection-reason" name="connectionReason" required>
-          <option value="">Choose one</option>
-          {connectionReasons.map((item) => (
-            <option value={item.value}>{item.label}</option>
-          ))}
-        </select>
-      </div>
-
-      <div class="form-section">
-        <p class="form-label">I’d like the team to follow up about:</p>
-        <div class="checkbox-grid">
-          {interestOptions.map((item) => (
-            <label class="checkbox" for={interestsId(item.value)}>
-              <input id={interestsId(item.value)} name="interests[]" value={item.value} type="checkbox" />
-              <span>{item.label}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div class="form-section">
-        <label for="preferred-contact">Preferred follow-up method <span class="required" aria-hidden="true">*</span></label>
-        <select id="preferred-contact" name="preferredContact" required>
-          <option value="">Select</option>
-          {preferredContactOptions.map((item) => (
-            <option value={item.value}>{item.label}</option>
-          ))}
-        </select>
-      </div>
-
-      <div class="form-section">
-        <label for="notes">Anything else we should know?</label>
-        <textarea
-          id="notes"
-          name="notes"
-          rows="4"
-          placeholder="Share a prayer request, questions about ministry, or a time to connect."
-        ></textarea>
-      </div>
-
-      <input type="hidden" name="redirectUrl" value={thankYouUrl} />
-      <input type="hidden" name="formSource" value="connect-card-web" />
-
-      <div class="form-section turnstile">
-        {turnstileSiteKey ? (
-          <div class="cf-turnstile" data-sitekey={turnstileSiteKey}></div>
-        ) : (
-          <p class="muted small">
-            For spam protection, set <code>PUBLIC_TURNSTILE_SITE_KEY</code> and <code>PRIVATE_TURNSTILE_SECRET_KEY</code> (used
-            server-side) so we can verify the widget before writing to the sheet.
-          </p>
-        )}
-      </div>
-
-      <p class="privacy-note small muted">
-        Privacy note: We ask for phone or address so the pastor or hospitality team can follow up personally and send you
-        relevant arrival details. We do not share your information outside the church family without permission.
+    <section class="card stack" aria-labelledby="facilities-approval-heading">
+      <h2 id="facilities-approval-heading">Who approves &amp; schedules</h2>
+      <p>
+        The Pastor, Head Elder, and church office team review every request to avoid calendar conflicts and make sure ministry priorities stay in step with our mission. Once everyone signs off, the office will confirm the room assignment and email you a reservation summary with any follow-up items.
       </p>
+      <p>
+        Belinda Behnava, who coordinates facility approvals on behalf of the Head Deaconess, is our named scheduler. Mention her name when you email or call the office for confirmation so the right ministry oversight is included in the approval.
+      </p>
+      <p class="muted">
+        Please do not assume a space is reserved until you receive an approval email. Approval may include instructions for additional ministry oversight depending on the type of event.
+      </p>
+    </section>
 
-      <div class="form-actions">
-        <button type="submit" class="primary-action">
-          Submit a Connect Card
-        </button>
-        <a class="ghost-action" href="/connect/contact">Need help now?</a>
+    <section class="card stack" aria-labelledby="facilities-lead-time-heading">
+      <h2 id="facilities-lead-time-heading">Expected lead time</h2>
+      <p>
+        Standard events require at least four weeks notice so we can review the calendar, verify staffing, and align insurance coverage. Large receptions, off-site retreats, or anything requiring extra custodial support should be submitted six weeks ahead. Smaller meetings may be considered with two weeks' notice but are subject to available space.
+      </p>
+      <p class="muted">
+        When possible, confirm recurring meetings for the next quarter before the last Sunday of the current month so we can hold the rooms you rely on.
+      </p>
+    </section>
+
+    <section class="card stack" aria-labelledby="facilities-rules-heading">
+      <h2 id="facilities-rules-heading">Basic rules</h2>
+      <div class="prose">
+        <ul>
+          <li>Leave every space as you found it—wipe down tables, sweep floors, return chairs and equipment to the storage closet, and remove all trash. Extra trash bags are available in the janitor closet; please bag and haul trash to the dumpster behind the building.</li>
+          <li>Keys for classrooms, the main sanctuary, or the Annex must be picked up and returned at the church office during business hours. Report any missing keys immediately so we can re-key locks if needed.</li>
+          <li>Protect carpets and wood floors by using spill guards, liners, or trays when serving food or beverages. No confetti, helium balloons, or permanent adhesives on walls.</li>
+          <li>Keep exterior doors locked when you are not escorting guests, and make sure everyone exits before the building is secured. Immediately report any maintenance or safety issues to the office.</li>
+          <li>If your group needs parking assistance, we can supply cones or volunteers. Please set up signage only with office approval so we do not block emergency routes.</li>
+        </ul>
       </div>
-    </form>
+      <p class="small muted">
+        Failure to follow these guidelines may result in loss of future facility privileges. If your plans change, let us know as soon as possible so we can free up the space for another group.
+      </p>
+    </section>
   </div>
 </BaseLayout>
-
-<style>
-  .connect-card {
-    max-width: 52rem;
-  }
-
-  .connect-card__intro + .connect-card__form {
-    margin-top: var(--space-6);
-  }
-
-  .connect-card__warning {
-    border-left: 4px solid var(--color-primary);
-    padding: var(--space-3);
-    background: var(--color-surface-2);
-  }
-
-  .connect-card__form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-6);
-  }
-
-  .connect-card__grid {
-    display: grid;
-    gap: var(--space-4);
-  }
-
-  .connect-card__form .form-field {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-  }
-
-  .connect-card__form label {
-    font-weight: 700;
-  }
-
-  .connect-card__form input,
-  .connect-card__form select,
-  .connect-card__form textarea {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-2);
-    padding: var(--space-3);
-    font: inherit;
-    background: var(--color-white);
-  }
-
-  .connect-card__form textarea {
-    resize: vertical;
-    min-height: 3rem;
-  }
-
-  .required {
-    margin-left: 0.25rem;
-    color: var(--color-secondary);
-  }
-
-  .form-helper {
-    display: block;
-    font-size: var(--font-size-0);
-    color: var(--color-text-muted);
-    font-weight: 400;
-  }
-
-  .connect-card__form .form-section {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  .connect-card__form .checkbox-grid {
-    display: grid;
-    gap: var(--space-2);
-  }
-
-  .connect-card__form .checkbox {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-weight: 500;
-    font-size: 0.95rem;
-  }
-
-  .connect-card__form .checkbox input {
-    margin: 0;
-    accent-color: var(--color-primary);
-  }
-
-  .connect-card__form .turnstile {
-    padding: var(--space-3);
-    border: 1px dashed var(--color-border);
-    border-radius: var(--radius-2);
-    background: var(--color-surface-2);
-  }
-
-  .connect-card__form .form-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-    align-items: center;
-  }
-
-  .connect-card__form .primary-action {
-    background: var(--color-primary);
-    color: var(--color-white);
-    border: none;
-    border-radius: var(--radius-3);
-    padding: var(--space-3) var(--space-5);
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  .connect-card__form .ghost-action {
-    color: var(--color-primary);
-    font-weight: 600;
-    text-decoration: underline;
-  }
-
-  .connect-card .privacy-note {
-    margin: 0;
-  }
-
-  @media (min-width: 720px) {
-    .connect-card__grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .form-field:nth-child(odd) {
-      min-width: 0;
-    }
-  }
-</style>
 </file>
 
 <file path="web/src/pages/events/[id].astro">
@@ -6062,6 +6308,16 @@ test.describe("Smoke - cross browser", () => {
 </file>
 
 <file path="web/.env.example">
+# Connect Card configuration
+PUBLIC_CONNECT_CARD_FORM_ACTION=
+PUBLIC_TURNSTILE_SITE_KEY=
+PRIVATE_TURNSTILE_SECRET_KEY=
+PRIVATE_CONNECT_CARD_FORWARD_URL=
+CONNECT_CARD_NOTIFY_EMAILS=
+CONNECT_CARD_NOTIFY_FROM=firstspringfieldsda@gmail.com
+CONNECT_CARD_SENDGRID_API_KEY=
+PUBLIC_PRAYER_MEETING_ZOOM_URL=
+
 # Future use (Phase 5+)
 # PUBLIC_SITE_URL=https://example.com
 PUBLIC_CF_ANALYTICS_TOKEN=
@@ -6501,6 +6757,668 @@ const { mission } = site;
     </section>
   </div>
 </BaseLayout>
+</file>
+
+<file path="web/src/pages/connect/connect-card/index.astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import churchExterior from "../../../assets/photos/first-springfield-exterior.png";
+import bridgeDusk from "../../../assets/photos/bridge-dusk.jpg";
+import adventistCommunityServicesLogo from "../../../assets/photos/ministries-adventist-community-services-logo.png";
+import childrensMinistryBanner from "../../../assets/photos/ministries-childrens-ministry-banner.png";
+import youthLogo from "../../../assets/photos/ministries-youth-young-adults-ay-logo.png";
+import pathfindersLogo from "../../../assets/photos/club-pathfinders-logo.png";
+
+const customFormAction = import.meta.env.PUBLIC_CONNECT_CARD_FORM_ACTION;
+const defaultFormAction = "/api/connect-card";
+const formAction = customFormAction || defaultFormAction;
+const usesCustomFormAction = Boolean(customFormAction);
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
+const pageOrigin = Astro.url?.origin;
+const thankYouPath = "/connect/connect-card/thank-you";
+const thankYouUrl = pageOrigin ? `${pageOrigin}${thankYouPath}` : thankYouPath;
+
+const galleryPhotos = [
+  {
+    src: bridgeDusk.src,
+    alt: "Evening light on the bridge that leads toward our campus.",
+    caption: "Neighborhood welcomes before you even cross the bridge.",
+    tag: "Community",
+  },
+  {
+    src: churchExterior.src,
+    alt: "First Springfield SDA Church building and welcome sign.",
+    caption: "Our sanctuary is open for worship, fellowship, and hospitality.",
+    tag: "Welcome",
+  },
+  {
+    src: childrensMinistryBanner.src,
+    alt: "A colorful banner announcing Children’s Ministry programming.",
+    caption: "Children’s Ministry storytelling, music, and hugs make every visitor feel known.",
+    tag: "Children",
+  },
+  {
+    src: pathfindersLogo.src,
+    alt: "Pathfinders & Adventurers club crest.",
+    caption: "Pathfinders & Adventurers gather for service, camping, and faith-building adventures.",
+    tag: "Pathfinders",
+  },
+  {
+    src: adventistCommunityServicesLogo.src,
+    alt: "Adventist Community Services logo.",
+    caption: "ACS outreach brings meals, care, and compassion to Springfield neighbors.",
+    tag: "Service",
+  },
+  {
+    src: youthLogo.src,
+    alt: "Youth & Young Adults ministry emblem.",
+    caption: "AY conversations, prayer, and mentorship keep young people connected.",
+    tag: "Youth",
+  },
+];
+
+const interestOptions = [
+  { value: "prayer", label: "Prayer" },
+  { value: "bible-study", label: "Bible study" },
+  { value: "visitation", label: "Visitation" },
+  { value: "conversion", label: "Conversion" },
+  { value: "baptism", label: "Baptism" },
+  { value: "transfer", label: "Transfer" },
+  { value: "facility-use", label: "Facility use" },
+];
+
+const connectionReasons = [
+  { value: "first-time-visit", label: "I am planning my first visit" },
+  { value: "moving-to-town", label: "We just moved to the area" },
+  { value: "prayer", label: "I’d like prayer or encouragement" },
+  { value: "questions", label: "I have a question about the church" },
+  { value: "other", label: "Other" },
+];
+
+const preferredContactOptions = [
+  { value: "email", label: "Email (fastest)" },
+  { value: "phone", label: "Phone call or text" },
+];
+
+const interestsId = (value: string) => `interest-${value}`;
+---
+
+<BaseLayout
+  title="Connect Card"
+  description="Submit a Connect Card to let the team know how to pray for you, follow up, or support your next steps."
+>
+  <script slot="head" is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+  <div class="stack connect-card">
+    <div class="connect-card__intro">
+      <h1>Connect Card</h1>
+      <p id="connect-card-summary" class="muted">
+        Tell us about your visit window, how we can pray for you, and which ministries you’d like to explore.
+        We’ll ask for your preferred follow-up method and keep your information private unless you say otherwise.
+      </p>
+      {!usesCustomFormAction ? (
+        <div class="connect-card__warning" role="status">
+          <strong>Built-in Connect Card backend is active.</strong> Before publishing, configure
+          <code>PRIVATE_CONNECT_CARD_FORWARD_URL</code> and <code>PRIVATE_TURNSTILE_SECRET_KEY</code>
+          (and optionally <code>CONNECT_CARD_NOTIFY_EMAILS</code>) so submissions forward and trigger alerts.
+        </div>
+      ) : null}
+    </div>
+
+    <section class="connect-card__gallery" aria-labelledby="connect-card-gallery-title">
+      <div class="connect-card__gallery-head">
+        <p class="muted small">This is your church family</p>
+        <h2 id="connect-card-gallery-title">This is your church family</h2>
+        <p class="muted">
+          Worship, fellowship, and service all intersect in the people you’ll meet when you visit First Springfield.
+        </p>
+      </div>
+      <div class="connect-card__gallery-grid">
+        {galleryPhotos.map((photo) => (
+          <figure class="connect-card__photo">
+            <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
+            <figcaption>
+              <span class="connect-card__photo-tag">{photo.tag}</span>
+              <p>{photo.caption}</p>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+
+    <form
+      class="connect-card__form"
+      action={formAction || "#"}
+      method="POST"
+      accept-charset="UTF-8"
+      aria-describedby="connect-card-summary"
+    >
+      <div class="connect-card__grid">
+        <div class="form-field">
+          <label for="full-name">
+            Full name <span class="required" aria-hidden="true">*</span>
+          </label>
+          <input id="full-name" name="fullName" type="text" required autocomplete="name" placeholder="Jamie Rivera" />
+        </div>
+
+        <div class="form-field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="name@example.com" />
+        </div>
+
+        <div class="form-field">
+          <label for="phone">
+            Phone <span class="required" aria-hidden="true">*</span>
+            <span class="form-helper">Calls/texts help us respond if email bounces.</span>
+          </label>
+          <input id="phone" name="phone" type="tel" required autocomplete="tel" placeholder="(123) 456‑7890" />
+        </div>
+
+        <div class="form-field">
+          <label for="visit-date">
+            Preferred visit date <span class="required" aria-hidden="true">*</span>
+            <span class="form-helper">Let us know when you hope to visit so we can plan hospitality.</span>
+          </label>
+          <input id="visit-date" name="visitDate" type="date" required />
+        </div>
+      </div>
+
+      <div class="form-section connect-card__visited">
+        <fieldset>
+          <legend>Have you visited First Springfield before?</legend>
+          <p class="form-helper">Knowing your familiarity helps us tailor your welcome.</p>
+          <div class="radio-group">
+            <label class="radio" for="visited-before-yes">
+              <input id="visited-before-yes" name="visitedBefore" type="radio" value="yes" required />
+              <span>Yes</span>
+            </label>
+            <label class="radio" for="visited-before-no">
+              <input id="visited-before-no" name="visitedBefore" type="radio" value="no" required />
+              <span>No</span>
+            </label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="form-section connect-card__address">
+        <div class="connect-card__section-heading">
+          <p class="form-label">
+            Address <span class="required" aria-hidden="true">*</span>
+          </p>
+          <span class="form-helper">Needed for arrival info, mailings, or hospitality follow-up.</span>
+        </div>
+        <div class="address-grid">
+          <div class="form-field">
+            <label for="address-street">Street address <span class="required" aria-hidden="true">*</span></label>
+            <input
+              id="address-street"
+              data-address-part
+              name="addressStreet"
+              type="text"
+              required
+              placeholder="123 Main St"
+              autocomplete="address-line1"
+            />
+          </div>
+          <div class="form-field form-field--wide">
+            <label for="address-line2">Line 2 (apt, suite, etc.)</label>
+            <input
+              id="address-line2"
+              data-address-part
+              name="addressLine2"
+              type="text"
+              placeholder="Suite 4"
+              autocomplete="address-line2"
+            />
+          </div>
+          <div class="form-field">
+            <label for="address-city">City <span class="required" aria-hidden="true">*</span></label>
+            <input
+              id="address-city"
+              data-address-part
+              name="addressCity"
+              type="text"
+              required
+              placeholder="Springfield"
+              autocomplete="address-level2"
+            />
+          </div>
+          <div class="form-field">
+            <label for="address-state">State <span class="required" aria-hidden="true">*</span></label>
+            <input
+              id="address-state"
+              data-address-part
+              name="addressState"
+              type="text"
+              required
+              placeholder="MA"
+              autocomplete="address-level1"
+            />
+          </div>
+          <div class="form-field">
+            <label for="address-zip">ZIP code <span class="required" aria-hidden="true">*</span></label>
+            <input
+              id="address-zip"
+              data-address-part
+              name="addressZip"
+              type="text"
+              required
+              placeholder="01118"
+              autocomplete="postal-code"
+            />
+          </div>
+          <div class="form-field">
+            <label for="address-country">Country</label>
+            <span class="form-helper">Optional unless you are visiting from outside the U.S.</span>
+            <input
+              id="address-country"
+              data-address-part
+              name="addressCountry"
+              type="text"
+              placeholder="United States"
+              autocomplete="country"
+            />
+          </div>
+        </div>
+        <input type="hidden" id="address-summary" name="address" required />
+      </div>
+
+      <div class="form-section">
+        <label for="connection-reason">What best describes your reason for connecting?</label>
+        <select id="connection-reason" name="connectionReason" required>
+          <option value="">Choose one</option>
+          {connectionReasons.map((item) => (
+            <option value={item.value}>{item.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div class="form-section connect-card__interests">
+        <p id="interests-label" class="form-label">
+          I’d like the team to follow up about:
+          <span class="required" aria-hidden="true">*</span>
+        </p>
+        <p class="form-helper">Choose all that apply so we can match you with the right team.</p>
+        <div
+          class="checkbox-grid"
+          role="group"
+          aria-labelledby="interests-label"
+          aria-describedby="interests-error"
+        >
+          {interestOptions.map((item) => (
+            <label class="checkbox" for={interestsId(item.value)}>
+              <input id={interestsId(item.value)} name="interests[]" value={item.value} type="checkbox" />
+              <span>{item.label}</span>
+            </label>
+          ))}
+        </div>
+        <p id="interests-error" class="form-error" role="alert" aria-live="assertive" hidden></p>
+      </div>
+
+      <div class="form-section">
+        <label for="preferred-contact">Preferred follow-up method <span class="required" aria-hidden="true">*</span></label>
+        <select id="preferred-contact" name="preferredContact" required>
+          <option value="">Select</option>
+          {preferredContactOptions.map((item) => (
+            <option value={item.value}>{item.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div class="form-section">
+        <label for="notes">Anything else we should know?</label>
+        <textarea
+          id="notes"
+          name="notes"
+          rows="4"
+          placeholder="Share a prayer request, questions about ministry, or a time to connect."
+        ></textarea>
+      </div>
+
+      <input type="hidden" name="redirectUrl" value={thankYouUrl} />
+      <input type="hidden" name="formSource" value="connect-card-web" />
+
+      <div class="form-section turnstile">
+        {turnstileSiteKey ? (
+          <div class="cf-turnstile" data-sitekey={turnstileSiteKey}></div>
+        ) : (
+          <p class="muted small">
+            For spam protection, set <code>PUBLIC_TURNSTILE_SITE_KEY</code> and <code>PRIVATE_TURNSTILE_SECRET_KEY</code> (used
+            server-side) so we can verify the widget before writing to the sheet.
+          </p>
+        )}
+      </div>
+
+      <p class="privacy-note small muted">
+        Privacy note: We ask for phone, visit details, and address so the pastor, hospitality, or children’s team can respond
+        with arrival information, ministry invitations, or resources you request. We will not share personal data outside the house
+        of worship without permission.
+      </p>
+
+      <div class="form-actions">
+        <button type="submit" class="primary-action">
+          Submit a Connect Card
+        </button>
+        <a class="ghost-action" href="/connect/contact">Need help now?</a>
+      </div>
+    </form>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+(function () {
+  const focusFirstInvalidField = (form) => {
+    const firstInvalid = form.querySelector(":invalid");
+    if (firstInvalid instanceof HTMLElement && document.activeElement !== firstInvalid) {
+      firstInvalid.focus();
+    }
+  };
+
+  const init = () => {
+    const form = document.querySelector(".connect-card__form");
+    if (!form) return;
+
+    const addressInputs = Array.from(form.querySelectorAll("[data-address-part]"));
+    const addressSummary = form.querySelector("#address-summary");
+
+    const updateAddressSummary = () => {
+      if (!addressSummary) return;
+      const parts = addressInputs.map((input) => input.value.trim()).filter(Boolean);
+      addressSummary.value = parts.join(", ");
+    };
+
+    addressInputs.forEach((input) => input.addEventListener("input", updateAddressSummary));
+    updateAddressSummary();
+
+    const interestInputs = Array.from(form.querySelectorAll('input[name="interests[]"]'));
+    const interestErrorElement = form.querySelector("#interests-error");
+
+    const showInterestError = (message) => {
+      if (!interestErrorElement) return;
+      interestErrorElement.textContent = message;
+      interestErrorElement.hidden = false;
+    };
+
+    const hideInterestError = () => {
+      if (!interestErrorElement) return;
+      interestErrorElement.textContent = "";
+      interestErrorElement.hidden = true;
+    };
+
+    if (interestInputs.length) {
+      const interestErrorMessage = "Select at least one interest so we can best support you.";
+
+      const resetInterestValidation = () => {
+        interestInputs.forEach((input) => input.setCustomValidity(""));
+        hideInterestError();
+      };
+
+      interestInputs.forEach((input) => {
+        input.setAttribute("aria-describedby", "interests-error");
+        input.addEventListener("change", resetInterestValidation);
+      });
+
+      form.addEventListener("submit", (event) => {
+        const hasAny = interestInputs.some((input) => input.checked);
+        if (!hasAny) {
+          interestInputs[0].setCustomValidity(interestErrorMessage);
+          showInterestError(interestErrorMessage);
+          if (typeof form.reportValidity === "function") {
+            form.reportValidity();
+          }
+          interestInputs[0].focus();
+          event.preventDefault();
+          return;
+        }
+      });
+    }
+
+    form.addEventListener("submit", () => {
+      setTimeout(() => focusFirstInvalidField(form), 0);
+    });
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+<style>
+  .connect-card {
+    max-width: 52rem;
+  }
+
+  .connect-card__intro + .connect-card__gallery,
+  .connect-card__gallery + .connect-card__form {
+    margin-top: var(--space-6);
+  }
+
+  .connect-card__gallery {
+    background: var(--color-surface-2);
+    border-radius: var(--radius-3);
+    padding: var(--space-4) var(--space-5);
+    border: 1px solid var(--color-border);
+  }
+
+  .connect-card__gallery-head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+
+  .connect-card__gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-3);
+  }
+
+  .connect-card__photo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .connect-card__photo img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: var(--radius-2);
+    display: block;
+  }
+
+  .connect-card__photo-tag {
+    text-transform: uppercase;
+    font-size: var(--font-size-0);
+    color: var(--color-primary);
+    letter-spacing: 0.08em;
+  }
+
+  .connect-card__photo figcaption p {
+    margin: 0;
+  }
+
+  .connect-card__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .connect-card__grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .form-field--wide {
+    grid-column: span 2;
+  }
+
+  .connect-card__form label {
+    font-weight: 700;
+  }
+
+  .connect-card__form input,
+  .connect-card__form select,
+  .connect-card__form textarea {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    padding: var(--space-3);
+    font: inherit;
+    background: var(--color-white);
+  }
+
+  .connect-card__form textarea {
+    resize: vertical;
+    min-height: 3rem;
+  }
+
+  .required {
+    margin-left: 0.25rem;
+    color: var(--color-secondary);
+  }
+
+  .form-helper {
+    display: block;
+    font-size: var(--font-size-0);
+    color: var(--color-text-muted);
+    font-weight: 400;
+  }
+
+  .form-error {
+    margin: 0;
+    font-size: var(--font-size-0);
+    color: #b00020;
+  }
+
+  .form-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .connect-card__visited fieldset {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    padding: var(--space-3);
+    margin: 0;
+  }
+
+  .connect-card__visited legend {
+    font-weight: 700;
+  }
+
+  .radio-group {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .radio {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .radio input {
+    margin: 0;
+    accent-color: var(--color-primary);
+  }
+
+  .connect-card__address {
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-3);
+    padding: var(--space-4);
+    background: var(--color-surface);
+  }
+
+  .connect-card__section-heading {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .address-grid {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+
+  .connect-card__interests .checkbox-grid {
+    display: grid;
+    gap: var(--space-2);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  .checkbox input {
+    margin: 0;
+    accent-color: var(--color-primary);
+  }
+
+  .turnstile {
+    padding: var(--space-3);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-2);
+    background: var(--color-surface-2);
+  }
+
+  .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-items: center;
+  }
+
+  .primary-action {
+    background: var(--color-primary);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-3);
+    padding: var(--space-3) var(--space-5);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .ghost-action {
+    color: var(--color-primary);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  .connect-card .privacy-note {
+    margin: 0;
+  }
+
+  @media (min-width: 720px) {
+    .connect-card__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .form-field:nth-child(odd) {
+      min-width: 0;
+    }
+  }
+</style>
 </file>
 
 <file path="web/src/pages/connect/team/index.astro">
@@ -8598,152 +9516,6 @@ function linkAttrs(item: { href: string; external?: boolean }) {
 </script>
 </file>
 
-<file path="web/src/data/activities.ts">
-export type ActivityCategory = "service" | "ministry" | "event" | "community";
-
-export type RecurringActivity = {
-  id: string;
-  title: string;
-  cadence: string;
-  time?: string;
-  day?: string;
-  link?: string;
-  note?: string;
-  category?: ActivityCategory;
-};
-
-export type OneOffEvent = {
-  title: string;
-  start: string;
-  link?: string;
-  note?: string;
-};
-
-export const recurringActivities: RecurringActivity[] = [
-  {
-    id: "sabbath-school",
-    title: "Sabbath School",
-    cadence: "Weekly study groups for every age",
-    day: "Saturday",
-    time: "10:00 AM",
-    link: "/ministries/adult-sabbath-school",
-    note: "Classes for children, youth, and adults in-person",
-    category: "service",
-  },
-  {
-    id: "worship-service",
-    title: "Worship service",
-    cadence: "Celebration via music and preaching",
-    day: "Saturday",
-    time: "11:15 AM",
-    link: "/connect/worship-with-us",
-    note: "Livestream + in-person fellowship",
-    category: "service",
-  },
-  {
-    id: "prayer-meeting",
-    title: "Prayer meeting",
-    cadence: "Midweek prayer, praise, and study",
-    day: "Wednesday",
-    time: "7:00 PM",
-    link: "/connect/prayer",
-    note: "Hybrid gathering with scripture focus",
-    category: "service",
-  },
-  {
-    id: "nar-anon",
-    title: "Nar-Anon",
-    cadence: "Mondays at 7:00 PM in the fellowship hall",
-    day: "Monday",
-    time: "7:00 PM",
-    note: "Support for families and friends affected by addiction",
-    category: "community",
-  },
-  {
-    id: "pathfinders",
-    title: "Pathfinders and Adventurers",
-    cadence: "Meet on the first and third Sabbath",
-    link: "/ministries/pathfinders",
-    note: "Public",
-    category: "ministry",
-  },
-  {
-    id: "table-talk",
-    title: "Table Talk",
-    cadence: "Friday small groups over supper",
-    day: "Friday",
-    note: "Youth and young adult conversations around faith",
-    category: "ministry",
-  },
-  {
-    id: "board-meeting",
-    title: "Board meeting",
-    cadence: "Second Tuesday of every month",
-    link: "/ministries/board-meeting",
-    note: "Members only",
-    category: "event",
-  },
-  {
-    id: "mens-ministry",
-    title: "Men's ministry",
-    cadence: "Weekly Friday fellowship",
-    time: "7:00 PM",
-    link: "/ministries/mens-ministry",
-    note: "Public",
-    category: "ministry",
-  },
-  {
-    id: "womens-ministry",
-    title: "Women's ministry",
-    cadence: "First Tuesday of every month",
-    link: "/ministries/womens-ministry",
-    note: "Public",
-    category: "ministry",
-  },
-  {
-    id: "community-meal",
-    title: "Free spaghetti dinner",
-    cadence: "Fourth Wednesday each month",
-    link: "/ministries/community-meal-spaghetti",
-    note: "Public outreach meal",
-    category: "community",
-  },
-  {
-    id: "bible-study",
-    title: "Bible study",
-    cadence: "Fourth Sabbath",
-    link: "/ministries/bible-study",
-    note: "Public",
-    category: "ministry",
-  },
-];
-
-export const oneOffEvents: OneOffEvent[] = [];
-
-export type PrayerMeetingDetails = {
-  title: string;
-  day: string;
-  time: string;
-  location: string;
-  zoomUrl: string;
-  dialIn: string;
-  meetingId: string;
-  passcode: string;
-};
-
-export const prayerMeetingDetails: PrayerMeetingDetails = {
-  title: "Midweek Prayer Meeting",
-  day: "Wednesday",
-  time: "7:00 PM",
-  location: "Church annex",
-  zoomUrl:
-    "https://us02web.zoom.us/j/87430121210?pwd=QVNCRUlXcDdtU2dUSUdrbFdVdDlMUT09",
-  dialIn: "(646) 558-8656",
-  meetingId: "874 3012 1210",
-  passcode: "487844",
-};
-</file>
-
 <file path="web/src/pages/connect/prayer/index.astro">
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
@@ -8788,6 +9560,7 @@ const hasPrayerForm = Boolean(prayerFormUrl && prayerFormUrl !== "TBD");
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Schedule from "../../../components/ui/Schedule.astro";
 import { site } from "../../../data/site";
+import { prayerMeetingDetails } from "../../../data/activities";
 ---
 
 <BaseLayout
@@ -8819,18 +9592,14 @@ import { site } from "../../../data/site";
         Join us midweek for prayer, encouragement, and Bible study.
       </p>
       <ul class="muted">
-        <li><strong>When:</strong> Wednesdays at 7:00 p.m.</li>
-        <li><strong>In person:</strong> Church annex</li>
+        <li><strong>When:</strong> {prayerMeetingDetails.day} · {prayerMeetingDetails.time}</li>
+        <li><strong>In person:</strong> {prayerMeetingDetails.location}</li>
         <li><strong>Online:</strong>
-          <a
-            href="https://us02web.zoom.us/j/87430121210?pwd=QVNCRUlXcDdtU2dUSUdrbFdVdDlMUT09"
-            target="_blank"
-            rel="noreferrer"
-          >Join via Zoom</a>
+          <a href={prayerMeetingDetails.zoomUrl} target="_blank" rel="noreferrer">Join via Zoom</a>
         </li>
-        <li><strong>Dial-in:</strong> (646) 558-8656</li>
-        <li><strong>Meeting ID:</strong> 874 3012 1210</li>
-        <li><strong>Passcode:</strong> 487844</li>
+        <li><strong>Dial-in:</strong> {prayerMeetingDetails.dialIn}</li>
+        <li><strong>Meeting ID:</strong> {prayerMeetingDetails.meetingId}</li>
+        <li><strong>Passcode:</strong> {prayerMeetingDetails.passcode}</li>
       </ul>
     </section>
   </div>
@@ -9084,134 +9853,6 @@ export default defineConfig({
 });
 </file>
 
-<file path="web/src/components/sections/HeroBanner.astro">
----
-import type { ImageMetadata } from "astro";
-import { Image } from "astro:assets";
-import HeroUI from "../ui/Hero.astro";
-
-export type Props = {
-  title: string;
-  subtitle?: string;
-  primaryCtaLabel?: string;
-  primaryCtaHref?: string;
-  secondaryCtaLabel?: string;
-  secondaryCtaHref?: string;
-
-  background: ImageMetadata;
-
-  /**
-   * Keep the bridge centered-ish.
-   * Example: "50% 55%" (x y)
-   */
-  objectPosition?: string;
-};
-
-const {
-  background,
-  objectPosition = "50% 55%",
-  ...heroProps
-} = Astro.props as Props;
-const hasMetaSlot = Boolean(Astro.slots?.meta);
----
-
-<section class="heroBanner fullbleed" style={`--hero-object-position:${objectPosition};`}>
-  <div class="heroBanner__media" aria-hidden="true">
-    <Image
-      src={background}
-      alt=""
-      widths={[640, 960, 1280, 1600, 1920]}
-      sizes="100vw"
-      loading="eager"
-      decoding="async"
-      fetchpriority="high"
-      class="heroBanner__img"
-    />
-    <div class="heroBanner__scrim" aria-hidden="true"></div>
-  </div>
-
-  <div class="heroBanner__content">
-    <div class="heroBanner__container">
-      <HeroUI {...heroProps} className="hero-card">
-        {hasMetaSlot ? <slot name="meta" slot="meta" /> : null}
-      </HeroUI>
-    </div>
-  </div>
-</section>
-
-<style>
-  .heroBanner {
-    position: relative;
-    padding: var(--space-12) 0;
-    border-bottom: 1px solid var(--color-border);
-    overflow: hidden;
-    --hero-content-offset: clamp(var(--space-4), 3vw, var(--space-6));
-  }
-
-  .heroBanner__media {
-    position: absolute;
-    inset: 0;
-  }
-
-  .heroBanner__img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: var(--hero-object-position);
-    transform: scale(1.02);
-  }
-
-  .heroBanner__scrim {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      180deg,
-      rgba(11, 15, 23, 0.45) 0%,
-      rgba(11, 15, 23, 0.18) 45%,
-      rgba(11, 15, 23, 0.55) 100%
-    );
-  }
-
-  .heroBanner__content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    justify-content: flex-start;
-  }
-
-  /* Match BaseLayout container sizing without nesting issues */
-  .heroBanner__container {
-    width: min(var(--container-max), calc(100% - var(--hero-content-offset)));
-    margin: 0;
-    padding-left: var(--hero-content-offset);
-  }
-
-  /* Keep the existing “card” look, but make it sit nicely on the photo */
-  :global(.heroBanner .hero.card) {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    border-color: rgba(255, 255, 255, 0.35);
-  }
-
-  @media (max-width: 720px) {
-    .heroBanner {
-      padding: var(--space-8) 0;
-      --hero-content-offset: var(--space-4);
-      --hero-object-position: 50% 50%;
-    }
-  }
-
-  @media (prefers-reduced-data: reduce) {
-    .heroBanner__media {
-      display: none;
-    }
-    .heroBanner {
-      background: var(--color-surface-2);
-    }
-  }
-</style>
-</file>
-
 <file path="web/src/components/Footer.astro">
 ---
 import { site } from "../data/site";
@@ -9270,52 +9911,155 @@ const year = new Date().getFullYear();
 </footer>
 </file>
 
-<file path="web/src/content/ministries/pathfinders.md">
----
-title: "Pathfinders & Adventurers"
-summary: "The Seventh-day Adventist Church’s Adventurers and Pathfinders Clubs are Christ-centered programs designed to nurture children and youth in their spiritual, mental, physical, and social development."
-leaderName: "Daunette Lemard-Reid"
-leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "First and Third Sabbath of each month, from 3:00 PM – 5:00 PM."
-category: "Children & Youth"
-tags: ["children", "teens", "family", "discipleship", "adventure"]
----
+<file path="web/src/data/activities.ts">
+export type ActivityCategory = "service" | "ministry" | "event" | "community";
 
-## Overview
+export type RecurringActivity = {
+  id: string;
+  title: string;
+  cadence: string;
+  time?: string;
+  day?: string;
+  link?: string;
+  note?: string;
+  category?: ActivityCategory;
+};
 
-“The Seventh-day Adventist Church’s Adventurers and Pathfinders Clubs are Christ-centered programs designed to nurture children and youth in their spiritual, mental, physical, and social development.”
+export type OneOffEvent = {
+  title: string;
+  start: string;
+  link?: string;
+  note?: string;
+};
 
-Pathfinders & Adventurers Club Director: Daunette Lemard-Reid
+export const recurringActivities: RecurringActivity[] = [
+  {
+    id: "sabbath-school",
+    title: "Sabbath School",
+    cadence: "Weekly study groups for every age",
+    day: "Saturday",
+    time: "10:00 AM",
+    link: "/ministries/adult-sabbath-school",
+    note: "Classes for children, youth, and adults in-person",
+    category: "service",
+  },
+  {
+    id: "worship-service",
+    title: "Worship service",
+    cadence: "Celebration via music and preaching",
+    day: "Saturday",
+    time: "11:15 AM",
+    link: "/connect/worship-with-us",
+    note: "Livestream + in-person fellowship",
+    category: "service",
+  },
+  {
+    id: "prayer-meeting",
+    title: "Prayer meeting",
+    cadence: "Midweek prayer, praise, and study",
+    day: "Wednesday",
+    time: "7:00 PM",
+    link: "/connect/prayer",
+    note: "Hybrid gathering with scripture focus",
+    category: "service",
+  },
+  {
+    id: "nar-anon",
+    title: "Nar-Anon",
+    cadence: "Thursdays · 7:00 PM – 8:30 PM in the Mother’s room",
+    day: "Thursday",
+    time: "7:00 PM – 8:30 PM",
+    note: "Support for families and friends affected by addiction",
+    category: "community",
+  },
+  {
+    id: "pathfinders",
+    title: "Pathfinders and Adventurers",
+    cadence: "First and third Sabbath of each month",
+    time: "3:00 PM – 5:00 PM",
+    link: "/ministries/pathfinders",
+    note: "Public",
+    category: "ministry",
+  },
+  {
+    id: "table-talk",
+    title: "Table Talk",
+    cadence: "Second Sabbath of every month",
+    day: "Saturday",
+    note: "Youth and young adult conversations around faith",
+    link: "/ministries/youth-young-adults",
+    category: "ministry",
+  },
+  {
+    id: "board-meeting",
+    title: "Board meeting",
+    cadence: "Second Tuesday of every month",
+    link: "/ministries/board-meeting",
+    note: "Members only",
+    category: "event",
+  },
+  {
+    id: "mens-fellowship",
+    title: "Men's fellowship",
+    cadence: "Fridays · 7:00 PM",
+    day: "Friday",
+    time: "7:00 PM",
+    note: "Bible study, prayer, and brotherhood",
+    category: "service",
+  },
+  {
+    id: "womens-ministry",
+    title: "Women's ministry",
+    cadence: "First Tuesday of every month",
+    link: "/ministries/womens-ministry",
+    note: "Public",
+    category: "ministry",
+  },
+  {
+    id: "community-meal",
+    title: "Free spaghetti dinner",
+    cadence: "Fourth Wednesday each month",
+    link: "/ministries/community-meal-spaghetti",
+    note: "Public outreach meal",
+    category: "community",
+  },
+  {
+    id: "bible-study",
+    title: "Bible study",
+    cadence: "Fourth Sabbath",
+    link: "/ministries/bible-study",
+    note: "Public",
+    category: "ministry",
+  },
+];
 
-Meeting Time: First and Third Sabbath of each month, from 3:00 PM – 5:00 PM.
+export const oneOffEvents: OneOffEvent[] = [];
 
-### Club logos
+export type PrayerMeetingDetails = {
+  title: string;
+  day: string;
+  time: string;
+  location: string;
+  zoomUrl: string;
+  dialIn: string;
+  meetingId: string;
+  passcode: string;
+};
 
-We proudly display both club insignias so families can recognize the young people’s ministry that speaks to them.
+const PRAYER_MEETING_ZOOM_URL =
+  import.meta.env.PUBLIC_PRAYER_MEETING_ZOOM_URL ??
+  "https://us02web.zoom.us/j/87430121210?pwd=QVNCRUlXcDdtU2dUSUdrbFdVdDlMUT09";
 
-<figure>
-  <img src="../../assets/ministries/pathfinders/adventurers-logo.svg" alt="Adventurers Club badge" width="220" loading="lazy" />
-  <figcaption>Adventurers Club (ages 4–9)</figcaption>
-</figure>
-
-<figure>
-  <img src="../../assets/ministries/pathfinders/pathfinders-logo.svg" alt="Pathfinders Club badge" width="220" loading="lazy" />
-  <figcaption>Pathfinders Club (ages 10–15)</figcaption>
-</figure>
-
-## Adventurers
-
-“The Adventurer Club is a fun, Christ-centered program for children ages 4–9 that helps them grow spiritually, socially, mentally, and physically. Through hands-on activities, Bible learning, games, and service projects, children build faith, character, confidence, friendships, and life skills in a supportive, family-focused environment while preparing for the Pathfinder journey ahead.”
-
-## Pathfinders
-
-“Pathfinders are a worldwide organization of young people sponsored by the Seventh-day Adventist Church, with nearly 2 million members around the globe. Young people of any religious persuasion, or none at all, are welcome and encouraged to join the organization.”
-
-• Pathfinders (ages 10–15) provides opportunities for youth to grow in leadership, teamwork, and personal responsibility through outdoor activities, community service, spiritual growth, and practical life skills.
-
-## Contact
-
-To learn more about our Pathfinders and Adventurers Clubs or to get involved, email [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) or visit our [Contact page](/connect/contact).
+export const prayerMeetingDetails: PrayerMeetingDetails = {
+  title: "Midweek Prayer Meeting",
+  day: "Wednesday",
+  time: "7:00 PM",
+  location: "Church annex",
+  zoomUrl: PRAYER_MEETING_ZOOM_URL,
+  dialIn: "(646) 558-8656",
+  meetingId: "874 3012 1210",
+  passcode: "487844",
+};
 </file>
 
 <file path="web/src/data/site-links.json">
@@ -10184,6 +10928,132 @@ const accessibilityHref = "/accessibility";
 </style>
 </file>
 
+<file path="web/src/components/sections/HeroBanner.astro">
+---
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import HeroUI from "../ui/Hero.astro";
+
+export type Props = {
+  title: string;
+  subtitle?: string;
+  primaryCtaLabel?: string;
+  primaryCtaHref?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+
+  background: ImageMetadata;
+
+  /**
+   * Keep the bridge centered-ish.
+   * Example: "50% 55%" (x y)
+   */
+  objectPosition?: string;
+};
+
+const {
+  background,
+  objectPosition = "50% 55%",
+  ...heroProps
+} = Astro.props as Props;
+const hasMetaSlot = Boolean(Astro.slots?.meta);
+---
+
+<section class="heroBanner fullbleed" style={`--hero-object-position:${objectPosition};`}>
+  <div class="heroBanner__media" aria-hidden="true">
+    <Image
+      src={background}
+      alt=""
+      widths={[640, 960, 1280, 1600, 1920]}
+      sizes="100vw"
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
+      class="heroBanner__img"
+    />
+    <div class="heroBanner__scrim" aria-hidden="true"></div>
+  </div>
+
+  <div class="heroBanner__content">
+    <HeroUI {...heroProps} className="hero-card">
+      {hasMetaSlot ? <slot name="meta" slot="meta" /> : null}
+    </HeroUI>
+  </div>
+</section>
+
+<style>
+  .heroBanner {
+    position: relative;
+    min-height: clamp(62vh, 70vh, 80vh);
+    border-bottom: 1px solid var(--color-border);
+    overflow: hidden;
+    --hero-content-offset-x: clamp(var(--space-4), 3vw, var(--space-7));
+    --hero-content-offset-y: clamp(var(--space-5), 5vw, var(--space-7));
+  }
+
+  .heroBanner__media {
+    position: absolute;
+    inset: 0;
+  }
+
+  .heroBanner__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--hero-object-position);
+    transform: scale(1.02);
+  }
+
+  .heroBanner__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(11, 15, 23, 0.45) 0%,
+      rgba(11, 15, 23, 0.18) 45%,
+      rgba(11, 15, 23, 0.55) 100%
+    );
+  }
+
+  .heroBanner__content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    padding: var(--hero-content-offset-y) 0 0 var(--hero-content-offset-x);
+  }
+
+  /* Keep the existing “card” look, but make it sit nicely on the photo */
+  :global(.heroBanner .hero.card) {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-color: rgba(255, 255, 255, 0.35);
+    max-width: min(440px, 100%);
+    padding: clamp(1rem, 0.9rem + 0.3vw, 1.25rem);
+  }
+
+  @media (max-width: 720px) {
+    .heroBanner {
+      min-height: 55vh;
+      --hero-content-offset-x: var(--space-4);
+      --hero-content-offset-y: var(--space-4);
+      --hero-object-position: 50% 50%;
+    }
+  }
+
+  @media (prefers-reduced-data: reduce) {
+    .heroBanner__media {
+      display: none;
+    }
+    .heroBanner {
+      background: var(--color-surface-2);
+    }
+  }
+</style>
+</file>
+
 <file path="web/src/components/ui/Hero.astro">
 ---
 import Button from "./Button.astro";
@@ -10319,41 +11189,52 @@ const rootClass = ["hero", "card", className].filter(Boolean).join(" ");
 </style>
 </file>
 
-<file path="web/src/content/ministries/children.md">
+<file path="web/src/content/ministries/pathfinders.md">
 ---
-title: "Children’s Ministry"
-summary: "Nurturing 3–9-year-olds to know Jesus through story, song, and safe, joyful community."
-leaderName: "Giselle Davey"
+title: "Pathfinders & Adventurers"
+summary: "The Seventh-day Adventist Church’s Adventurers and Pathfinders Clubs are Christ-centered programs designed to nurture children and youth in their spiritual, mental, physical, and social development."
+leaderName: "Daunette Lemard-Reid"
 leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "Sabbath mornings (see programs below)"
+meetingTime: "First and Third Sabbath of each month, from 3:00 PM – 5:00 PM."
 category: "Children & Youth"
-ctaLabel: "Contact us"
-ctaHref: "/connect/contact"
-tags: ["kids", "families"]
+tags: ["children", "teens", "family", "discipleship", "adventure"]
 ---
 
-## Children’s Ministry
+## Overview
 
-Coordinator: Giselle Davey
+“The Seventh-day Adventist Church’s Adventurers and Pathfinders Clubs are Christ-centered programs designed to nurture children and youth in their spiritual, mental, physical, and social development.”
 
-The mission of the Children’s Ministries Department is to nurture children into a loving, serving relationship with Jesus. We are committed to creating a safe, joyful, and faith-filled environment where children can grow spiritually, emotionally, socially, and mentally while learning how deeply they are loved by God.
+Pathfinders & Adventurers Club Director: Daunette Lemard-Reid
 
-We seek to fulfill this mission by providing age-appropriate programs that encourage Bible learning, worship, service, and fellowship, while partnering closely with families to support children’s spiritual growth.
+Meeting Time: First and Third Sabbath of each month, from 3:00 PM – 5:00 PM.
 
-### Our Programs & Meeting Times
+### Club logos
 
-- • Sabbath School begins every Sabbath at 10:00 AM, offering engaging Bible-based lessons for children.
-- • Children’s Choir Practice takes place every Sabbath from 10:55–11:10 AM, helping children worship God through music.
-- • Children’s Church is held on the first and third Sabbath of each month, immediately following the Children’s Story, starting June 2026. Children’s Church is designed for children ages 3–9 and includes Bible stories, crafts, singing, a short sermonette, and snacks. For the safety of all children, parents are required to sign children in and out each Sabbath.
-- • Vacation Bible School (VBS): July 28 to July 30 from 6 pm to 7:15 pm.
+We proudly display both club insignias so families can recognize the young people’s ministry that speaks to them.
 
-Through these ministries, we aim to help children grow in faith, build friendships, and develop a strong foundation that will guide them throughout their lives.
+<figure>
+  <img src="../../assets/photos/club-adventurers-logo.png" alt="Adventurers Club badge" width="220" loading="lazy" />
+  <figcaption>Adventurers Club (ages 4–9)</figcaption>
+</figure>
 
-### Resources
+<figure>
+  <img src="../../assets/photos/club-pathfinders-logo.png" alt="Pathfinders Club badge" width="220" loading="lazy" />
+  <figcaption>Pathfinders Club (ages 10–15)</figcaption>
+</figure>
 
-- https://www.youtube.com/c/adventistchildrensministries
-- https://www.faithfinders.com/god-sent-his-son-to-be-my-friend-bible-study-guides
-- https://www.gracelink.net/podcast
+## Adventurers
+
+“The Adventurer Club is a fun, Christ-centered program for children ages 4–9 that helps them grow spiritually, socially, mentally, and physically. Through hands-on activities, Bible learning, games, and service projects, children build faith, character, confidence, friendships, and life skills in a supportive, family-focused environment while preparing for the Pathfinder journey ahead.”
+
+## Pathfinders
+
+“Pathfinders are a worldwide organization of young people sponsored by the Seventh-day Adventist Church, with nearly 2 million members around the globe. Young people of any religious persuasion, or none at all, are welcome and encouraged to join the organization.”
+
+• Pathfinders (ages 10–15) provides opportunities for youth to grow in leadership, teamwork, and personal responsibility through outdoor activities, community service, spiritual growth, and practical life skills.
+
+## Contact
+
+To learn more about our Pathfinders and Adventurers Clubs or to get involved, email [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) or visit our [Contact page](/connect/contact).
 </file>
 
 <file path="web/src/pages/connect/contact/index.astro">
@@ -10651,6 +11532,48 @@ Lighthouse category assertions operate on a 0–1 scale in CI configs, so 0.90 c
 - If Lighthouse CI fails, inspect large images or heavyweight scripts, optimize them, and rerun `npm run lighthouse`; budgets guard performance, accessibility, best practices, and SEO.
 </file>
 
+<file path="web/src/content/ministries/children.md">
+---
+title: "Children’s Ministry"
+summary: "Nurturing every child to know Jesus through story, song, and a safe, joyful community."
+leaderName: "Giselle Davey"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "Sabbath mornings (see programs below)"
+category: "Children & Youth"
+ctaLabel: "Contact us"
+ctaHref: "/connect/contact"
+tags: ["kids", "families", "faith formation"]
+---
+
+## Children’s Ministry
+
+Coordinator: Giselle Davey
+
+The mission of the Children’s Ministries Department is to nurture children of every age into a loving, serving relationship with Jesus. We are committed to creating a safe, joyful, and faith-filled environment where every child can grow spiritually, emotionally, socially, and mentally while learning how deeply they are loved by God.
+
+We seek to fulfill this mission by partnering closely with families to encourage Bible learning, worship, service, and fellowship through programs that welcome the whole child.
+
+### Our Programs & Meeting Times
+
+- • Sabbath School begins every Sabbath at 10:00 AM, offering engaging Bible-based lessons for children of all ages.
+- • Children’s Choir Practice takes place every Sabbath from 10:55–11:10 AM, helping kids worship God through music and shared praise.
+- • Children’s Church is held on the first and third Sabbath of each month, immediately following the Children’s Story, starting June 2026. Children’s Church is designed for children ages 3–9 and includes Bible stories, crafts, singing, a short sermonette, and snacks. For the safety of all children, parents are required to sign children in and out each Sabbath. All other Children’s Ministry programs are open to every child in Springfield and beyond.
+- • Vacation Bible School (VBS): July 28 to July 30 from 6 pm to 7:15 pm.
+
+Through these ministries, we aim to help children build faith, grow friendships, serve others, and develop a strong foundation that will guide them throughout their lives.
+
+### Special Dates
+
+- **Global Children’s Day — March 21, 2026:** We celebrate children worldwide with stories, songs, and acts of kindness, inviting each child to share in the joy of knowing Jesus.
+- **Children’s Sabbath — July 25, 2026:** Our worship services highlight children through music, scripture, and stories as they help lead the congregation in gratitude.
+
+### Resources
+
+- https://www.youtube.com/c/adventistchildrensministries
+- https://www.faithfinders.com/god-sent-his-son-to-be-my-friend-bible-study-guides
+- https://www.gracelink.net/podcast
+</file>
+
 <file path="web/src/layouts/BaseLayout.astro">
 ---
 import "../styles/global.css";
@@ -10777,6 +11700,38 @@ import bridgeDusk from "../assets/photos/bridge-dusk.jpg";
 import churchLogo from "../assets/photos/church-logo-primary.jpg";
 import { prayerMeetingDetails } from "../data/activities";
 import Button from "../components/ui/Button.astro";
+const ministryCards = [
+  {
+    title: "Children’s Ministry",
+    description:
+      "Storytelling, worship, choir, and family-focused programs that welcome every child and invite them to grow in Jesus.",
+    href: "/ministries/children"
+  },
+  {
+    title: "Pathfinders & Adventurers",
+    description:
+      "Two vibrant clubs filled with faith, service, and outdoor adventures for children and youth ready to discover purpose together.",
+    href: "/ministries/pathfinders"
+  },
+  {
+    title: "Adventist Community Services (ACS)",
+    description:
+      "Compassionate care, monthly meals, and community outreach that meet the whole person in Springfield and beyond.",
+    href: "/ministries/adventist-community-services"
+  },
+  {
+    title: "Women’s Ministry",
+    description:
+      "Prayer circles, retreats, and service projects that help women grow spiritually and encourage one another in Jesus.",
+    href: "/ministries/womens-ministry"
+  },
+  {
+    title: "Social Ministry",
+    description:
+      "Hospitality, fellowship meals, and celebration events that help members and neighbors build deeper relationships.",
+    href: "/ministries/social-ministry"
+  }
+];
 ---
 
 <BaseLayout title={site.name} description={site.description}>
@@ -10813,6 +11768,11 @@ import Button from "../components/ui/Button.astro";
 
   <PrayerMeetingCallout meeting={prayerMeetingDetails} />
   <HighlightsScroller />
+  <CardGrid
+    title="Ministries"
+    subtitle="Find a place to serve, grow, and celebrate with your church family."
+    cards={ministryCards}
+  />
   <section class="home-budget">
     <BudgetProgress />
   </section>
@@ -11073,29 +12033,77 @@ const serviceSchedule: ScheduleItem[] = recurringActivities
     time: activity.time ?? activity.cadence ?? "",
   }));
 
-const leadershipTeam: TeamMember[] = [
-  { role: "Pastor", name: PASTOR_NAME, email: PUBLIC_EMAIL },
-  { role: "Head Elder", name: "Church Office", email: PUBLIC_EMAIL },
-  { role: "Head Deacon", name: "Church Office", email: PUBLIC_EMAIL },
-  { role: "Church Clerk", name: "Church Office", email: PUBLIC_EMAIL },
-  { role: "Treasurer", name: "Church Office", email: PUBLIC_EMAIL },
-];
+type TeamSection = "leadership" | "ministries";
 
-const ministryLeads: TeamMember[] = [
+type RosterMember = TeamMember & { section: TeamSection };
+
+const teamRoster: RosterMember[] = [
+  { role: "Pastor", name: PASTOR_NAME, email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Head Elder", name: "Elder Trevor Crossfield", email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Head Deacon", name: "Church Office", email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Head Deaconess", name: "Melinda Lajoie", email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Church Clerk", name: "Myrna L Leiper", email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Assistant Bulletin Secretary", name: "Loreli Gaetki", email: PUBLIC_EMAIL, section: "leadership" },
+  {
+    role: "Sabbath School Superintendent",
+    name: "Elder Paul Moulema",
+    email: PUBLIC_EMAIL,
+    section: "leadership",
+  },
+  { role: "Stewardship", name: "Dan Hayes", email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Treasurer", name: "Church Office", email: PUBLIC_EMAIL, section: "leadership" },
   {
     role: "Children’s Ministry",
     name: "Giselle Davey",
     email: PUBLIC_EMAIL,
+    section: "ministries",
   },
-  { role: "Youth Ministry", name: "Youth Ministry Team", email: PUBLIC_EMAIL },
+  {
+    role: "Youth & Young Adults Ministry",
+    name: "Anthia Elliott (AY Director) · Yolann Guirand (AY Assistant Director)",
+    email: PUBLIC_EMAIL,
+    section: "ministries",
+  },
   {
     role: "Women’s Ministry",
-    name: "Women’s Ministry Team",
+    name: "Yejide Bell · Ada Durand · Maxine Griffiths · Sharon Luszcz",
     email: PUBLIC_EMAIL,
+    section: "ministries",
   },
-  { role: "Men’s Ministry", name: "Men’s Ministry Team", email: PUBLIC_EMAIL },
-  { role: "Communications / Media", name: "Media Team", email: PUBLIC_EMAIL },
+  {
+    role: "Adventist Community Services (ACS)",
+    name: "Brenda St George · Belinda Behnava · Donald Moore · Gabriele Moore · Carolyn Mutcherson · Pastor Abankwa Amoakohene",
+    email: PUBLIC_EMAIL,
+    section: "ministries",
+  },
+  { role: "Pathfinders & Adventurers", name: "Daunette Lemard-Reid", email: PUBLIC_EMAIL, section: "ministries" },
+  {
+    role: "Sabbath School",
+    name: "Elder Paul Moulema · Carol Elliott",
+    email: PUBLIC_EMAIL,
+    section: "ministries",
+  },
+  {
+    role: "Secretary / Communications",
+    name: "Myrna L Leiper · Loreli Gaetki",
+    email: PUBLIC_EMAIL,
+    section: "ministries",
+  },
+  { role: "Media & Audio Visual", name: "Josue Marrero", email: PUBLIC_EMAIL, section: "ministries" },
+  { role: "Prayer Ministry", name: "Bernice McKenzie", email: PUBLIC_EMAIL, section: "ministries" },
+  {
+    role: "Social Committee",
+    name: "Teddy Williamson · David McKenzie",
+    email: PUBLIC_EMAIL,
+    section: "ministries",
+  },
+  { role: "Health Ministry", name: "Gary Peiffer", email: PUBLIC_EMAIL, section: "ministries" },
+  { role: "Communications", name: "Belinda Behnava · David McKenzie", email: PUBLIC_EMAIL, section: "ministries" },
+  { role: "Music Director", name: "Berline Guirand", email: PUBLIC_EMAIL, section: "ministries" },
 ];
+
+const leadershipTeam = teamRoster.filter((member) => member.section === "leadership");
+const ministryLeads = teamRoster.filter((member) => member.section === "ministries");
 
 const hasVolunteerForm =
   portals.volunteerFormUrl && portals.volunteerFormUrl !== "TBD";
