@@ -4,19 +4,22 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "check": "astro check",
+    "patch:yargs-parser": "node scripts/patch-yargs-parser.js",
+    "astro": "npm run patch:yargs-parser && node ./node_modules/astro/astro.js",
+    "dev": "npm run astro -- dev",
+    "start": "npm run dev",
+    "build": "npm run astro -- build",
+    "preview": "npm run astro -- preview",
+    "check": "npm run astro -- check",
     "test:e2e": "npm run build && playwright test",
     "test:e2e:ci": "playwright test",
     "test:links": "npm run build && linkinator ./dist --config ./linkinator.config.json",
-    "test:links:ci": "linkinator ./dist --config ./linkinator.config.json",
+    "test:links:ci": "linkinator ./dist --config=./linkinator.config.json",
     "lighthouse": "npm run build && lhci autorun --config=./lighthouserc.cjs",
     "lighthouse:ci": "lhci autorun --config=./lighthouserc.cjs",
     "qa": "npm run check && npm run test:e2e && npm run test:links && npm run lighthouse",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "postinstall": "node scripts/patch-yargs-parser.js"
   },
   "dependencies": {
     "@astrojs/check": "0.9.6",
@@ -26,15 +29,16 @@
     "@astrojs/sitemap": "^3.5.1",
     "@astrojs/svelte": "^7.0.2",
     "@fontsource-variable/inter": "^5.2.5",
-    "astro": "^5.4.2",
+    "astro": "5.17.2",
     "astro-compress": "^2.3.3",
     "astro-icon": "^1.1.5",
     "astro-pagefind": "^1.7.0",
     "gray-matter": "^4.0.3",
+    "html-escaper": "3.0.3",
+    "node-addon-api": "^8.5.0",
     "sharp": "^0.34.2",
     "svelte": "^5.25.3",
-    "zod": "^3.24.2",
-    "node-addon-api": "^8.5.0"
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
@@ -42,10 +46,10 @@
     "@playwright/test": "^1.51.1",
     "@types/node": "^22.13.9",
     "linkinator": "^7.5.0",
+    "node-gyp": "^9.4.1",
     "prettier": "^3.5.3",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-svelte": "^3.3.3",
-    "typescript": "5.9.3",
-    "node-gyp": "^9.4.1"
+    "typescript": "5.9.3"
   }
 }
