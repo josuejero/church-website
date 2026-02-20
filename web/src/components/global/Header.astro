@@ -15,6 +15,10 @@ function linkAttrs(item: { href: string; external?: boolean }) {
   return item.external ? { target: "_blank", rel: "noopener noreferrer" } : {};
 }
 
+const utilityNavLabels = new Set(["Events", "Privacy"]);
+const primaryNav = site.nav.filter((item) => !utilityNavLabels.has(item.label));
+const utilityNav = site.nav.filter((item) => utilityNavLabels.has(item.label));
+
 const watchLive = site.quickActions.find((i) => i.label === "Watch Live") ?? site.quickActions[0];
 const give = site.quickActions.find((i) => i.label === "Give") ?? site.quickActions[1];
 const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label && i.label !== give?.label);
@@ -36,7 +40,7 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     </a>
 
     <nav class="nav nav--desktop" aria-label="Primary navigation">
-      {site.nav.map((item) => (
+      {primaryNav.map((item) => (
         <a
           href={item.href}
           aria-current={isActive(item.href) ? "page" : undefined}
@@ -124,6 +128,16 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
       </details>
     </div>
   </div>
+
+  {utilityNav.length > 0 && (
+    <nav class="utility-bar" aria-label="Utility navigation">
+      {utilityNav.map((item) => (
+        <a href={item.href} {...linkAttrs(item)}>
+          {item.label}
+        </a>
+      ))}
+    </nav>
+  )}
 </header>
 
 <script>
@@ -145,6 +159,9 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     z-index: 50;
     background: var(--color-white);
     border-bottom: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
   }
 
   .inner {
@@ -155,6 +172,32 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: var(--space-4);
+  }
+
+  .utility-bar {
+    width: 100%;
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-pad) var(--space-1);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-gray-50);
+    font-size: var(--font-size-0);
+  }
+
+  .utility-bar a {
+    color: var(--color-text);
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0.2rem 0.4rem;
+    border-radius: var(--radius-2);
+  }
+
+  .utility-bar a:hover,
+  .utility-bar a:focus-visible {
+    text-decoration: underline;
   }
 
   .brand {

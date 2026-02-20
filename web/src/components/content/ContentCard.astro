@@ -16,7 +16,7 @@ const safeTags = tags ?? [];
   <h3>
     <span class="link">{title}</span>
   </h3>
-  <p class="muted">{summary}</p>
+  <p class="card-summary">{summary}</p>
 
   {safeTags.length > 0 && (
     <ul class="tags" aria-label="Tags">
@@ -26,3 +26,12 @@ const safeTags = tags ?? [];
     </ul>
   )}
 </a>
+
+<style>
+  .card-summary {
+    margin: 0;
+    font-size: var(--type-scale-body-size);
+    line-height: var(--type-scale-body-line-height);
+    color: var(--color-text);
+  }
+</style>

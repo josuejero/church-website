@@ -5,23 +5,37 @@ type Props = {
   href?: string;
 };
 
-const { title, description, href } = Astro.props;
----
-
-{href ? (
-  <a class="card card--link" href={href} aria-label={title}>
-    <div class="card__title">{title}</div>
-    {description && <p class="card__desc muted">{description}</p>}
-    <span class="card__cta link" aria-hidden="true">Learn more</span>
-  </a>
-) : (
-  <div class="card">
-    <div class="card__title">{title}</div>
-    {description && <p class="card__desc muted">{description}</p>}
+const { title, description, href } = Astro.props as Props;
+const hasDescription = Boolean(description?.trim?.());
+const body = (
+  <div class="card__body">
+    <div>
+      <div class="card__title">{title}</div>
+      {hasDescription && <p class="card__desc">{description}</p>}
+    </div>
+    {href ? <span class="card__cta link" aria-hidden="true">Learn more</span> : null}
   </div>
-)}
+);
+
+{
+  href ? (
+    <a class="card card--link" href={href} aria-label={title}>
+      {body}
+    </a>
+  ) : (
+    <div class="card">{body}</div>
+  )
+}
 
 <style>
+  .card__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-height: 160px;
+    justify-content: space-between;
+  }
+
   .card__title {
     font-weight: 800;
     font-size: var(--font-size-2);
@@ -29,7 +43,10 @@ const { title, description, href } = Astro.props;
   }
 
   .card__desc {
-    margin: 0 0 var(--space-3);
+    margin: 0;
+    font-size: var(--type-scale-body-size);
+    line-height: var(--type-scale-body-line-height);
+    color: var(--color-text);
   }
 
   .card__cta {

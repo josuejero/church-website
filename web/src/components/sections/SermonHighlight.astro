@@ -34,7 +34,9 @@ const youtubeHref = hasYouTube ? site.portals.youtubeChannelUrl : "/media/videos
 ---
 
 <section class="stack">
-  <h2>{title}</h2>
+  <header class="section-heading">
+    <h2 class="section-heading__title">{title}</h2>
+  </header>
 
   {!latest ? (
     <p class="muted">No videos are listed yet.</p>
@@ -43,7 +45,7 @@ const youtubeHref = hasYouTube ? site.portals.youtubeChannelUrl : "/media/videos
       <div class="stack--tight">
         {meta && <p class="muted small">{meta}</p>}
         <h3>{latest.title}</h3>
-        {latest.summary && <p class="muted">{latest.summary}</p>}
+        {latest.summary && <p class="text-body">{latest.summary}</p>}
       </div>
 
       {hasEmbed ? (
@@ -58,10 +60,10 @@ const youtubeHref = hasYouTube ? site.portals.youtubeChannelUrl : "/media/videos
       )}
 
       <div class="cluster">
-        <Button href="/media/videos" variant="secondary">More videos</Button>
         {hasYouTube ? (
-          <Button href={youtubeHref} external>Open YouTube</Button>
+          <Button href={youtubeHref} variant="primary" external>Open YouTube</Button>
         ) : null}
+        <Button href="/media/videos" variant="secondary">More videos</Button>
       </div>
     </div>
   )}

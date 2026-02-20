@@ -26,7 +26,8 @@ body {
   font-family: var(--font-family-sans);
   color: var(--color-text);
   background: var(--color-surface);
-  line-height: 1.55;
+  font-size: var(--type-scale-body-size);
+  line-height: var(--type-scale-body-line-height);
 }
 
 img {
@@ -70,21 +71,78 @@ h1,
 h2,
 h3,
 h4 {
-  line-height: 1.15;
-  letter-spacing: -0.02em;
   margin: 0;
+  font-weight: 700;
 }
 
-h1 { font-size: var(--font-size-5); }
-h2 { font-size: var(--font-size-4); }
-h3 { font-size: var(--font-size-3); }
-h4 { font-size: var(--font-size-2); }
+h1 {
+  font-size: var(--type-scale-h1-size);
+  line-height: var(--type-scale-h1-line-height);
+  font-weight: var(--type-scale-h1-weight);
+  letter-spacing: var(--type-scale-h1-letter-spacing);
+}
+
+h2 {
+  font-size: var(--type-scale-h2-size);
+  line-height: var(--type-scale-h2-line-height);
+  font-weight: var(--type-scale-h2-weight);
+  letter-spacing: var(--type-scale-h2-letter-spacing);
+}
+
+h3 {
+  font-size: var(--type-scale-h3-size);
+  line-height: var(--type-scale-h3-line-height);
+  font-weight: var(--type-scale-h3-weight);
+}
+
+h4 {
+  font-size: var(--font-size-2);
+  line-height: 1.4;
+}
 
 p {
   margin: 0;
+  font-size: var(--type-scale-body-size);
+  line-height: var(--type-scale-body-line-height);
+  color: var(--color-text);
 }
 
-.small { font-size: var(--font-size-0); }
+.small {
+  font-size: var(--type-scale-small-size);
+  line-height: var(--type-scale-small-line-height);
+}
+
+.text-body {
+  font-size: var(--type-scale-body-size);
+  line-height: var(--type-scale-body-line-height);
+  color: var(--color-text);
+}
+
+.section-heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.section-heading--horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.section-heading__title {
+  margin: 0;
+}
+
+.section-heading__subtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-scale-body-size);
+  line-height: var(--type-scale-body-line-height);
+}
 .muted { color: var(--color-text-muted); }
 .center { text-align: center; }
 

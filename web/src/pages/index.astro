@@ -81,91 +81,126 @@ const ministryCards = [
     </div>
   </HeroBanner>
 
-  <PrayerMeetingCallout meeting={prayerMeetingDetails} />
-  <HighlightsScroller />
-  <CardGrid
-    title="Ministries"
-    subtitle="Find a place to serve, grow, and celebrate with your church family."
-    cards={ministryCards}
-  />
-  <section class="home-budget">
-    <BudgetProgress />
-  </section>
+  <div class="home-grid">
+    <div class="home-grid__section">
+      <PrayerMeetingCallout meeting={prayerMeetingDetails} />
+    </div>
 
-  <section class="photo-montage stack">
-    <div class="photo-montage__intro">
-      <p>
-        We gather beneath the morning glow of the new entryway and cherish the calm of the familiar bridge-dusk view.
-        Both scenes are part of First Springfield’s story; one bright and ready, the other still and reflective.
+    <div class="home-grid__section">
+      <HighlightsScroller />
+    </div>
+
+    <CardGrid
+      title="Ministries"
+      subtitle="Find a place to serve, grow, and celebrate with your church family."
+      cards={ministryCards}
+      columnsMin={320}
+      class="home-grid__section home-grid__cards home-grid__cards--ministries"
+    />
+
+    <section class="stack home-grid__section home-grid__giving" aria-label="Giving">
+      <header class="section-heading">
+        <h2 class="section-heading__title">Giving</h2>
+        <p class="section-heading__subtitle">
+          Support First Springfield’s ministries through faithful giving—every gift helps us worship, serve, and reach our neighbors.
+        </p>
+      </header>
+
+      <BudgetProgress />
+
+      <p class="home-grid__giving-copy">
+        Your generosity keeps the lights on, feeds neighbors, and helps young disciples grow in faith. Thank you for partnering with us.
       </p>
+
+      <div class="home-grid__giving-cta">
+        <Button href="/give">Give online</Button>
+        <Button href="/connect/contact" variant="secondary">Connect with stewardship</Button>
+      </div>
+    </section>
+
+    <section class="photo-montage stack home-grid__section home-grid__photo">
+      <div class="photo-montage__intro">
+        <p>
+          We gather beneath the morning glow of the new entryway and cherish the calm of the familiar bridge-dusk view.
+          Both scenes are part of First Springfield’s story; one bright and ready, the other still and reflective.
+        </p>
+      </div>
+
+      <div class="photo-montage__grid">
+        <article class="photo-card">
+          <Image
+            src={heroBg}
+            alt="First Springfield Church exterior bathed in daylight"
+            widths={[440, 660, 880, 1100]}
+            sizes="(min-width: 960px) 40vw, 80vw"
+            loading="lazy"
+            decoding="async"
+            class="photo-card__img"
+          />
+          <div class="photo-card__caption">
+            <h3>Sunlit welcome</h3>
+            <p>The new front exterior invites you with bright, clear light every day.</p>
+          </div>
+        </article>
+
+        <article class="photo-card">
+          <Image
+            src={bridgeDusk}
+            alt="The church and bridge illuminated at dusk"
+            widths={[440, 660, 880, 1100]}
+            sizes="(min-width: 960px) 40vw, 80vw"
+            loading="lazy"
+            decoding="async"
+            class="photo-card__img"
+          />
+          <div class="photo-card__caption">
+            <h3>Evening stillness</h3>
+            <p>The bridge-dusk view keeps watch over Springfield as Sabbath approaches.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <CardGrid
+      title="Get Connected"
+      cards={[
+        {
+          title: "About Us",
+          description: "Learn our mission and what we believe.",
+          href: "/connect/about"
+        },
+        {
+          title: "Adult Sabbath School",
+          description: "Discover the mission, goals, and study focus of Adult Sabbath School.",
+          href: "/ministries/adult-sabbath-school"
+        },
+        {
+          title: "Worship With Us",
+          description: "See when we meet and what to expect.",
+          href: "/connect/worship-with-us"
+        },
+        {
+          title: "Prayer Request",
+          description: "Share a prayer request with our prayer team.",
+          href: "/connect/prayer"
+        }
+      ]}
+      columnsMin={280}
+      class="home-grid__section home-grid__cards home-grid__cards--connected"
+    />
+
+    <div class="home-grid__section">
+      <EventList title="Upcoming Events" />
     </div>
 
-    <div class="photo-montage__grid">
-      <article class="photo-card">
-        <Image
-          src={heroBg}
-          alt="First Springfield Church exterior bathed in daylight"
-          widths={[440, 660, 880, 1100]}
-          sizes="(min-width: 960px) 40vw, 80vw"
-          loading="lazy"
-          decoding="async"
-          class="photo-card__img"
-        />
-        <div class="photo-card__caption">
-          <h3>Sunlit welcome</h3>
-          <p>The new front exterior invites you with bright, clear light every day.</p>
-        </div>
-      </article>
-
-      <article class="photo-card">
-        <Image
-          src={bridgeDusk}
-          alt="The church and bridge illuminated at dusk"
-          widths={[440, 660, 880, 1100]}
-          sizes="(min-width: 960px) 40vw, 80vw"
-          loading="lazy"
-          decoding="async"
-          class="photo-card__img"
-        />
-        <div class="photo-card__caption">
-          <h3>Evening stillness</h3>
-          <p>The bridge-dusk view keeps watch over Springfield as Sabbath approaches.</p>
-        </div>
-      </article>
+    <div class="home-grid__section">
+      <RecurringActivities />
     </div>
-  </section>
 
-  <CardGrid
-    title="Get Connected"
-    cards={[
-      {
-        title: "About Us",
-        description: "Learn our mission and what we believe.",
-        href: "/connect/about"
-      },
-      {
-        title: "Adult Sabbath School",
-        description: "Discover the mission, goals, and study focus of Adult Sabbath School.",
-        href: "/ministries/adult-sabbath-school"
-      },
-      {
-        title: "Worship With Us",
-        description: "See when we meet and what to expect.",
-        href: "/connect/worship-with-us"
-      },
-      {
-        title: "Prayer Request",
-        description: "Share a prayer request with our prayer team.",
-        href: "/connect/prayer"
-      }
-    ]}
-  />
-
-  <EventList title="Upcoming Events" />
-
-  <RecurringActivities />
-
-  <SermonHighlight title="Latest Sermon" />
+    <div class="home-grid__section">
+      <SermonHighlight title="Latest Sermon" />
+    </div>
+  </div>
 </BaseLayout>
 
 <style>
@@ -180,16 +215,55 @@ const ministryCards = [
     height: auto;
     display: block;
   }
+
+  .home-grid {
+    width: 100%;
+    margin: var(--space-10) 0 0;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--space-10);
+  }
+
+  .home-grid__section {
+    grid-column: 1 / -1;
+  }
+
+  .home-grid__cards {
+    grid-column: 1 / -1;
+  }
+
+  .home-grid__giving {
+    gap: var(--space-4);
+    padding: var(--space-6);
+    border-radius: var(--radius-3);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-2);
+  }
+
+  .home-grid__giving-copy {
+    margin: 0;
+    color: var(--color-text);
+  }
+
+  .home-grid__giving-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
   .photo-montage {
     gap: var(--space-4);
-    margin: var(--space-10) 0;
+    margin: 0;
+    width: 100%;
   }
 
   .photo-montage__intro p {
     margin: 0;
     max-width: 50rem;
-    font-size: 1rem;
-    color: var(--color-text-muted);
+    font-size: var(--type-scale-body-size);
+    line-height: var(--type-scale-body-line-height);
+    color: var(--color-text);
   }
 
   .photo-montage__grid {
@@ -230,25 +304,31 @@ const ministryCards = [
     color: var(--color-text-muted);
   }
 
-@media (max-width: 720px) {
-  .photo-card__img {
-    height: 200px;
+  @media (max-width: 960px) {
+    .home-grid {
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
   }
-}
 
-.index-hero__meta {
-  margin-top: var(--space-4);
-  display: grid;
-  gap: var(--space-3);
-}
+  @media (max-width: 640px) {
+    .home-grid {
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .photo-card__img {
+      height: 200px;
+    }
+  }
+
+  .index-hero__meta {
+    margin-top: var(--space-4);
+    display: grid;
+    gap: var(--space-3);
+  }
 
   .index-hero__meta-copy {
     margin: 0;
-  }
-
-  .home-budget {
-    max-width: 520px;
-    width: min(520px, 100%);
-    margin: 0 auto;
   }
 </style>

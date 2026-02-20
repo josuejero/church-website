@@ -14,17 +14,26 @@ type Props = {
   cards: CardItem[];
   columns?: number;
   columnsMin?: number;
+  class?: string;
 };
 
-const { title, subtitle, cards, columns, columnsMin = 240 } = Astro.props;
+const {
+  title,
+  subtitle,
+  cards,
+  columns,
+  columnsMin = 240,
+  class: className = "",
+} = Astro.props;
+const sectionClasses = ["stack", className].filter(Boolean).join(" ");
 ---
 
-<section class="stack">
+<section class={sectionClasses}>
   {(title || subtitle) && (
-    <div class="stack--tight">
-      {title && <h2>{title}</h2>}
-      {subtitle && <p class="muted">{subtitle}</p>}
-    </div>
+    <header class="section-heading">
+      {title && <h2 class="section-heading__title">{title}</h2>}
+      {subtitle && <p class="section-heading__subtitle">{subtitle}</p>}
+    </header>
   )}
 
   <Grid columns={columns} columnsMin={columnsMin}>
