@@ -141,7 +141,7 @@ const describeRecurringActivity = (activity: RecurringActivity) => {
       {activeRecurringGroups.map((groupKey) => {
         const activities = groupedRecurring[groupKey] ?? [];
         return (
-          <div class="activity-group" key={groupKey}>
+          <div class="activity-group">
             <h4 class="activity-group__heading">
               {activityGroupLabels[groupKey] ?? "Activities"}
             </h4>

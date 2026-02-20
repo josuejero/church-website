@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "patch:yargs-parser": "node scripts/patch-yargs-parser.js",
-    "astro": "npm run patch:yargs-parser && node ./node_modules/astro/astro.js",
+    "astro": "npm run patch:yargs-parser && NODE_OPTIONS=--max-old-space-size=8192 node ./node_modules/astro/astro.js",
     "dev": "npm run astro -- dev",
     "start": "npm run dev",
     "build": "npm run astro -- build",
