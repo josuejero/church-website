@@ -35,20 +35,20 @@ const toneClass = tone === "warn" ? "banner--warn" : "banner--info";
 
 <style>
   .banner {
-    border: 1px solid var(--color-border);
+    border: 1px solid transparent;
     border-radius: var(--radius-3);
     padding: var(--space-3) var(--space-4);
     background: var(--color-surface-2);
   }
 
   .banner--info {
-    background: var(--color-surface-2);
-    border-color: var(--color-border);
+    background: var(--color-info-bg);
+    border-color: var(--color-info-border);
   }
 
   .banner--warn {
-    background: #fff4e3;
-    border-color: #f97316;
+    background: var(--color-warn-bg);
+    border-color: var(--color-warn-border);
   }
 
   .banner__inner {
@@ -60,6 +60,6 @@ const toneClass = tone === "warn" ? "banner--warn" : "banner--info";
   }
 
   .banner__msg {
-    font-weight: 700;
+    font-weight: 800;
   }
 </style>

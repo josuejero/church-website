@@ -1,57 +1,98 @@
+/* Design tokens: colors, typography, spacing, radius, shadows
+   - Keep these as the single source of truth for styling.
+   - All component/page CSS should reference variables from here.
+*/
+
 :root {
-  /* Primitive tokens */
-  --color-white: #ffffff;
-  --color-black: #0b0f17;
-  --color-gray-50: #f7f8fa;
-  --color-gray-100: #eef0f4;
-  --color-gray-200: #dfe3ea;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-blue-600: #1d4ed8;
-  --color-blue-700: #1e40af;
+  /* Typography */
+  --font-family-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", "Liberation Sans", sans-serif;
 
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-12: 3rem;
+  /* Font sizes (step scale) */
+  --font-size-0: 0.95rem;
+  --font-size-1: 1rem;
+  --font-size-2: 1.15rem;
+  --font-size-3: 1.35rem;
+  --font-size-4: 1.7rem;
+  --font-size-5: 2.2rem;
 
+  /* Spacing scale (fixes missing vars used across the repo) */
+  --space-0: 0;
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px  (was missing) */
+  --space-6: 1.5rem;   /* 24px */
+  --space-7: 1.75rem;  /* 28px  (was missing) */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px  (was missing) */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+
+  /* Radii */
   --radius-2: 0.5rem;
   --radius-3: 0.75rem;
   --radius-4: 1rem;
 
-  --font-size-0: 0.95rem;
-  --font-size-1: 1rem;
-  --font-size-2: 1.125rem;
-  --font-size-3: 1.35rem;
-  --font-size-4: 1.8rem;
-  --font-size-5: 2.25rem;
+  /* Shadows */
+  --shadow-1: 0 1px 2px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
+  --shadow-2: 0 2px 8px rgba(0,0,0,0.10), 0 16px 48px rgba(0,0,0,0.08);
 
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-2: 0 12px 28px rgba(0, 0, 0, 0.12);
-
-  /* Semantic tokens */
-  --color-bg: var(--color-white);
-  --color-surface: var(--color-white);
-  --color-surface-2: var(--color-gray-50);
-  --color-surface-muted: var(--color-surface-2);
-  --color-text: var(--color-black);
-  --color-text-muted: var(--color-gray-600);
-  --color-border: rgba(17, 25, 30, 0.16);
-  --color-border-strong: rgba(17, 25, 30, 0.26);
-  --color-primary: #6c1d25;
-  --color-primary-hover: #7f2a32;
-  --color-focus: #2d6cdf;
-
-  --container-max: 1100px;
-  --container-pad: var(--space-8);
+  /* Layout */
+  --container-max: 72rem;
+  --container-pad: 1.75rem;
   --target-min: 44px;
-}
 
-@media (max-width: 720px) {
-  :root {
-    --container-pad: var(--space-6);
-  }
+  /* Brand */
+  --color-primary: #6c1d25;
+  --color-primary-hover: #4c1117;
+
+  /* Optional deeper shade (used for gradients / emphasis) */
+  --color-primary-700: #3b0d12;
+
+  /* Neutrals */
+  --color-black: #0b0f17;
+  --color-text: #0b0f17;
+  --color-white: #ffffff;
+
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-600: #4b5563;
+
+  /* Surfaces */
+  --color-surface: #ffffff;
+  --color-surface-2: #f3f4f6;
+  --color-surface-muted: #f9fafb;
+
+  --color-border: #e5e7eb;
+
+  /* Text accents */
+  --color-text-muted: #4b5563;
+
+  /* Alias used in a few components */
+  --color-muted: var(--color-text-muted);
+
+  /* Semantic colors */
+  --color-info-border: #d6b5b8; /* brand-tinted info */
+  --color-info-bg: #fbf3f4;
+
+  --color-warn-border: #f59e0b;
+  --color-warn-bg: #fff7ed;
+
+  --color-danger: #b00020;
+  --color-danger-border: #b91c1c;
+  --color-danger-bg: #fee2e2;
+
+  --color-success-border: #34d399;
+  --color-success-bg: #ecfdf5;
+
+  /* Alias used by connect-card page */
+  --color-secondary: var(--color-danger);
+
+  /* Focus */
+  --color-focus: #2563eb;
+  --focus-ring: 3px solid var(--color-focus);
 }

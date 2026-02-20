@@ -1,29 +1,4 @@
-/* Small accessibility helpers layered on top of global.css */
-
-:focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 3px;
-}
-
-/* If skip-link isn't already styled in global.css, this ensures it is usable */
-.skip-link {
-  position: absolute;
-  top: var(--space-2);
-  left: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-2);
-  text-decoration: none;
-  transform: translateY(-200%);
-  transition: transform 120ms ease;
-  z-index: 999;
-}
-
-.skip-link:focus {
-  transform: translateY(0);
-}
-
+/* Accessibility helpers layered on top of global.css */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -98,6 +98,15 @@ web/
       2026-01-03.pdf
     _headers
     .assetsignore
+  scripts/
+    vendor/
+      yargs-parser/
+        build/
+          lib/
+            string-utils.js
+            yargs-parser-types.js
+            yargs-parser.js
+    patch-yargs-parser.js
   src/
     assets/
       photos/
@@ -191,6 +200,7 @@ web/
         children.md
         community-meal-spaghetti.md
         media-audio-visual.md
+        mens-ministry.md
         music-ministry.md
         pathfinders.md
         sabbath-school.md
@@ -210,6 +220,7 @@ web/
         _sms-opt-in-template.md
         _social-voicemail-template.md
         _weather-cancellation.md
+        annex-access-paused-for-safety.md
       verses/
         2026/
           02/
@@ -332,6 +343,7 @@ web/
       smoke.spec.ts
   .env.example
   .gitignore
+  astro.config 2.mjs
   astro.config.mjs
   hast-util-to-html-8.0.4.tgz
   hast-util-to-html-9.0.5.tgz
@@ -359,163 +371,42 @@ SECURITY.md
 <files>
 This section contains the contents of the repository's files.
 
-<file path="web/src/pages/api/connect-card.ts">
-import type { APIRoute } from "astro";
-import { site } from "../../data/site";
+<file path="web/astro.config 2.mjs">
+import cloudflare from "@astrojs/cloudflare";
+import mdx from "@astrojs/mdx";
+import sitemap from "@astrojs/sitemap";
+import compress from "astro-compress";
+import icon from "astro-icon";
+import pagefind from "astro-pagefind";
+import { defineConfig } from "astro/config";
 
-const THANK_YOU_PATH = "/connect/connect-card/thank-you";
-const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
-const SENDGRID_ENDPOINT = "https://api.sendgrid.com/v3/mail/send";
+const site = process.env.PUBLIC_SITE_URL;
 
-const verifyTurnstile = async (token: string, secret: string) => {
-  try {
-    const response = await fetch(TURNSTILE_VERIFY_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ secret, response: token }),
-    });
-    const payload = await response.json();
-    return payload.success === true;
-  } catch (error) {
-    console.error("Turnstile verification error", error);
-    return false;
-  }
-};
+export default defineConfig({
+  // Used for canonical URLs + sitemap/robots generation.
+  // In Cloudflare Pages: set PUBLIC_SITE_URL to your production domain (e.g. https://example.org)
+  site: site ?? "http://localhost:4321",
+  trailingSlash: "never",
 
-const buildSummary = (entries: [string, FormDataEntryValue][]) => {
-  const summary: Record<string, string> = {};
+  integrations: [
+    mdx(),
+    icon(),
+    compress(),
+    pagefind(),
+    sitemap({
+      // Internal site search is not a page you want indexed.
+      filter: (page) => !page.endsWith("/search"),
+    }),
+  ],
 
-  for (const [key, value] of entries) {
-    if (key === "cf-turnstile-response" || value instanceof File) {
-      continue;
-    }
-
-    const normalizedKey = key.replace(/\[\]$/, "");
-    const textValue = String(value).trim();
-    if (!textValue) {
-      continue;
-    }
-
-    summary[normalizedKey] = summary[normalizedKey]
-      ? `${summary[normalizedKey]}, ${textValue}`
-      : textValue;
-  }
-
-  return summary;
-};
-
-const formatSummaryText = (summary: Record<string, string>) =>
-  Object.entries(summary)
-    .map(([key, value]) => `${key}: ${value}`)
-    .join("\n");
-
-const sendNotificationEmail = async (
-  recipients: string[],
-  fromEmail: string,
-  apiKey: string,
-  summaryText: string
-) => {
-  if (!recipients.length) return;
-
-  const payload = {
-    personalizations: [
-      {
-        to: recipients.map((email) => ({ email })),
-        subject: `Connect Card · ${site.shortName}`,
-      },
-    ],
-    from: { email: fromEmail },
-    content: [{ type: "text/plain", value: summaryText }],
-  };
-
-  const response = await fetch(SENDGRID_ENDPOINT, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
+  output: "static",
+  adapter: cloudflare(),
+  vite: {
+    ssr: {
+      noExternal: ["@fontsource-variable/inter"],
     },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`SendGrid error ${response.status}: ${errorText}`);
-  }
-};
-
-export const prerender = false;
-
-export const post: APIRoute = async ({ request }) => {
-  const turnstileSecret = process.env.PRIVATE_TURNSTILE_SECRET_KEY;
-  if (!turnstileSecret) {
-    return new Response("Turnstile secret is not configured.", { status: 503 });
-  }
-
-  const formData = await request.formData();
-  const tokenValue = formData.get("cf-turnstile-response");
-  if (!tokenValue) {
-    return new Response("Turnstile token missing.", { status: 400 });
-  }
-
-  const token = String(tokenValue);
-  const authenticated = await verifyTurnstile(token, turnstileSecret);
-  if (!authenticated) {
-    return new Response("Turnstile verification failed.", { status: 400 });
-  }
-
-  const forwardUrl = process.env.PRIVATE_CONNECT_CARD_FORWARD_URL;
-  if (!forwardUrl) {
-    return new Response("Connect Card destination is not configured.", { status: 503 });
-  }
-
-  const entries = Array.from(formData.entries());
-  const payload = new URLSearchParams();
-
-  for (const [key, value] of entries) {
-    if (value instanceof File || key === "cf-turnstile-response") {
-      continue;
-    }
-    payload.append(key, String(value));
-  }
-
-  const forwardResponse = await fetch(forwardUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: payload,
-  });
-
-  if (!forwardResponse.ok) {
-    const errorText = await forwardResponse.text();
-    console.error("Connect Card forward failed", errorText);
-    return new Response("Unable to deliver the Connect Card submission.", { status: 502 });
-  }
-
-  const summary = buildSummary(entries);
-  summary["Submitted At"] = new Date().toISOString();
-
-  const notifyEmails = (process.env.CONNECT_CARD_NOTIFY_EMAILS ?? "")
-    .split(",")
-    .map((email) => email.trim())
-    .filter(Boolean);
-  const sendgridKey = process.env.CONNECT_CARD_SENDGRID_API_KEY;
-  const summaryText = formatSummaryText(summary);
-
-  if (sendgridKey && notifyEmails.length) {
-    const fromEmail = process.env.CONNECT_CARD_NOTIFY_FROM?.trim() || site.contact.email;
-    try {
-      await sendNotificationEmail(notifyEmails, fromEmail, sendgridKey, summaryText);
-    } catch (error) {
-      console.error("Connect Card notification failed", error);
-    }
-  }
-
-  const redirectValue = formData.get("redirectUrl");
-  const redirectUrl = typeof redirectValue === "string" && redirectValue.trim()
-    ? redirectValue
-    : THANK_YOU_PATH;
-
-  return Response.redirect(redirectUrl, 303);
-};
+  },
+});
 </file>
 
 <file path=".github/ISSUE_TEMPLATE/content-update.md">
@@ -1408,6 +1299,1336 @@ This page explains the known UI failure modes we monitor so we can triage common
 <file path="web/public/.assetsignore">
 _worker.js
 _routes.json
+</file>
+
+<file path="web/scripts/vendor/yargs-parser/build/lib/string-utils.js">
+/**
+ * @license
+ * Copyright (c) 2016, Contributors
+ * SPDX-License-Identifier: ISC
+ */
+export function camelCase(str) {
+    // Handle the case where an argument is provided as camel case, e.g., fooBar.
+    // by ensuring that the string isn't already mixed case:
+    const isCamelCase = str !== str.toLowerCase() && str !== str.toUpperCase();
+    if (!isCamelCase) {
+        str = str.toLowerCase();
+    }
+    if (str.indexOf('-') === -1 && str.indexOf('_') === -1) {
+        return str;
+    }
+    else {
+        let camelcase = '';
+        let nextChrUpper = false;
+        const leadingHyphens = str.match(/^-+/);
+        for (let i = leadingHyphens ? leadingHyphens[0].length : 0; i < str.length; i++) {
+            let chr = str.charAt(i);
+            if (nextChrUpper) {
+                nextChrUpper = false;
+                chr = chr.toUpperCase();
+            }
+            if (i !== 0 && (chr === '-' || chr === '_')) {
+                nextChrUpper = true;
+            }
+            else if (chr !== '-' && chr !== '_') {
+                camelcase += chr;
+            }
+        }
+        return camelcase;
+    }
+}
+export function decamelize(str, joinString) {
+    const lowercase = str.toLowerCase();
+    joinString = joinString || '-';
+    let notCamelcase = '';
+    for (let i = 0; i < str.length; i++) {
+        const chrLower = lowercase.charAt(i);
+        const chrString = str.charAt(i);
+        if (chrLower !== chrString && i > 0) {
+            notCamelcase += `${joinString}${lowercase.charAt(i)}`;
+        }
+        else {
+            notCamelcase += chrString;
+        }
+    }
+    return notCamelcase;
+}
+export function looksLikeNumber(x) {
+    if (x === null || x === undefined)
+        return false;
+    // if loaded from config, may already be a number.
+    if (typeof x === 'number')
+        return true;
+    // hexadecimal.
+    if (/^0x[0-9a-f]+$/i.test(x))
+        return true;
+    // don't treat 0123 as a number; as it drops the leading '0'.
+    if (/^0[^.]/.test(x))
+        return false;
+    return /^[-]?(?:\d+(?:\.\d*)?|\.\d+)(e[-+]?\d+)?$/.test(x);
+}
+</file>
+
+<file path="web/scripts/vendor/yargs-parser/build/lib/yargs-parser-types.js">
+/**
+ * @license
+ * Copyright (c) 2016, Contributors
+ * SPDX-License-Identifier: ISC
+ */
+export var DefaultValuesForTypeKey;
+(function (DefaultValuesForTypeKey) {
+    DefaultValuesForTypeKey["BOOLEAN"] = "boolean";
+    DefaultValuesForTypeKey["STRING"] = "string";
+    DefaultValuesForTypeKey["NUMBER"] = "number";
+    DefaultValuesForTypeKey["ARRAY"] = "array";
+})(DefaultValuesForTypeKey || (DefaultValuesForTypeKey = {}));
+</file>
+
+<file path="web/scripts/vendor/yargs-parser/build/lib/yargs-parser.js">
+/**
+ * @license
+ * Copyright (c) 2016, Contributors
+ * SPDX-License-Identifier: ISC
+ */
+import { tokenizeArgString } from './tokenize-arg-string.js';
+import { DefaultValuesForTypeKey } from './yargs-parser-types.js';
+import { camelCase, decamelize, looksLikeNumber } from './string-utils.js';
+let mixin;
+export class YargsParser {
+    constructor(_mixin) {
+        mixin = _mixin;
+    }
+    parse(argsInput, options) {
+        const opts = Object.assign({
+            alias: undefined,
+            array: undefined,
+            boolean: undefined,
+            config: undefined,
+            configObjects: undefined,
+            configuration: undefined,
+            coerce: undefined,
+            count: undefined,
+            default: undefined,
+            envPrefix: undefined,
+            narg: undefined,
+            normalize: undefined,
+            string: undefined,
+            number: undefined,
+            __: undefined,
+            key: undefined
+        }, options);
+        // allow a string argument to be passed in rather
+        // than an argv array.
+        const args = tokenizeArgString(argsInput);
+        // tokenizeArgString adds extra quotes to args if argsInput is a string
+        // only strip those extra quotes in processValue if argsInput is a string
+        const inputIsString = typeof argsInput === 'string';
+        // aliases might have transitive relationships, normalize this.
+        const aliases = combineAliases(Object.assign(Object.create(null), opts.alias));
+        const configuration = Object.assign({
+            'boolean-negation': true,
+            'camel-case-expansion': true,
+            'combine-arrays': false,
+            'dot-notation': true,
+            'duplicate-arguments-array': true,
+            'flatten-duplicate-arrays': true,
+            'greedy-arrays': true,
+            'halt-at-non-option': false,
+            'nargs-eats-options': false,
+            'negation-prefix': 'no-',
+            'parse-numbers': true,
+            'parse-positional-numbers': true,
+            'populate--': false,
+            'set-placeholder-key': false,
+            'short-option-groups': true,
+            'strip-aliased': false,
+            'strip-dashed': false,
+            'unknown-options-as-args': false
+        }, opts.configuration);
+        const defaults = Object.assign(Object.create(null), opts.default);
+        const configObjects = opts.configObjects || [];
+        const envPrefix = opts.envPrefix;
+        const notFlagsOption = configuration['populate--'];
+        const notFlagsArgv = notFlagsOption ? '--' : '_';
+        const newAliases = Object.create(null);
+        const defaulted = Object.create(null);
+        // allow a i18n handler to be passed in, default to a fake one (util.format).
+        const __ = opts.__ || mixin.format;
+        const flags = {
+            aliases: Object.create(null),
+            arrays: Object.create(null),
+            bools: Object.create(null),
+            strings: Object.create(null),
+            numbers: Object.create(null),
+            counts: Object.create(null),
+            normalize: Object.create(null),
+            configs: Object.create(null),
+            nargs: Object.create(null),
+            coercions: Object.create(null),
+            keys: []
+        };
+        const negative = /^-([0-9]+(\.[0-9]+)?|\.[0-9]+)$/;
+        const negatedBoolean = new RegExp('^--' + configuration['negation-prefix'] + '(.+)');
+        [].concat(opts.array || []).filter(Boolean).forEach(function (opt) {
+            const key = typeof opt === 'object' ? opt.key : opt;
+            // assign to flags[bools|strings|numbers]
+            const assignment = Object.keys(opt).map(function (key) {
+                const arrayFlagKeys = {
+                    boolean: 'bools',
+                    string: 'strings',
+                    number: 'numbers'
+                };
+                return arrayFlagKeys[key];
+            }).filter(Boolean).pop();
+            // assign key to be coerced
+            if (assignment) {
+                flags[assignment][key] = true;
+            }
+            flags.arrays[key] = true;
+            flags.keys.push(key);
+        });
+        [].concat(opts.boolean || []).filter(Boolean).forEach(function (key) {
+            flags.bools[key] = true;
+            flags.keys.push(key);
+        });
+        [].concat(opts.string || []).filter(Boolean).forEach(function (key) {
+            flags.strings[key] = true;
+            flags.keys.push(key);
+        });
+        [].concat(opts.number || []).filter(Boolean).forEach(function (key) {
+            flags.numbers[key] = true;
+            flags.keys.push(key);
+        });
+        [].concat(opts.count || []).filter(Boolean).forEach(function (key) {
+            flags.counts[key] = true;
+            flags.keys.push(key);
+        });
+        [].concat(opts.normalize || []).filter(Boolean).forEach(function (key) {
+            flags.normalize[key] = true;
+            flags.keys.push(key);
+        });
+        if (typeof opts.narg === 'object') {
+            Object.entries(opts.narg).forEach(([key, value]) => {
+                if (typeof value === 'number') {
+                    flags.nargs[key] = value;
+                    flags.keys.push(key);
+                }
+            });
+        }
+        if (typeof opts.coerce === 'object') {
+            Object.entries(opts.coerce).forEach(([key, value]) => {
+                if (typeof value === 'function') {
+                    flags.coercions[key] = value;
+                    flags.keys.push(key);
+                }
+            });
+        }
+        if (typeof opts.config !== 'undefined') {
+            if (Array.isArray(opts.config) || typeof opts.config === 'string') {
+                ;
+                [].concat(opts.config).filter(Boolean).forEach(function (key) {
+                    flags.configs[key] = true;
+                });
+            }
+            else if (typeof opts.config === 'object') {
+                Object.entries(opts.config).forEach(([key, value]) => {
+                    if (typeof value === 'boolean' || typeof value === 'function') {
+                        flags.configs[key] = value;
+                    }
+                });
+            }
+        }
+        // create a lookup table that takes into account all
+        // combinations of aliases: {f: ['foo'], foo: ['f']}
+        extendAliases(opts.key, aliases, opts.default, flags.arrays);
+        // apply default values to all aliases.
+        Object.keys(defaults).forEach(function (key) {
+            (flags.aliases[key] || []).forEach(function (alias) {
+                defaults[alias] = defaults[key];
+            });
+        });
+        let error = null;
+        checkConfiguration();
+        let notFlags = [];
+        const argv = Object.assign(Object.create(null), { _: [] });
+        // TODO(bcoe): for the first pass at removing object prototype  we didn't
+        // remove all prototypes from objects returned by this API, we might want
+        // to gradually move towards doing so.
+        const argvReturn = {};
+        for (let i = 0; i < args.length; i++) {
+            const arg = args[i];
+            const truncatedArg = arg.replace(/^-{3,}/, '---');
+            let broken;
+            let key;
+            let letters;
+            let m;
+            let next;
+            let value;
+            // any unknown option (except for end-of-options, "--")
+            if (arg !== '--' && /^-/.test(arg) && isUnknownOptionAsArg(arg)) {
+                pushPositional(arg);
+                // ---, ---=, ----, etc,
+            }
+            else if (truncatedArg.match(/^---+(=|$)/)) {
+                // options without key name are invalid.
+                pushPositional(arg);
+                continue;
+                // -- separated by =
+            }
+            else if (arg.match(/^--.+=/) || (!configuration['short-option-groups'] && arg.match(/^-.+=/))) {
+                // Using [\s\S] instead of . because js doesn't support the
+                // 'dotall' regex modifier. See:
+                // http://stackoverflow.com/a/1068308/13216
+                m = arg.match(/^--?([^=]+)=([\s\S]*)$/);
+                // arrays format = '--f=a b c'
+                if (m !== null && Array.isArray(m) && m.length >= 3) {
+                    if (checkAllAliases(m[1], flags.arrays)) {
+                        i = eatArray(i, m[1], args, m[2]);
+                    }
+                    else if (checkAllAliases(m[1], flags.nargs) !== false) {
+                        // nargs format = '--f=monkey washing cat'
+                        i = eatNargs(i, m[1], args, m[2]);
+                    }
+                    else {
+                        setArg(m[1], m[2], true);
+                    }
+                }
+            }
+            else if (arg.match(negatedBoolean) && configuration['boolean-negation']) {
+                m = arg.match(negatedBoolean);
+                if (m !== null && Array.isArray(m) && m.length >= 2) {
+                    key = m[1];
+                    setArg(key, checkAllAliases(key, flags.arrays) ? [false] : false);
+                }
+                // -- separated by space.
+            }
+            else if (arg.match(/^--.+/) || (!configuration['short-option-groups'] && arg.match(/^-[^-]+/))) {
+                m = arg.match(/^--?(.+)/);
+                if (m !== null && Array.isArray(m) && m.length >= 2) {
+                    key = m[1];
+                    if (checkAllAliases(key, flags.arrays)) {
+                        // array format = '--foo a b c'
+                        i = eatArray(i, key, args);
+                    }
+                    else if (checkAllAliases(key, flags.nargs) !== false) {
+                        // nargs format = '--foo a b c'
+                        // should be truthy even if: flags.nargs[key] === 0
+                        i = eatNargs(i, key, args);
+                    }
+                    else {
+                        next = args[i + 1];
+                        if (next !== undefined && (!next.match(/^-/) ||
+                            next.match(negative)) &&
+                            !checkAllAliases(key, flags.bools) &&
+                            !checkAllAliases(key, flags.counts)) {
+                            setArg(key, next);
+                            i++;
+                        }
+                        else if (/^(true|false)$/.test(next)) {
+                            setArg(key, next);
+                            i++;
+                        }
+                        else {
+                            setArg(key, defaultValue(key));
+                        }
+                    }
+                }
+                // dot-notation flag separated by '='.
+            }
+            else if (arg.match(/^-.\..+=/)) {
+                m = arg.match(/^-([^=]+)=([\s\S]*)$/);
+                if (m !== null && Array.isArray(m) && m.length >= 3) {
+                    setArg(m[1], m[2]);
+                }
+                // dot-notation flag separated by space.
+            }
+            else if (arg.match(/^-.\..+/) && !arg.match(negative)) {
+                next = args[i + 1];
+                m = arg.match(/^-(.\..+)/);
+                if (m !== null && Array.isArray(m) && m.length >= 2) {
+                    key = m[1];
+                    if (next !== undefined && !next.match(/^-/) &&
+                        !checkAllAliases(key, flags.bools) &&
+                        !checkAllAliases(key, flags.counts)) {
+                        setArg(key, next);
+                        i++;
+                    }
+                    else {
+                        setArg(key, defaultValue(key));
+                    }
+                }
+            }
+            else if (arg.match(/^-[^-]+/) && !arg.match(negative)) {
+                letters = arg.slice(1, -1).split('');
+                broken = false;
+                for (let j = 0; j < letters.length; j++) {
+                    next = arg.slice(j + 2);
+                    if (letters[j + 1] && letters[j + 1] === '=') {
+                        value = arg.slice(j + 3);
+                        key = letters[j];
+                        if (checkAllAliases(key, flags.arrays)) {
+                            // array format = '-f=a b c'
+                            i = eatArray(i, key, args, value);
+                        }
+                        else if (checkAllAliases(key, flags.nargs) !== false) {
+                            // nargs format = '-f=monkey washing cat'
+                            i = eatNargs(i, key, args, value);
+                        }
+                        else {
+                            setArg(key, value);
+                        }
+                        broken = true;
+                        break;
+                    }
+                    if (next === '-') {
+                        setArg(letters[j], next);
+                        continue;
+                    }
+                    // current letter is an alphabetic character and next value is a number
+                    if (/[A-Za-z]/.test(letters[j]) &&
+                        /^-?\d+(\.\d*)?(e-?\d+)?$/.test(next) &&
+                        checkAllAliases(next, flags.bools) === false) {
+                        setArg(letters[j], next);
+                        broken = true;
+                        break;
+                    }
+                    if (letters[j + 1] && letters[j + 1].match(/\W/)) {
+                        setArg(letters[j], next);
+                        broken = true;
+                        break;
+                    }
+                    else {
+                        setArg(letters[j], defaultValue(letters[j]));
+                    }
+                }
+                key = arg.slice(-1)[0];
+                if (!broken && key !== '-') {
+                    if (checkAllAliases(key, flags.arrays)) {
+                        // array format = '-f a b c'
+                        i = eatArray(i, key, args);
+                    }
+                    else if (checkAllAliases(key, flags.nargs) !== false) {
+                        // nargs format = '-f a b c'
+                        // should be truthy even if: flags.nargs[key] === 0
+                        i = eatNargs(i, key, args);
+                    }
+                    else {
+                        next = args[i + 1];
+                        if (next !== undefined && (!/^(-|--)[^-]/.test(next) ||
+                            next.match(negative)) &&
+                            !checkAllAliases(key, flags.bools) &&
+                            !checkAllAliases(key, flags.counts)) {
+                            setArg(key, next);
+                            i++;
+                        }
+                        else if (/^(true|false)$/.test(next)) {
+                            setArg(key, next);
+                            i++;
+                        }
+                        else {
+                            setArg(key, defaultValue(key));
+                        }
+                    }
+                }
+            }
+            else if (arg.match(/^-[0-9]$/) &&
+                arg.match(negative) &&
+                checkAllAliases(arg.slice(1), flags.bools)) {
+                // single-digit boolean alias, e.g: xargs -0
+                key = arg.slice(1);
+                setArg(key, defaultValue(key));
+            }
+            else if (arg === '--') {
+                notFlags = args.slice(i + 1);
+                break;
+            }
+            else if (configuration['halt-at-non-option']) {
+                notFlags = args.slice(i);
+                break;
+            }
+            else {
+                pushPositional(arg);
+            }
+        }
+        // order of precedence:
+        // 1. command line arg
+        // 2. value from env var
+        // 3. value from config file
+        // 4. value from config objects
+        // 5. configured default value
+        applyEnvVars(argv, true); // special case: check env vars that point to config file
+        applyEnvVars(argv, false);
+        setConfig(argv);
+        setConfigObjects();
+        applyDefaultsAndAliases(argv, flags.aliases, defaults, true);
+        applyCoercions(argv);
+        if (configuration['set-placeholder-key'])
+            setPlaceholderKeys(argv);
+        // for any counts either not in args or without an explicit default, set to 0
+        Object.keys(flags.counts).forEach(function (key) {
+            if (!hasKey(argv, key.split('.')))
+                setArg(key, 0);
+        });
+        // '--' defaults to undefined.
+        if (notFlagsOption && notFlags.length)
+            argv[notFlagsArgv] = [];
+        notFlags.forEach(function (key) {
+            argv[notFlagsArgv].push(key);
+        });
+        if (configuration['camel-case-expansion'] && configuration['strip-dashed']) {
+            Object.keys(argv).filter(key => key !== '--' && key.includes('-')).forEach(key => {
+                delete argv[key];
+            });
+        }
+        if (configuration['strip-aliased']) {
+            ;
+            [].concat(...Object.keys(aliases).map(k => aliases[k])).forEach(alias => {
+                if (configuration['camel-case-expansion'] && alias.includes('-')) {
+                    delete argv[alias.split('.').map(prop => camelCase(prop)).join('.')];
+                }
+                delete argv[alias];
+            });
+        }
+        // Push argument into positional array, applying numeric coercion:
+        function pushPositional(arg) {
+            const maybeCoercedNumber = maybeCoerceNumber('_', arg);
+            if (typeof maybeCoercedNumber === 'string' || typeof maybeCoercedNumber === 'number') {
+                argv._.push(maybeCoercedNumber);
+            }
+        }
+        // how many arguments should we consume, based
+        // on the nargs option?
+        function eatNargs(i, key, args, argAfterEqualSign) {
+            let ii;
+            let toEat = checkAllAliases(key, flags.nargs);
+            // NaN has a special meaning for the array type, indicating that one or
+            // more values are expected.
+            toEat = typeof toEat !== 'number' || isNaN(toEat) ? 1 : toEat;
+            if (toEat === 0) {
+                if (!isUndefined(argAfterEqualSign)) {
+                    error = Error(__('Argument unexpected for: %s', key));
+                }
+                setArg(key, defaultValue(key));
+                return i;
+            }
+            let available = isUndefined(argAfterEqualSign) ? 0 : 1;
+            if (configuration['nargs-eats-options']) {
+                // classic behavior, yargs eats positional and dash arguments.
+                if (args.length - (i + 1) + available < toEat) {
+                    error = Error(__('Not enough arguments following: %s', key));
+                }
+                available = toEat;
+            }
+            else {
+                // nargs will not consume flag arguments, e.g., -abc, --foo,
+                // and terminates when one is observed.
+                for (ii = i + 1; ii < args.length; ii++) {
+                    if (!args[ii].match(/^-[^0-9]/) || args[ii].match(negative) || isUnknownOptionAsArg(args[ii]))
+                        available++;
+                    else
+                        break;
+                }
+                if (available < toEat)
+                    error = Error(__('Not enough arguments following: %s', key));
+            }
+            let consumed = Math.min(available, toEat);
+            if (!isUndefined(argAfterEqualSign) && consumed > 0) {
+                setArg(key, argAfterEqualSign);
+                consumed--;
+            }
+            for (ii = i + 1; ii < (consumed + i + 1); ii++) {
+                setArg(key, args[ii]);
+            }
+            return (i + consumed);
+        }
+        // if an option is an array, eat all non-hyphenated arguments
+        // following it... YUM!
+        // e.g., --foo apple banana cat becomes ["apple", "banana", "cat"]
+        function eatArray(i, key, args, argAfterEqualSign) {
+            let argsToSet = [];
+            let next = argAfterEqualSign || args[i + 1];
+            // If both array and nargs are configured, enforce the nargs count:
+            const nargsCount = checkAllAliases(key, flags.nargs);
+            if (checkAllAliases(key, flags.bools) && !(/^(true|false)$/.test(next))) {
+                argsToSet.push(true);
+            }
+            else if (isUndefined(next) ||
+                (isUndefined(argAfterEqualSign) && /^-/.test(next) && !negative.test(next) && !isUnknownOptionAsArg(next))) {
+                // for keys without value ==> argsToSet remains an empty []
+                // set user default value, if available
+                if (defaults[key] !== undefined) {
+                    const defVal = defaults[key];
+                    argsToSet = Array.isArray(defVal) ? defVal : [defVal];
+                }
+            }
+            else {
+                // value in --option=value is eaten as is
+                if (!isUndefined(argAfterEqualSign)) {
+                    argsToSet.push(processValue(key, argAfterEqualSign, true));
+                }
+                for (let ii = i + 1; ii < args.length; ii++) {
+                    if ((!configuration['greedy-arrays'] && argsToSet.length > 0) ||
+                        (nargsCount && typeof nargsCount === 'number' && argsToSet.length >= nargsCount))
+                        break;
+                    next = args[ii];
+                    if (/^-/.test(next) && !negative.test(next) && !isUnknownOptionAsArg(next))
+                        break;
+                    i = ii;
+                    argsToSet.push(processValue(key, next, inputIsString));
+                }
+            }
+            // If both array and nargs are configured, create an error if less than
+            // nargs positionals were found. NaN has special meaning, indicating
+            // that at least one value is required (more are okay).
+            if (typeof nargsCount === 'number' && ((nargsCount && argsToSet.length < nargsCount) ||
+                (isNaN(nargsCount) && argsToSet.length === 0))) {
+                error = Error(__('Not enough arguments following: %s', key));
+            }
+            setArg(key, argsToSet);
+            return i;
+        }
+        function setArg(key, val, shouldStripQuotes = inputIsString) {
+            if (/-/.test(key) && configuration['camel-case-expansion']) {
+                const alias = key.split('.').map(function (prop) {
+                    return camelCase(prop);
+                }).join('.');
+                addNewAlias(key, alias);
+            }
+            const value = processValue(key, val, shouldStripQuotes);
+            const splitKey = key.split('.');
+            setKey(argv, splitKey, value);
+            // handle populating aliases of the full key
+            if (flags.aliases[key]) {
+                flags.aliases[key].forEach(function (x) {
+                    const keyProperties = x.split('.');
+                    setKey(argv, keyProperties, value);
+                });
+            }
+            // handle populating aliases of the first element of the dot-notation key
+            if (splitKey.length > 1 && configuration['dot-notation']) {
+                ;
+                (flags.aliases[splitKey[0]] || []).forEach(function (x) {
+                    let keyProperties = x.split('.');
+                    // expand alias with nested objects in key
+                    const a = [].concat(splitKey);
+                    a.shift(); // nuke the old key.
+                    keyProperties = keyProperties.concat(a);
+                    // populate alias only if is not already an alias of the full key
+                    // (already populated above)
+                    if (!(flags.aliases[key] || []).includes(keyProperties.join('.'))) {
+                        setKey(argv, keyProperties, value);
+                    }
+                });
+            }
+            // Set normalize getter and setter when key is in 'normalize' but isn't an array
+            if (checkAllAliases(key, flags.normalize) && !checkAllAliases(key, flags.arrays)) {
+                const keys = [key].concat(flags.aliases[key] || []);
+                keys.forEach(function (key) {
+                    Object.defineProperty(argvReturn, key, {
+                        enumerable: true,
+                        get() {
+                            return val;
+                        },
+                        set(value) {
+                            val = typeof value === 'string' ? mixin.normalize(value) : value;
+                        }
+                    });
+                });
+            }
+        }
+        function addNewAlias(key, alias) {
+            if (!(flags.aliases[key] && flags.aliases[key].length)) {
+                flags.aliases[key] = [alias];
+                newAliases[alias] = true;
+            }
+            if (!(flags.aliases[alias] && flags.aliases[alias].length)) {
+                addNewAlias(alias, key);
+            }
+        }
+        function processValue(key, val, shouldStripQuotes) {
+            // strings may be quoted, clean this up as we assign values.
+            if (shouldStripQuotes) {
+                val = stripQuotes(val);
+            }
+            // handle parsing boolean arguments --foo=true --bar false.
+            if (checkAllAliases(key, flags.bools) || checkAllAliases(key, flags.counts)) {
+                if (typeof val === 'string')
+                    val = val === 'true';
+            }
+            let value = Array.isArray(val)
+                ? val.map(function (v) { return maybeCoerceNumber(key, v); })
+                : maybeCoerceNumber(key, val);
+            // increment a count given as arg (either no value or value parsed as boolean)
+            if (checkAllAliases(key, flags.counts) && (isUndefined(value) || typeof value === 'boolean')) {
+                value = increment();
+            }
+            // Set normalized value when key is in 'normalize' and in 'arrays'
+            if (checkAllAliases(key, flags.normalize) && checkAllAliases(key, flags.arrays)) {
+                if (Array.isArray(val))
+                    value = val.map((val) => { return mixin.normalize(val); });
+                else
+                    value = mixin.normalize(val);
+            }
+            return value;
+        }
+        function maybeCoerceNumber(key, value) {
+            if (!configuration['parse-positional-numbers'] && key === '_')
+                return value;
+            if (!checkAllAliases(key, flags.strings) && !checkAllAliases(key, flags.bools) && !Array.isArray(value)) {
+                const shouldCoerceNumber = looksLikeNumber(value) && configuration['parse-numbers'] && (Number.isSafeInteger(Math.floor(parseFloat(`${value}`))));
+                if (shouldCoerceNumber || (!isUndefined(value) && checkAllAliases(key, flags.numbers))) {
+                    value = Number(value);
+                }
+            }
+            return value;
+        }
+        // set args from config.json file, this should be
+        // applied last so that defaults can be applied.
+        function setConfig(argv) {
+            const configLookup = Object.create(null);
+            // expand defaults/aliases, in-case any happen to reference
+            // the config.json file.
+            applyDefaultsAndAliases(configLookup, flags.aliases, defaults);
+            Object.keys(flags.configs).forEach(function (configKey) {
+                const configPath = argv[configKey] || configLookup[configKey];
+                if (configPath) {
+                    try {
+                        let config = null;
+                        const resolvedConfigPath = mixin.resolve(mixin.cwd(), configPath);
+                        const resolveConfig = flags.configs[configKey];
+                        if (typeof resolveConfig === 'function') {
+                            try {
+                                config = resolveConfig(resolvedConfigPath);
+                            }
+                            catch (e) {
+                                config = e;
+                            }
+                            if (config instanceof Error) {
+                                error = config;
+                                return;
+                            }
+                        }
+                        else {
+                            config = mixin.require(resolvedConfigPath);
+                        }
+                        setConfigObject(config);
+                    }
+                    catch (ex) {
+                        // Deno will receive a PermissionDenied error if an attempt is
+                        // made to load config without the --allow-read flag:
+                        if (ex.name === 'PermissionDenied')
+                            error = ex;
+                        else if (argv[configKey])
+                            error = Error(__('Invalid JSON config file: %s', configPath));
+                    }
+                }
+            });
+        }
+        // set args from config object.
+        // it recursively checks nested objects.
+        function setConfigObject(config, prev) {
+            Object.keys(config).forEach(function (key) {
+                const value = config[key];
+                const fullKey = prev ? prev + '.' + key : key;
+                // if the value is an inner object and we have dot-notation
+                // enabled, treat inner objects in config the same as
+                // heavily nested dot notations (foo.bar.apple).
+                if (typeof value === 'object' && value !== null && !Array.isArray(value) && configuration['dot-notation']) {
+                    // if the value is an object but not an array, check nested object
+                    setConfigObject(value, fullKey);
+                }
+                else {
+                    // setting arguments via CLI takes precedence over
+                    // values within the config file.
+                    if (!hasKey(argv, fullKey.split('.')) || (checkAllAliases(fullKey, flags.arrays) && configuration['combine-arrays'])) {
+                        setArg(fullKey, value);
+                    }
+                }
+            });
+        }
+        // set all config objects passed in opts
+        function setConfigObjects() {
+            if (typeof configObjects !== 'undefined') {
+                configObjects.forEach(function (configObject) {
+                    setConfigObject(configObject);
+                });
+            }
+        }
+        function applyEnvVars(argv, configOnly) {
+            if (typeof envPrefix === 'undefined')
+                return;
+            const prefix = typeof envPrefix === 'string' ? envPrefix : '';
+            const env = mixin.env();
+            Object.keys(env).forEach(function (envVar) {
+                if (prefix === '' || envVar.lastIndexOf(prefix, 0) === 0) {
+                    // get array of nested keys and convert them to camel case
+                    const keys = envVar.split('__').map(function (key, i) {
+                        if (i === 0) {
+                            key = key.substring(prefix.length);
+                        }
+                        return camelCase(key);
+                    });
+                    if (((configOnly && flags.configs[keys.join('.')]) || !configOnly) && !hasKey(argv, keys)) {
+                        setArg(keys.join('.'), env[envVar]);
+                    }
+                }
+            });
+        }
+        function applyCoercions(argv) {
+            let coerce;
+            const applied = new Set();
+            Object.keys(argv).forEach(function (key) {
+                if (!applied.has(key)) { // If we haven't already coerced this option via one of its aliases
+                    coerce = checkAllAliases(key, flags.coercions);
+                    if (typeof coerce === 'function') {
+                        try {
+                            const value = maybeCoerceNumber(key, coerce(argv[key]));
+                            ([].concat(flags.aliases[key] || [], key)).forEach(ali => {
+                                applied.add(ali);
+                                argv[ali] = value;
+                            });
+                        }
+                        catch (err) {
+                            error = err;
+                        }
+                    }
+                }
+            });
+        }
+        function setPlaceholderKeys(argv) {
+            flags.keys.forEach((key) => {
+                // don't set placeholder keys for dot notation options 'foo.bar'.
+                if (~key.indexOf('.'))
+                    return;
+                if (typeof argv[key] === 'undefined')
+                    argv[key] = undefined;
+            });
+            return argv;
+        }
+        function applyDefaultsAndAliases(obj, aliases, defaults, canLog = false) {
+            Object.keys(defaults).forEach(function (key) {
+                if (!hasKey(obj, key.split('.'))) {
+                    setKey(obj, key.split('.'), defaults[key]);
+                    if (canLog)
+                        defaulted[key] = true;
+                    (aliases[key] || []).forEach(function (x) {
+                        if (hasKey(obj, x.split('.')))
+                            return;
+                        setKey(obj, x.split('.'), defaults[key]);
+                    });
+                }
+            });
+        }
+        function hasKey(obj, keys) {
+            let o = obj;
+            if (!configuration['dot-notation'])
+                keys = [keys.join('.')];
+            keys.slice(0, -1).forEach(function (key) {
+                o = (o[key] || {});
+            });
+            const key = keys[keys.length - 1];
+            if (typeof o !== 'object')
+                return false;
+            else
+                return key in o;
+        }
+        function setKey(obj, keys, value) {
+            let o = obj;
+            if (!configuration['dot-notation'])
+                keys = [keys.join('.')];
+            keys.slice(0, -1).forEach(function (key) {
+                // TODO(bcoe): in the next major version of yargs, switch to
+                // Object.create(null) for dot notation:
+                key = sanitizeKey(key);
+                if (typeof o === 'object' && o[key] === undefined) {
+                    o[key] = {};
+                }
+                if (typeof o[key] !== 'object' || Array.isArray(o[key])) {
+                    // ensure that o[key] is an array, and that the last item is an empty object.
+                    if (Array.isArray(o[key])) {
+                        o[key].push({});
+                    }
+                    else {
+                        o[key] = [o[key], {}];
+                    }
+                    // we want to update the empty object at the end of the o[key] array, so set o to that object
+                    o = o[key][o[key].length - 1];
+                }
+                else {
+                    o = o[key];
+                }
+            });
+            // TODO(bcoe): in the next major version of yargs, switch to
+            // Object.create(null) for dot notation:
+            const key = sanitizeKey(keys[keys.length - 1]);
+            const isTypeArray = checkAllAliases(keys.join('.'), flags.arrays);
+            const isValueArray = Array.isArray(value);
+            let duplicate = configuration['duplicate-arguments-array'];
+            // nargs has higher priority than duplicate
+            if (!duplicate && checkAllAliases(key, flags.nargs)) {
+                duplicate = true;
+                if ((!isUndefined(o[key]) && flags.nargs[key] === 1) || (Array.isArray(o[key]) && o[key].length === flags.nargs[key])) {
+                    o[key] = undefined;
+                }
+            }
+            if (value === increment()) {
+                o[key] = increment(o[key]);
+            }
+            else if (Array.isArray(o[key])) {
+                if (duplicate && isTypeArray && isValueArray) {
+                    o[key] = configuration['flatten-duplicate-arrays'] ? o[key].concat(value) : (Array.isArray(o[key][0]) ? o[key] : [o[key]]).concat([value]);
+                }
+                else if (!duplicate && Boolean(isTypeArray) === Boolean(isValueArray)) {
+                    o[key] = value;
+                }
+                else {
+                    o[key] = o[key].concat([value]);
+                }
+            }
+            else if (o[key] === undefined && isTypeArray) {
+                o[key] = isValueArray ? value : [value];
+            }
+            else if (duplicate && !(o[key] === undefined ||
+                checkAllAliases(key, flags.counts) ||
+                checkAllAliases(key, flags.bools))) {
+                o[key] = [o[key], value];
+            }
+            else {
+                o[key] = value;
+            }
+        }
+        // extend the aliases list with inferred aliases.
+        function extendAliases(...args) {
+            args.forEach(function (obj) {
+                Object.keys(obj || {}).forEach(function (key) {
+                    // short-circuit if we've already added a key
+                    // to the aliases array, for example it might
+                    // exist in both 'opts.default' and 'opts.key'.
+                    if (flags.aliases[key])
+                        return;
+                    flags.aliases[key] = [].concat(aliases[key] || []);
+                    // For "--option-name", also set argv.optionName
+                    flags.aliases[key].concat(key).forEach(function (x) {
+                        if (/-/.test(x) && configuration['camel-case-expansion']) {
+                            const c = camelCase(x);
+                            if (c !== key && flags.aliases[key].indexOf(c) === -1) {
+                                flags.aliases[key].push(c);
+                                newAliases[c] = true;
+                            }
+                        }
+                    });
+                    // For "--optionName", also set argv['option-name']
+                    flags.aliases[key].concat(key).forEach(function (x) {
+                        if (x.length > 1 && /[A-Z]/.test(x) && configuration['camel-case-expansion']) {
+                            const c = decamelize(x, '-');
+                            if (c !== key && flags.aliases[key].indexOf(c) === -1) {
+                                flags.aliases[key].push(c);
+                                newAliases[c] = true;
+                            }
+                        }
+                    });
+                    flags.aliases[key].forEach(function (x) {
+                        flags.aliases[x] = [key].concat(flags.aliases[key].filter(function (y) {
+                            return x !== y;
+                        }));
+                    });
+                });
+            });
+        }
+        function checkAllAliases(key, flag) {
+            const toCheck = [].concat(flags.aliases[key] || [], key);
+            const keys = Object.keys(flag);
+            const setAlias = toCheck.find(key => keys.includes(key));
+            return setAlias ? flag[setAlias] : false;
+        }
+        function hasAnyFlag(key) {
+            const flagsKeys = Object.keys(flags);
+            const toCheck = [].concat(flagsKeys.map(k => flags[k]));
+            return toCheck.some(function (flag) {
+                return Array.isArray(flag) ? flag.includes(key) : flag[key];
+            });
+        }
+        function hasFlagsMatching(arg, ...patterns) {
+            const toCheck = [].concat(...patterns);
+            return toCheck.some(function (pattern) {
+                const match = arg.match(pattern);
+                return match && hasAnyFlag(match[1]);
+            });
+        }
+        // based on a simplified version of the short flag group parsing logic
+        function hasAllShortFlags(arg) {
+            // if this is a negative number, or doesn't start with a single hyphen, it's not a short flag group
+            if (arg.match(negative) || !arg.match(/^-[^-]+/)) {
+                return false;
+            }
+            let hasAllFlags = true;
+            let next;
+            const letters = arg.slice(1).split('');
+            for (let j = 0; j < letters.length; j++) {
+                next = arg.slice(j + 2);
+                if (!hasAnyFlag(letters[j])) {
+                    hasAllFlags = false;
+                    break;
+                }
+                if ((letters[j + 1] && letters[j + 1] === '=') ||
+                    next === '-' ||
+                    (/[A-Za-z]/.test(letters[j]) && /^-?\d+(\.\d*)?(e-?\d+)?$/.test(next)) ||
+                    (letters[j + 1] && letters[j + 1].match(/\W/))) {
+                    break;
+                }
+            }
+            return hasAllFlags;
+        }
+        function isUnknownOptionAsArg(arg) {
+            return configuration['unknown-options-as-args'] && isUnknownOption(arg);
+        }
+        function isUnknownOption(arg) {
+            arg = arg.replace(/^-{3,}/, '--');
+            // ignore negative numbers
+            if (arg.match(negative)) {
+                return false;
+            }
+            // if this is a short option group and all of them are configured, it isn't unknown
+            if (hasAllShortFlags(arg)) {
+                return false;
+            }
+            // e.g. '--count=2'
+            const flagWithEquals = /^-+([^=]+?)=[\s\S]*$/;
+            // e.g. '-a' or '--arg'
+            const normalFlag = /^-+([^=]+?)$/;
+            // e.g. '-a-'
+            const flagEndingInHyphen = /^-+([^=]+?)-$/;
+            // e.g. '-abc123'
+            const flagEndingInDigits = /^-+([^=]+?\d+)$/;
+            // e.g. '-a/usr/local'
+            const flagEndingInNonWordCharacters = /^-+([^=]+?)\W+.*$/;
+            // check the different types of flag styles, including negatedBoolean, a pattern defined near the start of the parse method
+            return !hasFlagsMatching(arg, flagWithEquals, negatedBoolean, normalFlag, flagEndingInHyphen, flagEndingInDigits, flagEndingInNonWordCharacters);
+        }
+        // make a best effort to pick a default value
+        // for an option based on name and type.
+        function defaultValue(key) {
+            if (!checkAllAliases(key, flags.bools) &&
+                !checkAllAliases(key, flags.counts) &&
+                `${key}` in defaults) {
+                return defaults[key];
+            }
+            else {
+                return defaultForType(guessType(key));
+            }
+        }
+        // return a default value, given the type of a flag.,
+        function defaultForType(type) {
+            const def = {
+                [DefaultValuesForTypeKey.BOOLEAN]: true,
+                [DefaultValuesForTypeKey.STRING]: '',
+                [DefaultValuesForTypeKey.NUMBER]: undefined,
+                [DefaultValuesForTypeKey.ARRAY]: []
+            };
+            return def[type];
+        }
+        // given a flag, enforce a default type.
+        function guessType(key) {
+            let type = DefaultValuesForTypeKey.BOOLEAN;
+            if (checkAllAliases(key, flags.strings))
+                type = DefaultValuesForTypeKey.STRING;
+            else if (checkAllAliases(key, flags.numbers))
+                type = DefaultValuesForTypeKey.NUMBER;
+            else if (checkAllAliases(key, flags.bools))
+                type = DefaultValuesForTypeKey.BOOLEAN;
+            else if (checkAllAliases(key, flags.arrays))
+                type = DefaultValuesForTypeKey.ARRAY;
+            return type;
+        }
+        function isUndefined(num) {
+            return num === undefined;
+        }
+        // check user configuration settings for inconsistencies
+        function checkConfiguration() {
+            // count keys should not be set as array/narg
+            Object.keys(flags.counts).find(key => {
+                if (checkAllAliases(key, flags.arrays)) {
+                    error = Error(__('Invalid configuration: %s, opts.count excludes opts.array.', key));
+                    return true;
+                }
+                else if (checkAllAliases(key, flags.nargs)) {
+                    error = Error(__('Invalid configuration: %s, opts.count excludes opts.narg.', key));
+                    return true;
+                }
+                return false;
+            });
+        }
+        return {
+            aliases: Object.assign({}, flags.aliases),
+            argv: Object.assign(argvReturn, argv),
+            configuration: configuration,
+            defaulted: Object.assign({}, defaulted),
+            error: error,
+            newAliases: Object.assign({}, newAliases)
+        };
+    }
+}
+// if any aliases reference each other, we should
+// merge them together.
+function combineAliases(aliases) {
+    const aliasArrays = [];
+    const combined = Object.create(null);
+    let change = true;
+    // turn alias lookup hash {key: ['alias1', 'alias2']} into
+    // a simple array ['key', 'alias1', 'alias2']
+    Object.keys(aliases).forEach(function (key) {
+        aliasArrays.push([].concat(aliases[key], key));
+    });
+    // combine arrays until zero changes are
+    // made in an iteration.
+    while (change) {
+        change = false;
+        for (let i = 0; i < aliasArrays.length; i++) {
+            for (let ii = i + 1; ii < aliasArrays.length; ii++) {
+                const intersect = aliasArrays[i].filter(function (v) {
+                    return aliasArrays[ii].indexOf(v) !== -1;
+                });
+                if (intersect.length) {
+                    aliasArrays[i] = aliasArrays[i].concat(aliasArrays[ii]);
+                    aliasArrays.splice(ii, 1);
+                    change = true;
+                    break;
+                }
+            }
+        }
+    }
+    // map arrays back to the hash-lookup (de-dupe while
+    // we're at it).
+    aliasArrays.forEach(function (aliasArray) {
+        aliasArray = aliasArray.filter(function (v, i, self) {
+            return self.indexOf(v) === i;
+        });
+        const lastAlias = aliasArray.pop();
+        if (lastAlias !== undefined && typeof lastAlias === 'string') {
+            combined[lastAlias] = aliasArray;
+        }
+    });
+    return combined;
+}
+// this function should only be called when a count is given as an arg
+// it is NOT called to set a default value
+// thus we can start the count at 1 instead of 0
+function increment(orig) {
+    return orig !== undefined ? orig + 1 : 1;
+}
+// TODO(bcoe): in the next major version of yargs, switch to
+// Object.create(null) for dot notation:
+function sanitizeKey(key) {
+    if (key === '__proto__')
+        return '___proto___';
+    return key;
+}
+function stripQuotes(val) {
+    return (typeof val === 'string' &&
+        (val[0] === "'" || val[0] === '"') &&
+        val[val.length - 1] === val[0])
+        ? val.substring(1, val.length - 1)
+        : val;
+}
+</file>
+
+<file path="web/scripts/patch-yargs-parser.js">
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const vendorDir = path.join(__dirname, 'vendor', 'yargs-parser', 'build', 'lib');
+const nodeModulesDir = path.join(process.cwd(), 'node_modules');
+const files = ['string-utils.js', 'yargs-parser-types.js', 'yargs-parser.js'];
+const logInfo = (message) => console.info(`[yargs patch] ${message}`);
+
+logInfo(`Starting yargs-parser patch (vendorDir=${vendorDir}).`);
+
+if (!fs.existsSync(vendorDir)) {
+  console.error('Missing vendor files; cannot patch yargs-parser.');
+  process.exit(1);
+}
+
+if (!fs.existsSync(nodeModulesDir)) {
+  console.warn('Skipping yargs-parser patch: project node_modules directory not found.');
+  process.exit(0);
+}
+
+const targetDirs = findYargsParserLibDirs(nodeModulesDir);
+if (!targetDirs.length) {
+  console.warn('Skipping yargs-parser patch: no yargs-parser directories detected in node_modules.');
+  process.exit(0);
+}
+
+logInfo(`Found ${targetDirs.length} target location(s) to patch.`);
+
+for (const targetDir of targetDirs) {
+  for (const file of files) {
+    const src = path.join(vendorDir, file);
+    const dest = path.join(targetDir, file);
+    try {
+      fs.unlinkSync(dest);
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
+    }
+    fs.copyFileSync(src, dest);
+  }
+}
+
+console.info(`Applied yargs-parser vendor patch to ${targetDirs.length} location(s).`);
+
+function findYargsParserLibDirs(startDir) {
+  const lockPath = path.join(process.cwd(), 'package-lock.json');
+  if (fs.existsSync(lockPath)) {
+    const lockDirs = findYargsParserLibDirsFromLock(lockPath);
+    if (lockDirs.length) {
+      logInfo(`Found ${lockDirs.length} yargs-parser/lib directories via package-lock.json.`);
+      return lockDirs;
+    }
+    logInfo('package-lock.json scan found no yargs-parser entries; falling back to filesystem traversal.');
+  } else {
+    logInfo('package-lock.json not found; falling back to filesystem traversal.');
+  }
+
+  return scanNodeModulesForYargs(startDir);
+}
+
+function scanNodeModulesForYargs(startDir) {
+  logInfo(`Scanning ${startDir} for yargs-parser/lib directories.`);
+  const scanStart = Date.now();
+  const targets = new Set();
+  const queue = [startDir];
+  const visited = new Set();
+  const stats = { directoriesVisited: 0, nestedDirsEnqueued: 0 };
+
+  while (queue.length) {
+    const currentDir = queue.shift();
+    let resolved;
+    try {
+      resolved = fs.realpathSync(currentDir);
+    } catch {
+      continue;
+    }
+    if (visited.has(resolved)) {
+      continue;
+    }
+    visited.add(resolved);
+
+    stats.directoriesVisited += 1;
+
+    let entries;
+    try {
+      entries = fs.readdirSync(currentDir, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+
+    for (const entry of entries) {
+      if (!entry.isDirectory()) {
+        continue;
+      }
+
+      const entryPath = path.join(currentDir, entry.name);
+
+      if (entry.name === 'yargs-parser') {
+        const libDir = path.join(entryPath, 'build', 'lib');
+        if (fs.existsSync(libDir)) {
+          targets.add(path.resolve(libDir));
+        }
+        continue;
+      }
+
+      if (entry.name.startsWith('@')) {
+        queue.push(entryPath);
+        stats.nestedDirsEnqueued += 1;
+        continue;
+      }
+
+      if (entry.name.startsWith('node_modules')) {
+        queue.push(entryPath);
+        stats.nestedDirsEnqueued += 1;
+        continue;
+      }
+
+      const nestedNodeModules = findNestedNodeModules(entryPath);
+      stats.nestedDirsEnqueued += nestedNodeModules.length;
+      for (const nestedDir of nestedNodeModules) {
+        queue.push(nestedDir);
+      }
+    }
+  }
+
+  const durationMs = Date.now() - scanStart;
+  logInfo(
+    `Scan finished in ${durationMs}ms; visited ${stats.directoriesVisited} directories and enqueued ${stats.nestedDirsEnqueued} nested node_modules variants.`
+  );
+
+  return Array.from(targets);
+}
+
+function findYargsParserLibDirsFromLock(lockPath) {
+  let lockJson;
+  try {
+    lockJson = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+  } catch (error) {
+    logInfo(`Could not read package-lock.json (${error.message}); falling back to traversal.`);
+    return [];
+  }
+
+  const packages = lockJson.packages;
+  if (!packages || typeof packages !== 'object') {
+    logInfo('package-lock.json missing packages map; falling back to traversal.');
+    return [];
+  }
+
+  const matches = [];
+  for (const pkgPath of Object.keys(packages)) {
+    const segments = pkgPath.split(/[\\/]+/).filter(Boolean);
+    if (!segments.length || segments[segments.length - 1] !== 'yargs-parser') {
+      continue;
+    }
+    const libDir = path.join(process.cwd(), ...segments, 'build', 'lib');
+    if (fs.existsSync(libDir)) {
+      matches.push(path.resolve(libDir));
+    }
+  }
+
+  return Array.from(new Set(matches));
+}
+
+function findNestedNodeModules(dir) {
+  const variants = [
+    'node_modules',
+    'node_modules2',
+    'node_modules3',
+    'node_modules4',
+    'node_modules5',
+    'node_modules 2',
+    'node_modules 3',
+    'node_modules 4',
+    'node_modules 5',
+    'node_modules-2',
+    'node_modules-3',
+    'node_modules-4',
+    'node_modules-5',
+  ];
+
+  const nested = [];
+  for (const variant of variants) {
+    const candidate = path.join(dir, variant);
+    try {
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
+        nested.push(candidate);
+      }
+    } catch {
+      // ignore permissions or race conditions
+    }
+  }
+  return nested;
+}
 </file>
 
 <file path="web/src/components/sections/PrayerMeetingCallout.astro">
@@ -2494,39 +3715,6 @@ Our Social Ministry brings intentional hospitality to First Springfield—creati
 To suggest a gathering, bring a recipe, or help serve, email the Social Committee (Teddy Williamson · David McKenzie) at [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com). Volunteers are welcome for setup, clean-up, decorating, and hospitality teams.
 </file>
 
-<file path="web/src/content/ministries/youth-young-adults.md">
----
-title: "Youth & Young Adults Ministry"
-summary: "Supporting young people with Christ-centered friendship, learning, and service."
-leaderName: "Youth & Young Adults Ministry Team"
-leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "See programs & events for the latest schedule."
-category: "Children & Youth"
-tags: ["youth", "young adults", "discipleship", "community"]
----
-
-## Youth & Young adults ministry
-
-“Our Youth and Young Adult Ministries are dedicated to helping young people grow in faith, purpose, and community as they navigate the important seasons of life. We strive to create a Christ-centered environment where youth and young adults can build meaningful relationships, deepen their walk with God, and discover their role in the church and the world.”
-
-“Through worship, fellowship, service, and meaningful conversations, our Youth and Young Adult Ministries seek to support, empower, and inspire young people to live out their faith with confidence and purpose.”
-
-AY Director: Anthia Elliott
-
-AY Assistant Director: Yolann Guirand
-
-### Programs & Events
-
-- “Table Talk: youth-focused program taking place the second Sabbath of the month. Each month, a new presenter will share practical guidance on life skills, workplace expectations, career insights, and personal development to help equip our youth for success. All youth are encouraged to attend and bring a friend, take part in these meaningful discussions in a relaxed, supportive setting. Come ready to learn, ask questions, and grow together!”
-- “GYC: December 30 to January 3, 2027- location and details will be shared soon.”
-
-### Resources
-
-- Instagram Page: @firstspringfieldday
-- https://nadyouthyoungadults.org/young-adult-ministry/
-- https://growingyoungadventists.com/
-</file>
-
 <file path="web/src/content/updates/_building-annex-closed.md">
 ---
 title: "Building/annex closed template"
@@ -2624,6 +3812,21 @@ draft: true
 Update the summary above with the specific program or service to postpone. Replace the date with the day the change starts, and then describe the conditions (storm, temperature, flooding, etc.) along with a reminder to double-check the forecast before heading out.
 </file>
 
+<file path="web/src/content/updates/annex-access-paused-for-safety.md">
+---
+title: "Annex access paused for safety review"
+date: "2026-02-11"
+summary: "We’ve paused annex use while the team completes an inspection and makes necessary repairs."
+category: "building"
+---
+
+Work crews discovered a structural concern in the annex hallway that needs tuned-up before we can safely welcome people back through that door. The side entrance, choir suite, and educator offices remain closed to visitors until the engineer signs off on the repairs.
+
+If you had a meeting or rehearsal scheduled in the annex, the schedulers will reach out with an alternate room (usually the sanctuary or fellowship hall). Please direct new space requests to the Church Clerk via the contact form so we can keep every calendar update aligned with the repair timeline.
+
+We’ll also post another update as soon as the inspection passes so the Sunday school classrooms and youth suite can reopen.
+</file>
+
 <file path="web/src/content/verses/2026/02/11/light-of-hope.md">
 ---
 date: "2026-02-11"
@@ -2697,17 +3900,6 @@ God promises to carry us when unease creeps in, so we can rest knowing His faith
   "goal": 320000,
   "received": 198450,
   "updatedAt": "2026-02-05"
-}
-</file>
-
-<file path="web/src/data/site-alert.json">
-{
-  "enabled": false,
-  "title": "Weather & schedule updates",
-  "message": "Weather and schedule updates are published on the updates page when the banner appears.",
-  "href": "/updates",
-  "variant": "warn",
-  "updatedAt": "2026-02-09T16:00:00Z"
 }
 </file>
 
@@ -2813,6 +4005,165 @@ const contactPhoneHref = tel(site.contact.phone);
     </section>
   </div>
 </BaseLayout>
+</file>
+
+<file path="web/src/pages/api/connect-card.ts">
+import type { APIRoute } from "astro";
+import { site } from "../../data/site";
+
+const THANK_YOU_PATH = "/connect/connect-card/thank-you";
+const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+const SENDGRID_ENDPOINT = "https://api.sendgrid.com/v3/mail/send";
+
+const verifyTurnstile = async (token: string, secret: string) => {
+  try {
+    const response = await fetch(TURNSTILE_VERIFY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ secret, response: token }),
+    });
+    const payload = await response.json();
+    return payload.success === true;
+  } catch (error) {
+    console.error("Turnstile verification error", error);
+    return false;
+  }
+};
+
+const buildSummary = (entries: [string, FormDataEntryValue][]) => {
+  const summary: Record<string, string> = {};
+
+  for (const [key, value] of entries) {
+    if (key === "cf-turnstile-response" || value instanceof File) {
+      continue;
+    }
+
+    const normalizedKey = key.replace(/\[\]$/, "");
+    const textValue = String(value).trim();
+    if (!textValue) {
+      continue;
+    }
+
+    summary[normalizedKey] = summary[normalizedKey]
+      ? `${summary[normalizedKey]}, ${textValue}`
+      : textValue;
+  }
+
+  return summary;
+};
+
+const formatSummaryText = (summary: Record<string, string>) =>
+  Object.entries(summary)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join("\n");
+
+const sendNotificationEmail = async (
+  recipients: string[],
+  fromEmail: string,
+  apiKey: string,
+  summaryText: string
+) => {
+  if (!recipients.length) return;
+
+  const payload = {
+    personalizations: [
+      {
+        to: recipients.map((email) => ({ email })),
+        subject: `Connect Card · ${site.shortName}`,
+      },
+    ],
+    from: { email: fromEmail },
+    content: [{ type: "text/plain", value: summaryText }],
+  };
+
+  const response = await fetch(SENDGRID_ENDPOINT, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`SendGrid error ${response.status}: ${errorText}`);
+  }
+};
+
+export const prerender = false;
+
+export const post: APIRoute = async ({ request }) => {
+  const turnstileSecret = process.env.PRIVATE_TURNSTILE_SECRET_KEY;
+  if (!turnstileSecret) {
+    return new Response("Turnstile secret is not configured.", { status: 503 });
+  }
+
+  const formData = await request.formData();
+  const tokenValue = formData.get("cf-turnstile-response");
+  if (!tokenValue) {
+    return new Response("Turnstile token missing.", { status: 400 });
+  }
+
+  const token = String(tokenValue);
+  const authenticated = await verifyTurnstile(token, turnstileSecret);
+  if (!authenticated) {
+    return new Response("Turnstile verification failed.", { status: 400 });
+  }
+
+  const forwardUrl = process.env.PRIVATE_CONNECT_CARD_FORWARD_URL;
+  if (!forwardUrl) {
+    return new Response("Connect Card destination is not configured.", { status: 503 });
+  }
+
+  const entries = Array.from(formData.entries());
+  const payload = new URLSearchParams();
+
+  for (const [key, value] of entries) {
+    if (value instanceof File || key === "cf-turnstile-response") {
+      continue;
+    }
+    payload.append(key, String(value));
+  }
+
+  const forwardResponse = await fetch(forwardUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: payload,
+  });
+
+  if (!forwardResponse.ok) {
+    const errorText = await forwardResponse.text();
+    console.error("Connect Card forward failed", errorText);
+    return new Response("Unable to deliver the Connect Card submission.", { status: 502 });
+  }
+
+  const summary = buildSummary(entries);
+  summary["Submitted At"] = new Date().toISOString();
+
+  const notifyEmails = (process.env.CONNECT_CARD_NOTIFY_EMAILS ?? "")
+    .split(",")
+    .map((email) => email.trim())
+    .filter(Boolean);
+  const sendgridKey = process.env.CONNECT_CARD_SENDGRID_API_KEY;
+  const summaryText = formatSummaryText(summary);
+
+  if (sendgridKey && notifyEmails.length) {
+    const fromEmail = process.env.CONNECT_CARD_NOTIFY_FROM?.trim() || site.contact.email;
+    try {
+      await sendNotificationEmail(notifyEmails, fromEmail, sendgridKey, summaryText);
+    } catch (error) {
+      console.error("Connect Card notification failed", error);
+    }
+  }
+
+  const redirectValue = formData.get("redirectUrl");
+  const redirectUrl = typeof redirectValue === "string" && redirectValue.trim()
+    ? redirectValue
+    : THANK_YOU_PATH;
+
+  return Response.redirect(redirectUrl, 303);
+};
 </file>
 
 <file path="web/src/pages/calendar/index.astro">
@@ -3990,161 +5341,6 @@ This repo runs on the latest dependencies pinned in `web/package-lock.json`. Sec
 - Document security implications of large changes in both the PR body and `docs/ui-reliability.md` when relevant.
 </file>
 
-<file path="docs/connect-card.md">
-## Connect Card / Connect Card (Static)
-
-### What’s live
-
-- `web/src/pages/connect/connect-card/index.astro` renders the Connect Card, complete with the photo gallery, gallery captions, and the refreshed specification described below.
-- `web/src/pages/connect/connect-card/thank-you.astro` is the post-submit landing page.
-- Header navigation and the hero banner now highlight the new page.
-
-### Connect Card spec
-
-- **This is your church family** – a 3–6 image gallery near the top of the page shows worship, fellowship, service, and welcome moments so visitors see the mix of people and gatherings before they hit the form.
-- **Required fields & flow** – the Connect Card is intentionally narrower than a generic contact form: email is optional, phone, a preferred visit date, the “Visited before?” radio, and a structured address block for street, line 2, city, state, ZIP, and country are all required so the hospitality team can respond with confidence.
-- **Interest list** – the checkbox set now follows the outreach categories you requested: Prayer; Bible study; Visitation; Conversion; Baptism; Transfer; Facility use. At least one option must be selected, and the hidden `address` input (supported by the client-side address summary script) keeps the submission schema aligned with your destination sheet.
-- **Deliverability / spam handling** – Cloudflare Turnstile stays on the form. The built-in `/api/connect-card` endpoint verifies each `cf-turnstile-response` with `PRIVATE_TURNSTILE_SECRET_KEY` before forwarding the submission to `PRIVATE_CONNECT_CARD_FORWARD_URL` (your Apps Script, SheetMonkey hook, etc.). You can also configure `CONNECT_CARD_NOTIFY_EMAILS`, `CONNECT_CARD_NOTIFY_FROM`, and `CONNECT_CARD_SENDGRID_API_KEY` to send inbox alerts via SendGrid. If you prefer to post directly to your script, set `PUBLIC_CONNECT_CARD_FORM_ACTION` to that URL instead.
-
-### Field & data mapping
-
-| Field | Input name | Notes |
-| --- | --- | --- |
-| Full Name | `fullName` | Required |
-| Email | `email` | Optional |
-| Phone | `phone` | Required so we can follow up when email bounces |
-| Preferred visit date | `visitDate` | Required to plan hospitality |
-| Visited before? | `visitedBefore` | Required radio (yes/no) |
-| Street address | `addressStreet` | Required |
-| Address line 2 | `addressLine2` | Optional (apt, suite, etc.) |
-| City | `addressCity` | Required |
-| State | `addressState` | Required |
-| ZIP | `addressZip` | Required |
-| Country | `addressCountry` | Optional unless you are visiting from outside the United States; helps the hospitality team prepare travel directions or mailings. |
-| Address (formatted) | `address` | Hidden input populated by the client-side script |
-| Reason for connecting | `connectionReason` | Required |
-| Interests | `interests[]` | Required checkbox set (select at least one from the canonical list) |
-| Preferred follow-up | `preferredContact` | Required |
-| Notes | `notes` | Optional free text |
-| Redirect URL | `redirectUrl` | Defaults to `/connect/connect-card/thank-you` |
-| Source | `formSource` | `connect-card-web` (static form identifier) |
-
-The front-end script also ensures at least one `interests[]` checkbox is checked before submission and keeps the hidden `address` field in sync with the structured address inputs.
-
-### Option A: Google Sheet + Web App (static-friendly, recommended)
-
-1. In Google Sheets, create a tab called **ConnectCards**. Add columns that match the form `name` attributes:
-
-   | Column | Field name |
-   | --- | --- |
-   | `Full Name` | `fullName` |
-   | `Email` | `email` |
-   | `Phone` | `phone` |
-   | `Preferred visit date` | `visitDate` |
-   | `Visited before?` | `visitedBefore` |
-   | `Street address` | `addressStreet` |
-   | `Address line 2` | `addressLine2` |
-   | `City` | `addressCity` |
-   | `State` | `addressState` |
-   | `ZIP` | `addressZip` |
-   | `Address line (formatted)` | `address` |
-   | `Reason` | `connectionReason` |
-   | `Interests` | `interests` (comma-separated, from checkboxes) |
-   | `Preferred Contact` | `preferredContact` |
-   | `Notes` | `notes` |
-   | `Source` | `formSource` |
-   | `Submitted At` | you can add a timestamp column |
-
-   The form script constructs the `address` column from the street/city/state/ZIP parts so you can use the formatted version in mailings while still keeping the discrete parts for logistics.
-
-2. Open **Extensions > Apps Script**:
-
-  ```javascript
-  const SPREADSHEET_ID = "…"; // readable from the sheet URL
-   const SHEET_NAME = "ConnectCards";
-   const TURNSTILE_SECRET = PropertiesService.getScriptProperties().getProperty(
-     "PRIVATE_TURNSTILE_SECRET_KEY"
-   );
-
-   function doPost(e) {
-     const token = e.parameter["cf-turnstile-response"];
-     if (!verifyTurnstile(token, TURNSTILE_SECRET)) {
-       return ContentService.createTextOutput("Bot check failed").setMimeType(
-         ContentService.MimeType.TEXT
-       );
-     }
-
-     const row = [
-       e.parameter.fullName,
-       e.parameter.email,
-       e.parameter.phone,
-       e.parameter.visitDate,
-       e.parameter.visitedBefore,
-       e.parameter.addressStreet,
-       e.parameter.addressLine2,
-       e.parameter.addressCity,
-       e.parameter.addressState,
-       e.parameter.addressZip,
-       e.parameter.address,
-       e.parameter.connectionReason,
-       (Array.isArray(e.parameter.interests) ? e.parameter.interests : [e.parameter.interests])
-         .filter(Boolean)
-         .join(", "),
-       e.parameter.preferredContact,
-       e.parameter.notes,
-       e.parameter.formSource,
-       new Date().toISOString(),
-     ];
-
-     SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME).appendRow(row);
-
-     const redirectUrl = e.parameter.redirectUrl || "/connect/connect-card/thank-you";
-     return ContentService.createTextOutput(
-       `<script>location.replace("${redirectUrl}")</script>`
-     ).setMimeType(ContentService.MimeType.TEXT);
-   }
-
-  function verifyTurnstile(token, secret) {
-    if (!token || !secret) return false;
-    const response = UrlFetchApp.fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-      method: "post",
-      payload: {
-        secret,
-        response: token,
-      },
-    });
-    return JSON.parse(response.getContentText()).success === true;
-  }
-  ```
-
-   Use this script as the destination pointed to by `PRIVATE_CONNECT_CARD_FORWARD_URL` so the built-in `/api/connect-card` proxy can append rows on your behalf. You can also deploy the script alone and set `PUBLIC_CONNECT_CARD_FORM_ACTION` directly to its URL if you prefer.
-
-   - Store `PRIVATE_TURNSTILE_SECRET_KEY` in **Script Properties**.
-   - Deploy as **Web App**: execute as yourself, access “Anyone with the link.”
-
-3. Copy the Web App URL into your `.env` / environment as:
-
-   ```
-   PUBLIC_CONNECT_CARD_FORM_ACTION=https://script.google.com/macros/s/…/exec
-   PUBLIC_TURNSTILE_SITE_KEY=… (same site key shown by Cloudflare)
-   PRIVATE_TURNSTILE_SECRET_KEY=… (only in Apps Script)
-   ```
-
-4. Turnstile requires server-side verification. The script above checks `cf-turnstile-response` before writing and redirects users to `redirectUrl` (defaults to `/connect/connect-card/thank-you`).
-
-### Optional: provider-based backend (Option B) or SSR
-
-- If you prefer Formspree/Basin/etc., point `PUBLIC_CONNECT_CARD_FORM_ACTION` to the provider’s URL instead. Keep the same field names for consistent columns (you can use hidden inputs to rename if needed).
-- When you later enable SSR hosting, implement `web/src/pages/api/connect-card.ts` to accept the form via `request.formData()`, validate Turnstile with `fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", ...)`, append to your backend datastore, and respond with a redirect/JSON success.
-
-### Deploy checklist
-
-1. Confirm the form page renders the Turnstile widget (requires `PUBLIC_TURNSTILE_SITE_KEY`).
-2. Fill the form in the staging site and verify a row is added to the sheet within seconds.
-3. Confirm the browser lands on `/connect/connect-card/thank-you` after submit.
-4. Keep `PRIVATE_TURNSTILE_SECRET_KEY` secret (Apps Script only).
-</file>
-
 <file path="web/src/components/content/ContentCard.astro">
 ---
 export interface Props {
@@ -5198,38 +6394,6 @@ Assistant Superintendent: Carol Elliott
 - https://3abnsabbathschoolpanel.com/
 </file>
 
-<file path="web/src/content/ministries/secretary-communications.md">
----
-title: "Secretary/Communications"
-summary: "Keeps the church informed through weekly publications, office records, and member communication."
-leaderName: "Secretary/Communications Team"
-leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "Produce weekly bulletin and announcements"
-category: "Leadership"
-tags: ["communications", "administration", "office"]
----
-
-## Secretary/Communications
-
-Church Clerk: Myrna L Leiper
-
-Assistant Bulletin Secretary: Loreli Gaetki
-
-This team keeps office records straight, shepherds member communication, and stewards the weekly bulletin that links congregants to worship plans, volunteer needs, and outreach invites. We coordinate with pastors, ministry leads, and volunteers so every voice is represented in print and online.
-
-### Weekly updates
-
-- [Add weekly bulletin (link)](/resources/bulletins)
-- [Add weekly announcements (link)](/resources/announcements)
-
-Need to send an announcement, update attendance, or ask a question about the bulletin? Reach out at the church office email above and we will walk you through the submission window for the coming Sabbath.
-
-### Secretary page upgrade (paid add-on)
-
-- TODO: Document the planned secretary page upgrade requirements so the paid add-on work stays visible to the vendor.
-- This placeholder tracks the additional scope we discussed for the secretary area until design artifacts land.
-</file>
-
 <file path="web/src/content/ministries/womens-ministry.md">
 ---
 title: "Women's Ministry"
@@ -5264,6 +6428,39 @@ Through Bible study, prayer, fellowship, outreach, and service, Women’s Minist
 - https://www.sneconline.org/copy-of-family-life-ministries
 - https://www.enditnow.org/
 - https://women.adventist.org/church-statements-against-violence
+</file>
+
+<file path="web/src/content/ministries/youth-young-adults.md">
+---
+title: "Youth & Young Adults Ministry"
+summary: "Supporting young people with Christ-centered friendship, learning, and service."
+leaderName: "Youth & Young Adults Ministry Team"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "See programs & events for the latest schedule."
+category: "Children & Youth"
+tags: ["youth", "young adults", "discipleship", "community"]
+---
+
+## Youth & Young adults ministry
+
+“Our Youth and Young Adult Ministries are dedicated to helping young people grow in faith, purpose, and community as they navigate the important seasons of life. We strive to create a Christ-centered environment where youth and young adults can build meaningful relationships, deepen their walk with God, and discover their role in the church and the world.”
+
+“Through worship, fellowship, service, and meaningful conversations, our Youth and Young Adult Ministries seek to support, empower, and inspire young people to live out their faith with confidence and purpose.”
+
+AY Director: Anthia Elliott
+
+AY Assistant Director: Yolann Guirand
+
+### Programs & Events
+
+- “Table Talk: youth-focused program taking place the second Sabbath of the month. Each month, a new presenter will share practical guidance on life skills, workplace expectations, career insights, and personal development to help equip our youth for success. All youth are encouraged to attend and bring a friend, take part in these meaningful discussions in a relaxed, supportive setting. Come ready to learn, ask questions, and grow together!”
+- “GYC: December 30 to January 3, 2027- location and details will be shared soon.”
+
+### Resources
+
+- Instagram Page: @firstspringfieldday
+- https://nadyouthyoungadults.org/young-adult-ministry/
+- https://growingyoungadventists.com/
 </file>
 
 <file path="web/src/content/resources/2025/12/16/welcome-packet.md">
@@ -5338,6 +6535,17 @@ export function getAnnouncementTag(value?: string) {
 }
 </file>
 
+<file path="web/src/data/site-alert.json">
+{
+  "enabled": true,
+  "title": "Annex access paused for safety review",
+  "message": "The annex is temporarily closed while engineers finish a safety inspection and repairs; check the update for details.",
+  "href": "/updates/annex-access-paused-for-safety",
+  "variant": "warn",
+  "updatedAt": "2026-02-12T15:00:00Z"
+}
+</file>
+
 <file path="web/src/data/videos.json">
 [
   {
@@ -5359,58 +6567,6 @@ export function getAnnouncementTag(value?: string) {
     "summary": "Guest speaker or special event."
   }
 ]
-</file>
-
-<file path="web/src/data/weekly-highlights.ts">
-export type WeeklyHighlight = {
-  activityId?: string;
-  text: string;
-  href?: string;
-  badge?: string;
-  tag?: string;
-  title?: string;
-  description?: string;
-  ctaHref?: string;
-  ctaLabel?: string;
-  external?: boolean;
-};
-
-const weeklyHighlights: WeeklyHighlight[] = [
-  {
-    activityId: "prayer-meeting",
-    text: "Prayer Meeting · Wednesdays at 7:00 PM · Church annex + Zoom",
-    href: "/connect/prayer",
-    badge: "This week",
-  },
-  {
-    activityId: "nar-anon",
-    text: "Nar-Anon · Thursdays at 7:00 PM – 8:30 PM in the Mother’s room",
-    badge: "Support",
-  },
-  {
-    activityId: "table-talk",
-    text: "Table Talk · Second Sabbath of every month · Youth conversations after worship",
-    badge: "Table Talk",
-    href: "/ministries/youth-young-adults",
-  },
-  {
-    activityId: "pathfinders",
-    text: "Pathfinders & Adventurers · 1st & 3rd Sabbaths · 3:00 PM – 5:00 PM",
-    href: "/ministries/pathfinders",
-  },
-  {
-    activityId: "mens-fellowship",
-    text: "Men's Fellowship · Fridays at 7:00 PM in the church annex for Bible study, prayer, and brotherhood",
-    badge: "Men's Fellowship",
-  },
-  {
-    activityId: "bible-study",
-    text: "Bible Study · Fourth Sabbath deeper dive for all ages",
-    href: "/ministries/bible-study",
-  },
-];
-
-export default weeklyHighlights;
 </file>
 
 <file path="web/src/lib/announcements.ts">
@@ -5906,133 +7062,6 @@ const rssUrl = "/resources/announcements/rss.xml";
 </style>
 </file>
 
-<file path="web/src/pages/resources/announcements/[...page].astro">
----
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import Button from "../../../components/ui/Button.astro";
-import ContentCard from "../../../components/content/ContentCard.astro";
-import { site } from "../../../data/site";
-import { announcementTagLabels } from "../../../data/announcement-tags";
-import {
-  announcementsPerPage,
-  getArchiveMonths,
-  getSortedAnnouncements,
-  paginateAnnouncements,
-} from "../../../lib/announcements";
-
-export async function getStaticPaths() {
-  const announcements = await getSortedAnnouncements();
-  const totalPages = Math.max(1, Math.ceil(announcements.length / announcementsPerPage));
-  const paths = [];
-
-  for (let pageNumber = 2; pageNumber <= totalPages; pageNumber++) {
-    paths.push({
-      params: {
-        page: ["page", String(pageNumber)],
-      },
-    });
-  }
-
-  return paths;
-}
-
-const announcements = await getSortedAnnouncements();
-const segments = (Astro.params.page ?? []) as string[];
-const requestedPage = Number(segments[segments.length - 1] ?? 1);
-const totalPages = Math.max(1, Math.ceil(announcements.length / announcementsPerPage));
-const page = Math.min(Math.max(1, Number.isNaN(requestedPage) ? 1 : requestedPage), totalPages);
-const pagination = paginateAnnouncements(announcements, page);
-const metaFormatter = new Intl.DateTimeFormat(site.locale, {
-  dateStyle: "medium",
-  timeZone: site.timeZone,
-});
-const archiveMonths = getArchiveMonths(await getSortedAnnouncements({ includeExpired: true }));
-const showPrev = page > 1;
-const showNext = page < totalPages;
-const prevHref = page === 2 ? "/resources/announcements" : `/resources/announcements/page/${page - 1}`;
-const nextHref = `/resources/announcements/page/${page + 1}`;
-const hasAnnouncements = announcements.length > 0;
-const rangeStart = hasAnnouncements ? (page - 1) * announcementsPerPage + 1 : 0;
-const rangeEnd = hasAnnouncements ? Math.min(announcements.length, page * announcementsPerPage) : 0;
-const updatesUrl = "/updates";
-const rssUrl = "/resources/announcements/rss.xml";
----
-
-<BaseLayout title={`Announcements · page ${page}`}>
-  <div class="stack">
-    <h1>Announcements · page {page}</h1>
-    <p class="muted">
-      {hasAnnouncements
-        ? `Showing ${rangeStart}–${rangeEnd} of ${announcements.length} announcements.`
-        : "No announcements have been published yet."}{" "}
-      <a class="link" href={rssUrl}>Subscribe via RSS</a>.
-    </p>
-
-    {pagination.results.length === 0 ? (
-      <p class="muted">No announcements published for this page.</p>
-    ) : (
-      <div class="grid--cards">
-        {pagination.results.map((entry) => (
-          <ContentCard
-            href={`/resources/announcements/${entry.id}`}
-            title={entry.data.title}
-            summary={entry.data.summary}
-            meta={metaFormatter.format(entry.data.date)}
-            tags={entry.data.tags?.map((value) => announcementTagLabels[value] ?? value)}
-          />
-        ))}
-      </div>
-    )}
-
-    <div class="cluster--between pagination">
-      {showPrev ? <Button href={prevHref} variant="ghost">Newer announcements</Button> : <span />}
-      {showNext ? <Button href={nextHref} variant="ghost">Older announcements</Button> : null}
-    </div>
-
-    <section class="card stack--tight">
-      <h2>Archive by month</h2>
-      {archiveMonths.length === 0 ? (
-        <p class="muted">No archived months yet.</p>
-      ) : (
-        <ul class="archive-list">
-          {archiveMonths.map(({ year, month, label }) => (
-            <li>
-              <a class="link" href={`/resources/announcements/archive/${year}/${String(month).padStart(2, "0")}`}>
-                {label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-
-    <div class="cluster">
-      <Button href="/resources/announcements" variant="secondary">Back to current announcements</Button>
-      <Button href={updatesUrl} variant="ghost">Visit updates page</Button>
-    </div>
-  </div>
-</BaseLayout>
-
-<style>
-  .archive-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-  }
-
-  .archive-list li {
-    min-width: 180px;
-  }
-
-  .pagination {
-    margin-top: var(--space-4);
-  }
-</style>
-</file>
-
 <file path="web/src/pages/resources/announcements/[id].astro">
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
@@ -6307,22 +7336,6 @@ test.describe("Smoke - cross browser", () => {
 });
 </file>
 
-<file path="web/.env.example">
-# Connect Card configuration
-PUBLIC_CONNECT_CARD_FORM_ACTION=
-PUBLIC_TURNSTILE_SITE_KEY=
-PRIVATE_TURNSTILE_SECRET_KEY=
-PRIVATE_CONNECT_CARD_FORWARD_URL=
-CONNECT_CARD_NOTIFY_EMAILS=
-CONNECT_CARD_NOTIFY_FROM=firstspringfieldsda@gmail.com
-CONNECT_CARD_SENDGRID_API_KEY=
-PUBLIC_PRAYER_MEETING_ZOOM_URL=
-
-# Future use (Phase 5+)
-# PUBLIC_SITE_URL=https://example.com
-PUBLIC_CF_ANALYTICS_TOKEN=
-</file>
-
 <file path="web/lighthouserc.cjs">
 module.exports = {
   ci: {
@@ -6371,19 +7384,6 @@ module.exports = {
     "enabled": true,
   },
 }
-</file>
-
-<file path=".gitignore">
-# Node
-node_modules/
-
-# Astro
-web/dist/
-web/.astro/
-web/.wrangler/tmp/
-
-# OS
-.DS_Store
 </file>
 
 <file path=".github/workflows/ci.yml">
@@ -6545,6 +7545,167 @@ copy:
   welcome_message: "We would love to have you join our church family."
 </file>
 
+<file path="docs/connect-card.md">
+## Connect Card / Connect Card (Static)
+
+### What’s live
+
+- `web/src/pages/connect/connect-card/index.astro` renders the Connect Card, complete with the photo gallery, gallery captions, and the refreshed specification described below.
+- `web/src/pages/connect/connect-card/thank-you.astro` is the post-submit landing page.
+- Header navigation and the hero banner now highlight the new page.
+
+### Connect Card spec
+
+- **This is your church family** – a 3–6 image gallery near the top of the page shows worship, fellowship, service, and welcome moments so visitors see the mix of people and gatherings before they hit the form.
+- **Required fields & flow** – the Connect Card is intentionally narrower than a generic contact form: email is optional, phone, a preferred visit date, the “Visited before?” radio, and a structured address block for street, line 2, city, state, ZIP, and country are all required so the hospitality team can respond with confidence.
+- **Interest list** – the checkbox set now follows the outreach categories you requested: Prayer; Bible study; Visitation; Conversion; Baptism; Transfer; Facility use. At least one option must be selected, and the hidden `address` input (supported by the client-side address summary script) keeps the submission schema aligned with your destination sheet.
+- **Deliverability / spam handling** – Cloudflare Turnstile stays on the form. The built-in `/api/connect-card` endpoint verifies each `cf-turnstile-response` with `PRIVATE_TURNSTILE_SECRET_KEY` before forwarding the submission to `PRIVATE_CONNECT_CARD_FORWARD_URL` (your Apps Script, SheetMonkey hook, etc.). You can also configure `CONNECT_CARD_NOTIFY_EMAILS`, `CONNECT_CARD_NOTIFY_FROM`, and `CONNECT_CARD_SENDGRID_API_KEY` to send inbox alerts via SendGrid. If you prefer to post directly to your script, set `PUBLIC_CONNECT_CARD_FORM_ACTION` to that URL instead.
+
+### Field & data mapping
+
+| Field | Input name | Notes |
+| --- | --- | --- |
+| Full Name | `fullName` | Required |
+| Email | `email` | Optional |
+| Phone | `phone` | Required so we can follow up when email bounces |
+| Preferred visit date | `visitDate` | Required to plan hospitality |
+| Visited before? | `visitedBefore` | Required radio (yes/no) |
+| Street address | `addressStreet` | Required |
+| Address line 2 | `addressLine2` | Optional (apt, suite, etc.) |
+| City | `addressCity` | Required |
+| State | `addressState` | Required |
+| ZIP | `addressZip` | Required |
+| Country | `addressCountry` | Optional unless you are visiting from outside the United States; helps the hospitality team prepare travel directions or mailings. |
+| Address (formatted) | `address` | Hidden input populated by the client-side script |
+| Reason for connecting | `connectionReason` | Required |
+| Interests | `interests[]` | Required checkbox set (select at least one from the canonical list) |
+| Preferred follow-up | `preferredContact` | Required |
+| Notes | `notes` | Optional free text |
+| Redirect URL | `redirectUrl` | Defaults to `/connect/connect-card/thank-you` |
+| Source | `formSource` | `connect-card-web` (static form identifier) |
+
+The front-end script also ensures at least one `interests[]` checkbox is checked before submission and keeps the hidden `address` field in sync with the structured address inputs.
+
+### Option A: Google Sheet + Web App (static-friendly, recommended)
+
+1. In Google Sheets, create a tab called **ConnectCards**. Add columns that match the form `name` attributes:
+
+   | Column | Field name |
+   | --- | --- |
+   | `Full Name` | `fullName` |
+   | `Email` | `email` |
+   | `Phone` | `phone` |
+   | `Preferred visit date` | `visitDate` |
+   | `Visited before?` | `visitedBefore` |
+   | `Street address` | `addressStreet` |
+   | `Address line 2` | `addressLine2` |
+   | `City` | `addressCity` |
+   | `State` | `addressState` |
+   | `ZIP` | `addressZip` |
+   | `Address line (formatted)` | `address` |
+   | `Reason` | `connectionReason` |
+   | `Interests` | `interests` (comma-separated, from checkboxes) |
+   | `Preferred Contact` | `preferredContact` |
+   | `Notes` | `notes` |
+   | `Source` | `formSource` |
+   | `Submitted At` | you can add a timestamp column |
+
+   The form script constructs the `address` column from the street/city/state/ZIP parts so you can use the formatted version in mailings while still keeping the discrete parts for logistics.
+
+2. Open **Extensions > Apps Script**:
+
+  ```javascript
+  const SPREADSHEET_ID = "…"; // readable from the sheet URL
+   const SHEET_NAME = "ConnectCards";
+   const TURNSTILE_SECRET = PropertiesService.getScriptProperties().getProperty(
+     "PRIVATE_TURNSTILE_SECRET_KEY"
+   );
+
+   function doPost(e) {
+     const token = e.parameter["cf-turnstile-response"];
+     if (!verifyTurnstile(token, TURNSTILE_SECRET)) {
+       return ContentService.createTextOutput("Bot check failed").setMimeType(
+         ContentService.MimeType.TEXT
+       );
+     }
+
+     const row = [
+       e.parameter.fullName,
+       e.parameter.email,
+       e.parameter.phone,
+       e.parameter.visitDate,
+       e.parameter.visitedBefore,
+       e.parameter.addressStreet,
+       e.parameter.addressLine2,
+       e.parameter.addressCity,
+       e.parameter.addressState,
+       e.parameter.addressZip,
+       e.parameter.address,
+       e.parameter.connectionReason,
+       (Array.isArray(e.parameter.interests) ? e.parameter.interests : [e.parameter.interests])
+         .filter(Boolean)
+         .join(", "),
+       e.parameter.preferredContact,
+       e.parameter.notes,
+       e.parameter.formSource,
+       new Date().toISOString(),
+     ];
+
+     SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME).appendRow(row);
+
+     const redirectUrl = e.parameter.redirectUrl || "/connect/connect-card/thank-you";
+     return ContentService.createTextOutput(
+       `<script>location.replace("${redirectUrl}")</script>`
+     ).setMimeType(ContentService.MimeType.TEXT);
+   }
+
+  function verifyTurnstile(token, secret) {
+    if (!token || !secret) return false;
+    const response = UrlFetchApp.fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "post",
+      payload: {
+        secret,
+        response: token,
+      },
+    });
+    return JSON.parse(response.getContentText()).success === true;
+  }
+  ```
+
+   Use this script as the destination pointed to by `PRIVATE_CONNECT_CARD_FORWARD_URL` so the built-in `/api/connect-card` proxy can append rows on your behalf. You can also deploy the script alone and set `PUBLIC_CONNECT_CARD_FORM_ACTION` directly to its URL if you prefer.
+
+   - Store `PRIVATE_TURNSTILE_SECRET_KEY` in **Script Properties**.
+   - Deploy as **Web App**: execute as yourself, access “Anyone with the link.”
+
+3. Copy the Web App URL into your `.env` / environment as:
+
+   ```
+   PUBLIC_CONNECT_CARD_FORM_ACTION=https://script.google.com/macros/s/…/exec
+   PUBLIC_TURNSTILE_SITE_KEY=… (same site key shown by Cloudflare)
+   PRIVATE_TURNSTILE_SECRET_KEY=… (only in Apps Script)
+   ```
+
+4. Turnstile requires server-side verification. The script above checks `cf-turnstile-response` before writing and redirects users to `redirectUrl` (defaults to `/connect/connect-card/thank-you`).
+
+### Optional: provider-based backend (Option B) or SSR
+
+- If you prefer Formspree/Basin/etc., point `PUBLIC_CONNECT_CARD_FORM_ACTION` to the provider’s URL instead. Keep the same field names for consistent columns (you can use hidden inputs to rename if needed).
+- When you later enable SSR hosting, implement `web/src/pages/api/connect-card.ts` to accept the form via `request.formData()`, validate Turnstile with `fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", ...)`, append to your backend datastore, and respond with a redirect/JSON success.
+
+### Deploy checklist
+
+1. Confirm the form page renders the Turnstile widget (requires `PUBLIC_TURNSTILE_SITE_KEY`).
+2. Fill the form in the staging site and verify a row is added to the sheet within seconds.
+3. Confirm the browser lands on `/connect/connect-card/thank-you` after submit.
+4. Keep `PRIVATE_TURNSTILE_SECRET_KEY` secret (Apps Script only).
+
+### Environment & protections
+
+- The built-in `/api/connect-card` route fails closed if any of the required secrets (`PRIVATE_TURNSTILE_SECRET_KEY`, `PRIVATE_CONNECT_CARD_FORWARD_URL`, `PUBLIC_TURNSTILE_SITE_KEY`) are missing, so make sure your hosting environment defines them before going live.
+- Use `CONNECT_CARD_NOTIFY_EMAILS` (comma-separated list) and `CONNECT_CARD_NOTIFY_FROM` to route email alerts via SendGrid, or set `CONNECT_CARD_NOTIFY_EMAILS` empty if you prefer forwarding only to your script.
+- Rate limiting is not enforced inside the handler itself; protect the endpoint with your host’s edge rules (Cloudflare rate limiting, a WAF, or platform throttling) to guard against automated abuse before submissions reach the Turnstile check.
+</file>
+
 <file path="web/src/components/sections/CardGrid.astro">
 ---
 import Card from "../ui/Card.astro";
@@ -6643,6 +7804,115 @@ tags: ["worship", "sabbath"]
 ## Who can come?
 
 Everyone. Come as you are.
+</file>
+
+<file path="web/src/content/ministries/mens-ministry.md">
+---
+title: "Men's Ministry"
+summary: "Brotherhood, prayer, and service to strengthen men of faith."
+leaderName: "Men's Ministry Team"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "Fridays at 7:00 PM"
+category: "Men"
+tags: ["men", "fellowship", "service"]
+---
+
+## Overview
+
+We gather for encouragement, prayer, and practical ways to serve families and the church.
+
+## How to get involved
+
+Reach out to the leader or show up on a Friday night.
+</file>
+
+<file path="web/src/content/ministries/secretary-communications.md">
+---
+title: "Secretary/Communications"
+summary: "Keeps the church informed through weekly publications, office records, and member communication."
+leaderName: "Secretary/Communications Team"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "Produce weekly bulletin and announcements"
+category: "Leadership"
+tags: ["communications", "administration", "office"]
+---
+
+## Secretary/Communications
+
+Church Clerk: Myrna L Leiper
+
+Assistant Bulletin Secretary: Loreli Gaetki
+
+This team keeps office records straight, shepherds member communication, and stewards the weekly bulletin that links congregants to worship plans, volunteer needs, and outreach invites. We coordinate with pastors, ministry leads, and volunteers so every voice is represented in print and online.
+
+### Weekly updates
+
+- [Add weekly bulletin (link)](/resources/bulletins)
+- [Add weekly announcements (link)](/resources/announcements)
+
+Need to send an announcement, update attendance, or ask a question about the bulletin? Reach out at the church office email above and we will walk you through the submission window for the coming Sabbath.
+
+### Secretary page upgrade (paid add-on)
+
+- Goal: build a dedicated Secretary/Communications page that highlights the office team, provides quick links to weekly bulletins and announcements, and surfaces the forms or contact points people use when they need to submit news, request a room, or update attendance.
+- Deliverables to capture once available:
+  1. Hero headline + description that frames the communications ministry and the secretary’s role.
+  2. Contact block with office hours, phone/email, and a “submit an announcement” CTA linked to the existing bulletin/announcements workflow.
+  3. Download links or embeds for the weekly bulletin/announcement PDFs (pulled from `/bulletins`).
+  4. Accessibility/access instructions plus any additional microcopy the vendor was asked to provide.
+- Keep this section updated with finalized copy or design notes so the vendor can replace the temporary placeholder content as soon as the assets arrive.
+</file>
+
+<file path="web/src/data/weekly-highlights.ts">
+export type WeeklyHighlight = {
+  activityId?: string;
+  text: string;
+  href?: string;
+  badge?: string;
+  tag?: string;
+  title?: string;
+  description?: string;
+  ctaHref?: string;
+  ctaLabel?: string;
+  external?: boolean;
+};
+
+const weeklyHighlights: WeeklyHighlight[] = [
+  {
+    activityId: "prayer-meeting",
+    text: "Prayer Meeting · Wednesdays at 7:00 PM · Church annex + Zoom",
+    href: "/connect/prayer",
+    badge: "This week",
+  },
+  {
+    activityId: "nar-anon",
+    text: "Nar-Anon · Thursdays at 7:00 PM – 8:30 PM in the Mother’s room",
+    badge: "Support",
+  },
+  {
+    activityId: "table-talk",
+    text: "Table Talk · Second Sabbath of every month · Youth conversations after worship",
+    badge: "Table Talk",
+    href: "/ministries/youth-young-adults",
+  },
+  {
+    activityId: "pathfinders",
+    text: "Pathfinders & Adventurers · 1st & 3rd Sabbaths · 3:00 PM – 5:00 PM",
+    href: "/ministries/pathfinders",
+  },
+  {
+    activityId: "mens-fellowship",
+    text: "Men's Fellowship · Fridays at 7:00 PM in the church annex for Bible study, prayer, and brotherhood",
+    badge: "Men's Fellowship",
+  },
+  {
+    activityId: "bible-study",
+    text: "Bible Study · Fourth Sabbath deeper dive for all ages",
+    href: "/ministries/bible-study",
+  },
+];
+
+export default weeklyHighlights;
 </file>
 
 <file path="web/src/pages/connect/about/index.astro">
@@ -6757,668 +8027,6 @@ const { mission } = site;
     </section>
   </div>
 </BaseLayout>
-</file>
-
-<file path="web/src/pages/connect/connect-card/index.astro">
----
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import churchExterior from "../../../assets/photos/first-springfield-exterior.png";
-import bridgeDusk from "../../../assets/photos/bridge-dusk.jpg";
-import adventistCommunityServicesLogo from "../../../assets/photos/ministries-adventist-community-services-logo.png";
-import childrensMinistryBanner from "../../../assets/photos/ministries-childrens-ministry-banner.png";
-import youthLogo from "../../../assets/photos/ministries-youth-young-adults-ay-logo.png";
-import pathfindersLogo from "../../../assets/photos/club-pathfinders-logo.png";
-
-const customFormAction = import.meta.env.PUBLIC_CONNECT_CARD_FORM_ACTION;
-const defaultFormAction = "/api/connect-card";
-const formAction = customFormAction || defaultFormAction;
-const usesCustomFormAction = Boolean(customFormAction);
-const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
-const pageOrigin = Astro.url?.origin;
-const thankYouPath = "/connect/connect-card/thank-you";
-const thankYouUrl = pageOrigin ? `${pageOrigin}${thankYouPath}` : thankYouPath;
-
-const galleryPhotos = [
-  {
-    src: bridgeDusk.src,
-    alt: "Evening light on the bridge that leads toward our campus.",
-    caption: "Neighborhood welcomes before you even cross the bridge.",
-    tag: "Community",
-  },
-  {
-    src: churchExterior.src,
-    alt: "First Springfield SDA Church building and welcome sign.",
-    caption: "Our sanctuary is open for worship, fellowship, and hospitality.",
-    tag: "Welcome",
-  },
-  {
-    src: childrensMinistryBanner.src,
-    alt: "A colorful banner announcing Children’s Ministry programming.",
-    caption: "Children’s Ministry storytelling, music, and hugs make every visitor feel known.",
-    tag: "Children",
-  },
-  {
-    src: pathfindersLogo.src,
-    alt: "Pathfinders & Adventurers club crest.",
-    caption: "Pathfinders & Adventurers gather for service, camping, and faith-building adventures.",
-    tag: "Pathfinders",
-  },
-  {
-    src: adventistCommunityServicesLogo.src,
-    alt: "Adventist Community Services logo.",
-    caption: "ACS outreach brings meals, care, and compassion to Springfield neighbors.",
-    tag: "Service",
-  },
-  {
-    src: youthLogo.src,
-    alt: "Youth & Young Adults ministry emblem.",
-    caption: "AY conversations, prayer, and mentorship keep young people connected.",
-    tag: "Youth",
-  },
-];
-
-const interestOptions = [
-  { value: "prayer", label: "Prayer" },
-  { value: "bible-study", label: "Bible study" },
-  { value: "visitation", label: "Visitation" },
-  { value: "conversion", label: "Conversion" },
-  { value: "baptism", label: "Baptism" },
-  { value: "transfer", label: "Transfer" },
-  { value: "facility-use", label: "Facility use" },
-];
-
-const connectionReasons = [
-  { value: "first-time-visit", label: "I am planning my first visit" },
-  { value: "moving-to-town", label: "We just moved to the area" },
-  { value: "prayer", label: "I’d like prayer or encouragement" },
-  { value: "questions", label: "I have a question about the church" },
-  { value: "other", label: "Other" },
-];
-
-const preferredContactOptions = [
-  { value: "email", label: "Email (fastest)" },
-  { value: "phone", label: "Phone call or text" },
-];
-
-const interestsId = (value: string) => `interest-${value}`;
----
-
-<BaseLayout
-  title="Connect Card"
-  description="Submit a Connect Card to let the team know how to pray for you, follow up, or support your next steps."
->
-  <script slot="head" is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-
-  <div class="stack connect-card">
-    <div class="connect-card__intro">
-      <h1>Connect Card</h1>
-      <p id="connect-card-summary" class="muted">
-        Tell us about your visit window, how we can pray for you, and which ministries you’d like to explore.
-        We’ll ask for your preferred follow-up method and keep your information private unless you say otherwise.
-      </p>
-      {!usesCustomFormAction ? (
-        <div class="connect-card__warning" role="status">
-          <strong>Built-in Connect Card backend is active.</strong> Before publishing, configure
-          <code>PRIVATE_CONNECT_CARD_FORWARD_URL</code> and <code>PRIVATE_TURNSTILE_SECRET_KEY</code>
-          (and optionally <code>CONNECT_CARD_NOTIFY_EMAILS</code>) so submissions forward and trigger alerts.
-        </div>
-      ) : null}
-    </div>
-
-    <section class="connect-card__gallery" aria-labelledby="connect-card-gallery-title">
-      <div class="connect-card__gallery-head">
-        <p class="muted small">This is your church family</p>
-        <h2 id="connect-card-gallery-title">This is your church family</h2>
-        <p class="muted">
-          Worship, fellowship, and service all intersect in the people you’ll meet when you visit First Springfield.
-        </p>
-      </div>
-      <div class="connect-card__gallery-grid">
-        {galleryPhotos.map((photo) => (
-          <figure class="connect-card__photo">
-            <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
-            <figcaption>
-              <span class="connect-card__photo-tag">{photo.tag}</span>
-              <p>{photo.caption}</p>
-            </figcaption>
-          </figure>
-        ))}
-      </div>
-    </section>
-
-    <form
-      class="connect-card__form"
-      action={formAction || "#"}
-      method="POST"
-      accept-charset="UTF-8"
-      aria-describedby="connect-card-summary"
-    >
-      <div class="connect-card__grid">
-        <div class="form-field">
-          <label for="full-name">
-            Full name <span class="required" aria-hidden="true">*</span>
-          </label>
-          <input id="full-name" name="fullName" type="text" required autocomplete="name" placeholder="Jamie Rivera" />
-        </div>
-
-        <div class="form-field">
-          <label for="email">Email</label>
-          <input id="email" name="email" type="email" autocomplete="email" placeholder="name@example.com" />
-        </div>
-
-        <div class="form-field">
-          <label for="phone">
-            Phone <span class="required" aria-hidden="true">*</span>
-            <span class="form-helper">Calls/texts help us respond if email bounces.</span>
-          </label>
-          <input id="phone" name="phone" type="tel" required autocomplete="tel" placeholder="(123) 456‑7890" />
-        </div>
-
-        <div class="form-field">
-          <label for="visit-date">
-            Preferred visit date <span class="required" aria-hidden="true">*</span>
-            <span class="form-helper">Let us know when you hope to visit so we can plan hospitality.</span>
-          </label>
-          <input id="visit-date" name="visitDate" type="date" required />
-        </div>
-      </div>
-
-      <div class="form-section connect-card__visited">
-        <fieldset>
-          <legend>Have you visited First Springfield before?</legend>
-          <p class="form-helper">Knowing your familiarity helps us tailor your welcome.</p>
-          <div class="radio-group">
-            <label class="radio" for="visited-before-yes">
-              <input id="visited-before-yes" name="visitedBefore" type="radio" value="yes" required />
-              <span>Yes</span>
-            </label>
-            <label class="radio" for="visited-before-no">
-              <input id="visited-before-no" name="visitedBefore" type="radio" value="no" required />
-              <span>No</span>
-            </label>
-          </div>
-        </fieldset>
-      </div>
-
-      <div class="form-section connect-card__address">
-        <div class="connect-card__section-heading">
-          <p class="form-label">
-            Address <span class="required" aria-hidden="true">*</span>
-          </p>
-          <span class="form-helper">Needed for arrival info, mailings, or hospitality follow-up.</span>
-        </div>
-        <div class="address-grid">
-          <div class="form-field">
-            <label for="address-street">Street address <span class="required" aria-hidden="true">*</span></label>
-            <input
-              id="address-street"
-              data-address-part
-              name="addressStreet"
-              type="text"
-              required
-              placeholder="123 Main St"
-              autocomplete="address-line1"
-            />
-          </div>
-          <div class="form-field form-field--wide">
-            <label for="address-line2">Line 2 (apt, suite, etc.)</label>
-            <input
-              id="address-line2"
-              data-address-part
-              name="addressLine2"
-              type="text"
-              placeholder="Suite 4"
-              autocomplete="address-line2"
-            />
-          </div>
-          <div class="form-field">
-            <label for="address-city">City <span class="required" aria-hidden="true">*</span></label>
-            <input
-              id="address-city"
-              data-address-part
-              name="addressCity"
-              type="text"
-              required
-              placeholder="Springfield"
-              autocomplete="address-level2"
-            />
-          </div>
-          <div class="form-field">
-            <label for="address-state">State <span class="required" aria-hidden="true">*</span></label>
-            <input
-              id="address-state"
-              data-address-part
-              name="addressState"
-              type="text"
-              required
-              placeholder="MA"
-              autocomplete="address-level1"
-            />
-          </div>
-          <div class="form-field">
-            <label for="address-zip">ZIP code <span class="required" aria-hidden="true">*</span></label>
-            <input
-              id="address-zip"
-              data-address-part
-              name="addressZip"
-              type="text"
-              required
-              placeholder="01118"
-              autocomplete="postal-code"
-            />
-          </div>
-          <div class="form-field">
-            <label for="address-country">Country</label>
-            <span class="form-helper">Optional unless you are visiting from outside the U.S.</span>
-            <input
-              id="address-country"
-              data-address-part
-              name="addressCountry"
-              type="text"
-              placeholder="United States"
-              autocomplete="country"
-            />
-          </div>
-        </div>
-        <input type="hidden" id="address-summary" name="address" required />
-      </div>
-
-      <div class="form-section">
-        <label for="connection-reason">What best describes your reason for connecting?</label>
-        <select id="connection-reason" name="connectionReason" required>
-          <option value="">Choose one</option>
-          {connectionReasons.map((item) => (
-            <option value={item.value}>{item.label}</option>
-          ))}
-        </select>
-      </div>
-
-      <div class="form-section connect-card__interests">
-        <p id="interests-label" class="form-label">
-          I’d like the team to follow up about:
-          <span class="required" aria-hidden="true">*</span>
-        </p>
-        <p class="form-helper">Choose all that apply so we can match you with the right team.</p>
-        <div
-          class="checkbox-grid"
-          role="group"
-          aria-labelledby="interests-label"
-          aria-describedby="interests-error"
-        >
-          {interestOptions.map((item) => (
-            <label class="checkbox" for={interestsId(item.value)}>
-              <input id={interestsId(item.value)} name="interests[]" value={item.value} type="checkbox" />
-              <span>{item.label}</span>
-            </label>
-          ))}
-        </div>
-        <p id="interests-error" class="form-error" role="alert" aria-live="assertive" hidden></p>
-      </div>
-
-      <div class="form-section">
-        <label for="preferred-contact">Preferred follow-up method <span class="required" aria-hidden="true">*</span></label>
-        <select id="preferred-contact" name="preferredContact" required>
-          <option value="">Select</option>
-          {preferredContactOptions.map((item) => (
-            <option value={item.value}>{item.label}</option>
-          ))}
-        </select>
-      </div>
-
-      <div class="form-section">
-        <label for="notes">Anything else we should know?</label>
-        <textarea
-          id="notes"
-          name="notes"
-          rows="4"
-          placeholder="Share a prayer request, questions about ministry, or a time to connect."
-        ></textarea>
-      </div>
-
-      <input type="hidden" name="redirectUrl" value={thankYouUrl} />
-      <input type="hidden" name="formSource" value="connect-card-web" />
-
-      <div class="form-section turnstile">
-        {turnstileSiteKey ? (
-          <div class="cf-turnstile" data-sitekey={turnstileSiteKey}></div>
-        ) : (
-          <p class="muted small">
-            For spam protection, set <code>PUBLIC_TURNSTILE_SITE_KEY</code> and <code>PRIVATE_TURNSTILE_SECRET_KEY</code> (used
-            server-side) so we can verify the widget before writing to the sheet.
-          </p>
-        )}
-      </div>
-
-      <p class="privacy-note small muted">
-        Privacy note: We ask for phone, visit details, and address so the pastor, hospitality, or children’s team can respond
-        with arrival information, ministry invitations, or resources you request. We will not share personal data outside the house
-        of worship without permission.
-      </p>
-
-      <div class="form-actions">
-        <button type="submit" class="primary-action">
-          Submit a Connect Card
-        </button>
-        <a class="ghost-action" href="/connect/contact">Need help now?</a>
-      </div>
-    </form>
-  </div>
-</BaseLayout>
-
-<script is:inline>
-(function () {
-  const focusFirstInvalidField = (form) => {
-    const firstInvalid = form.querySelector(":invalid");
-    if (firstInvalid instanceof HTMLElement && document.activeElement !== firstInvalid) {
-      firstInvalid.focus();
-    }
-  };
-
-  const init = () => {
-    const form = document.querySelector(".connect-card__form");
-    if (!form) return;
-
-    const addressInputs = Array.from(form.querySelectorAll("[data-address-part]"));
-    const addressSummary = form.querySelector("#address-summary");
-
-    const updateAddressSummary = () => {
-      if (!addressSummary) return;
-      const parts = addressInputs.map((input) => input.value.trim()).filter(Boolean);
-      addressSummary.value = parts.join(", ");
-    };
-
-    addressInputs.forEach((input) => input.addEventListener("input", updateAddressSummary));
-    updateAddressSummary();
-
-    const interestInputs = Array.from(form.querySelectorAll('input[name="interests[]"]'));
-    const interestErrorElement = form.querySelector("#interests-error");
-
-    const showInterestError = (message) => {
-      if (!interestErrorElement) return;
-      interestErrorElement.textContent = message;
-      interestErrorElement.hidden = false;
-    };
-
-    const hideInterestError = () => {
-      if (!interestErrorElement) return;
-      interestErrorElement.textContent = "";
-      interestErrorElement.hidden = true;
-    };
-
-    if (interestInputs.length) {
-      const interestErrorMessage = "Select at least one interest so we can best support you.";
-
-      const resetInterestValidation = () => {
-        interestInputs.forEach((input) => input.setCustomValidity(""));
-        hideInterestError();
-      };
-
-      interestInputs.forEach((input) => {
-        input.setAttribute("aria-describedby", "interests-error");
-        input.addEventListener("change", resetInterestValidation);
-      });
-
-      form.addEventListener("submit", (event) => {
-        const hasAny = interestInputs.some((input) => input.checked);
-        if (!hasAny) {
-          interestInputs[0].setCustomValidity(interestErrorMessage);
-          showInterestError(interestErrorMessage);
-          if (typeof form.reportValidity === "function") {
-            form.reportValidity();
-          }
-          interestInputs[0].focus();
-          event.preventDefault();
-          return;
-        }
-      });
-    }
-
-    form.addEventListener("submit", () => {
-      setTimeout(() => focusFirstInvalidField(form), 0);
-    });
-  };
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-})();
-</script>
-
-<style>
-  .connect-card {
-    max-width: 52rem;
-  }
-
-  .connect-card__intro + .connect-card__gallery,
-  .connect-card__gallery + .connect-card__form {
-    margin-top: var(--space-6);
-  }
-
-  .connect-card__gallery {
-    background: var(--color-surface-2);
-    border-radius: var(--radius-3);
-    padding: var(--space-4) var(--space-5);
-    border: 1px solid var(--color-border);
-  }
-
-  .connect-card__gallery-head {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    margin-bottom: var(--space-4);
-  }
-
-  .connect-card__gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: var(--space-3);
-  }
-
-  .connect-card__photo {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    margin: 0;
-  }
-
-  .connect-card__photo img {
-    width: 100%;
-    height: 160px;
-    object-fit: cover;
-    border-radius: var(--radius-2);
-    display: block;
-  }
-
-  .connect-card__photo-tag {
-    text-transform: uppercase;
-    font-size: var(--font-size-0);
-    color: var(--color-primary);
-    letter-spacing: 0.08em;
-  }
-
-  .connect-card__photo figcaption p {
-    margin: 0;
-  }
-
-  .connect-card__form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-6);
-  }
-
-  .connect-card__grid {
-    display: grid;
-    gap: var(--space-4);
-  }
-
-  .form-field {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-  }
-
-  .form-field--wide {
-    grid-column: span 2;
-  }
-
-  .connect-card__form label {
-    font-weight: 700;
-  }
-
-  .connect-card__form input,
-  .connect-card__form select,
-  .connect-card__form textarea {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-2);
-    padding: var(--space-3);
-    font: inherit;
-    background: var(--color-white);
-  }
-
-  .connect-card__form textarea {
-    resize: vertical;
-    min-height: 3rem;
-  }
-
-  .required {
-    margin-left: 0.25rem;
-    color: var(--color-secondary);
-  }
-
-  .form-helper {
-    display: block;
-    font-size: var(--font-size-0);
-    color: var(--color-text-muted);
-    font-weight: 400;
-  }
-
-  .form-error {
-    margin: 0;
-    font-size: var(--font-size-0);
-    color: #b00020;
-  }
-
-  .form-section {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  .connect-card__visited fieldset {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-2);
-    padding: var(--space-3);
-    margin: 0;
-  }
-
-  .connect-card__visited legend {
-    font-weight: 700;
-  }
-
-  .radio-group {
-    display: flex;
-    gap: var(--space-3);
-    flex-wrap: wrap;
-  }
-
-  .radio {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-weight: 600;
-    cursor: pointer;
-  }
-
-  .radio input {
-    margin: 0;
-    accent-color: var(--color-primary);
-  }
-
-  .connect-card__address {
-    border: 1px dashed var(--color-border);
-    border-radius: var(--radius-3);
-    padding: var(--space-4);
-    background: var(--color-surface);
-  }
-
-  .connect-card__section-heading {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-  }
-
-  .address-grid {
-    display: grid;
-    gap: var(--space-3);
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  }
-
-  .connect-card__interests .checkbox-grid {
-    display: grid;
-    gap: var(--space-2);
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  }
-
-  .checkbox {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-weight: 500;
-    font-size: 0.95rem;
-    cursor: pointer;
-  }
-
-  .checkbox input {
-    margin: 0;
-    accent-color: var(--color-primary);
-  }
-
-  .turnstile {
-    padding: var(--space-3);
-    border: 1px dashed var(--color-border);
-    border-radius: var(--radius-2);
-    background: var(--color-surface-2);
-  }
-
-  .form-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-    align-items: center;
-  }
-
-  .primary-action {
-    background: var(--color-primary);
-    color: var(--color-white);
-    border: none;
-    border-radius: var(--radius-3);
-    padding: var(--space-3) var(--space-5);
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  .ghost-action {
-    color: var(--color-primary);
-    font-weight: 600;
-    text-decoration: underline;
-  }
-
-  .connect-card .privacy-note {
-    margin: 0;
-  }
-
-  @media (min-width: 720px) {
-    .connect-card__grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .form-field:nth-child(odd) {
-      min-width: 0;
-    }
-  }
-</style>
 </file>
 
 <file path="web/src/pages/connect/team/index.astro">
@@ -7687,6 +8295,139 @@ const orderedCategories = [
     )}
   </section>
 </BaseLayout>
+</file>
+
+<file path="web/src/pages/resources/announcements/[...page].astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Button from "../../../components/ui/Button.astro";
+import ContentCard from "../../../components/content/ContentCard.astro";
+import { site } from "../../../data/site";
+import { announcementTagLabels } from "../../../data/announcement-tags";
+import {
+  announcementsPerPage,
+  getArchiveMonths,
+  getSortedAnnouncements,
+  paginateAnnouncements,
+} from "../../../lib/announcements";
+
+export async function getStaticPaths() {
+  const announcements = await getSortedAnnouncements();
+  const totalPages = Math.max(1, Math.ceil(announcements.length / announcementsPerPage));
+  const paths = [];
+
+  for (let pageNumber = 2; pageNumber <= totalPages; pageNumber++) {
+    paths.push({
+      params: {
+        page: `page/${pageNumber}`,
+      },
+    });
+  }
+
+  return paths;
+}
+
+const announcements = await getSortedAnnouncements();
+const rawSegments = Astro.params.page;
+const segments =
+  typeof rawSegments === "string"
+    ? rawSegments.split("/").filter(Boolean)
+    : Array.isArray(rawSegments)
+    ? rawSegments
+    : [];
+const requestedPage = Number(segments[segments.length - 1] ?? 1);
+const totalPages = Math.max(1, Math.ceil(announcements.length / announcementsPerPage));
+const page = Math.min(Math.max(1, Number.isNaN(requestedPage) ? 1 : requestedPage), totalPages);
+const pagination = paginateAnnouncements(announcements, page);
+const metaFormatter = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "medium",
+  timeZone: site.timeZone,
+});
+const archiveMonths = getArchiveMonths(await getSortedAnnouncements({ includeExpired: true }));
+const showPrev = page > 1;
+const showNext = page < totalPages;
+const prevHref = page === 2 ? "/resources/announcements" : `/resources/announcements/page/${page - 1}`;
+const nextHref = `/resources/announcements/page/${page + 1}`;
+const hasAnnouncements = announcements.length > 0;
+const rangeStart = hasAnnouncements ? (page - 1) * announcementsPerPage + 1 : 0;
+const rangeEnd = hasAnnouncements ? Math.min(announcements.length, page * announcementsPerPage) : 0;
+const updatesUrl = "/updates";
+const rssUrl = "/resources/announcements/rss.xml";
+---
+
+<BaseLayout title={`Announcements · page ${page}`}>
+  <div class="stack">
+    <h1>Announcements · page {page}</h1>
+    <p class="muted">
+      {hasAnnouncements
+        ? `Showing ${rangeStart}–${rangeEnd} of ${announcements.length} announcements.`
+        : "No announcements have been published yet."}{" "}
+      <a class="link" href={rssUrl}>Subscribe via RSS</a>.
+    </p>
+
+    {pagination.results.length === 0 ? (
+      <p class="muted">No announcements published for this page.</p>
+    ) : (
+      <div class="grid--cards">
+        {pagination.results.map((entry) => (
+          <ContentCard
+            href={`/resources/announcements/${entry.id}`}
+            title={entry.data.title}
+            summary={entry.data.summary}
+            meta={metaFormatter.format(entry.data.date)}
+            tags={entry.data.tags?.map((value) => announcementTagLabels[value] ?? value)}
+          />
+        ))}
+      </div>
+    )}
+
+    <div class="cluster--between pagination">
+      {showPrev ? <Button href={prevHref} variant="ghost">Newer announcements</Button> : <span />}
+      {showNext ? <Button href={nextHref} variant="ghost">Older announcements</Button> : null}
+    </div>
+
+    <section class="card stack--tight">
+      <h2>Archive by month</h2>
+      {archiveMonths.length === 0 ? (
+        <p class="muted">No archived months yet.</p>
+      ) : (
+        <ul class="archive-list">
+          {archiveMonths.map(({ year, month, label }) => (
+            <li>
+              <a class="link" href={`/resources/announcements/archive/${year}/${String(month).padStart(2, "0")}`}>
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+
+    <div class="cluster">
+      <Button href="/resources/announcements" variant="secondary">Back to current announcements</Button>
+      <Button href={updatesUrl} variant="ghost">Visit updates page</Button>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .archive-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .archive-list li {
+    min-width: 180px;
+  }
+
+  .pagination {
+    margin-top: var(--space-4);
+  }
+</style>
 </file>
 
 <file path="web/src/pages/resources/announcements/index.astro">
@@ -8791,6 +9532,23 @@ for (const { path, robots } of PAGES) {
 }
 </file>
 
+<file path="web/.env.example">
+# Connect Card configuration
+# These values must be populated before using the built-in connect card backend.
+PUBLIC_CONNECT_CARD_FORM_ACTION=
+PUBLIC_TURNSTILE_SITE_KEY=
+PRIVATE_TURNSTILE_SECRET_KEY=
+PRIVATE_CONNECT_CARD_FORWARD_URL=
+CONNECT_CARD_NOTIFY_EMAILS=
+CONNECT_CARD_NOTIFY_FROM=firstspringfieldsda@gmail.com
+CONNECT_CARD_SENDGRID_API_KEY=
+PUBLIC_PRAYER_MEETING_ZOOM_URL=
+
+# Future use (Phase 5+)
+# PUBLIC_SITE_URL=https://example.com
+PUBLIC_CF_ANALYTICS_TOKEN=
+</file>
+
 <file path="web/tsconfig.json">
 {
   "extends": "astro/tsconfigs/strict",
@@ -8800,6 +9558,20 @@ for (const { path, robots } of PAGES) {
   "include": [".astro/types.d.ts", "**/*"],
   "exclude": ["dist"]
 }
+</file>
+
+<file path=".gitignore">
+# Node
+node_modules/
+web/node_modules.bak/
+
+# Astro
+web/dist/
+web/.astro/
+web/.wrangler/tmp/
+
+# OS
+.DS_Store
 </file>
 
 <file path=".repomixignore">
@@ -9516,6 +10288,668 @@ function linkAttrs(item: { href: string; external?: boolean }) {
 </script>
 </file>
 
+<file path="web/src/pages/connect/connect-card/index.astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import churchExterior from "../../../assets/photos/first-springfield-exterior.png";
+import bridgeDusk from "../../../assets/photos/bridge-dusk.jpg";
+import adventistCommunityServicesLogo from "../../../assets/photos/ministries-adventist-community-services-logo.png";
+import childrensMinistryBanner from "../../../assets/photos/ministries-childrens-ministry-banner.png";
+import youthLogo from "../../../assets/photos/ministries-youth-young-adults-ay-logo.png";
+import pathfindersLogo from "../../../assets/photos/club-pathfinders-logo.png";
+
+const customFormAction = import.meta.env.PUBLIC_CONNECT_CARD_FORM_ACTION;
+const defaultFormAction = "/api/connect-card";
+const formAction = customFormAction || defaultFormAction;
+const usesCustomFormAction = Boolean(customFormAction);
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
+const pageOrigin = Astro.url?.origin;
+const thankYouPath = "/connect/connect-card/thank-you";
+const thankYouUrl = pageOrigin ? `${pageOrigin}${thankYouPath}` : thankYouPath;
+
+const galleryPhotos = [
+  {
+    src: bridgeDusk.src,
+    alt: "Evening light on the bridge that leads toward our campus.",
+    caption: "Neighborhood welcomes before you even cross the bridge.",
+    tag: "Community",
+  },
+  {
+    src: churchExterior.src,
+    alt: "First Springfield SDA Church building and welcome sign.",
+    caption: "Our sanctuary is open for worship, fellowship, and hospitality.",
+    tag: "Welcome",
+  },
+  {
+    src: childrensMinistryBanner.src,
+    alt: "A colorful banner announcing Children’s Ministry programming.",
+    caption: "Children’s Ministry storytelling, music, and hugs make every visitor feel known.",
+    tag: "Children",
+  },
+  {
+    src: pathfindersLogo.src,
+    alt: "Pathfinders & Adventurers club crest.",
+    caption: "Pathfinders & Adventurers gather for service, camping, and faith-building adventures.",
+    tag: "Pathfinders",
+  },
+  {
+    src: adventistCommunityServicesLogo.src,
+    alt: "Adventist Community Services logo.",
+    caption: "ACS outreach brings meals, care, and compassion to Springfield neighbors.",
+    tag: "Service",
+  },
+  {
+    src: youthLogo.src,
+    alt: "Youth & Young Adults ministry emblem.",
+    caption: "AY conversations, prayer, and mentorship keep young people connected.",
+    tag: "Youth",
+  },
+];
+
+const interestOptions = [
+  { value: "prayer", label: "Prayer" },
+  { value: "bible-study", label: "Bible study" },
+  { value: "visitation", label: "Visitation" },
+  { value: "conversion", label: "Conversion" },
+  { value: "baptism", label: "Baptism" },
+  { value: "transfer", label: "Transfer" },
+  { value: "facility-use", label: "Facility use" },
+];
+
+const connectionReasons = [
+  { value: "first-time-visit", label: "I am planning my first visit" },
+  { value: "moving-to-town", label: "We just moved to the area" },
+  { value: "prayer", label: "I’d like prayer or encouragement" },
+  { value: "questions", label: "I have a question about the church" },
+  { value: "other", label: "Other" },
+];
+
+const preferredContactOptions = [
+  { value: "email", label: "Email (fastest)" },
+  { value: "phone", label: "Phone call or text" },
+];
+
+const interestsId = (value: string) => `interest-${value}`;
+---
+
+<BaseLayout
+  title="Connect Card"
+  description="Submit a Connect Card to let the team know how to pray for you, follow up, or support your next steps."
+>
+  <script slot="head" is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+  <div class="stack connect-card">
+    <div class="connect-card__intro">
+      <h1>Connect Card</h1>
+      <p id="connect-card-summary" class="muted">
+        Tell us about your visit window, how we can pray for you, and which ministries you’d like to explore.
+        We’ll ask for your preferred follow-up method and keep your information private unless you say otherwise.
+      </p>
+      {!usesCustomFormAction ? (
+        <div class="connect-card__warning" role="status">
+          <strong>Built-in Connect Card backend is active.</strong> Before publishing, configure
+          <code>PRIVATE_CONNECT_CARD_FORWARD_URL</code> and <code>PRIVATE_TURNSTILE_SECRET_KEY</code>
+          (and optionally <code>CONNECT_CARD_NOTIFY_EMAILS</code>) so submissions forward and trigger alerts.
+        </div>
+      ) : null}
+    </div>
+
+    <section class="connect-card__gallery" aria-labelledby="connect-card-gallery-title">
+      <div class="connect-card__gallery-head">
+        <p class="muted small">This is your church family</p>
+        <h2 id="connect-card-gallery-title">This is your church family</h2>
+        <p class="muted">
+          Worship, fellowship, and service all intersect in the people you’ll meet when you visit First Springfield.
+        </p>
+      </div>
+      <div class="connect-card__gallery-grid">
+        {galleryPhotos.map((photo) => (
+          <figure class="connect-card__photo">
+            <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
+            <figcaption>
+              <span class="connect-card__photo-tag">{photo.tag}</span>
+              <p>{photo.caption}</p>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+
+    <form
+      class="connect-card__form"
+      action={formAction || "#"}
+      method="POST"
+      accept-charset="UTF-8"
+      aria-describedby="connect-card-summary"
+    >
+      <div class="connect-card__grid">
+        <div class="form-field">
+          <label for="full-name">
+            Full name <span class="required" aria-hidden="true">*</span>
+          </label>
+          <input id="full-name" name="fullName" type="text" required autocomplete="name" placeholder="Jamie Rivera" />
+        </div>
+
+        <div class="form-field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="name@example.com" />
+        </div>
+
+        <div class="form-field">
+          <label for="phone">
+            Phone <span class="required" aria-hidden="true">*</span>
+            <span class="form-helper">Calls/texts help us respond if email bounces.</span>
+          </label>
+          <input id="phone" name="phone" type="tel" required autocomplete="tel" placeholder="(123) 456‑7890" />
+        </div>
+
+        <div class="form-field">
+          <label for="visit-date">
+            Preferred visit date <span class="required" aria-hidden="true">*</span>
+            <span class="form-helper">Let us know when you hope to visit so we can plan hospitality.</span>
+          </label>
+          <input id="visit-date" name="visitDate" type="date" required />
+        </div>
+      </div>
+
+      <div class="form-section connect-card__visited">
+        <fieldset>
+          <legend>Have you visited First Springfield before?</legend>
+          <p class="form-helper">Knowing your familiarity helps us tailor your welcome.</p>
+          <div class="radio-group">
+            <label class="radio" for="visited-before-yes">
+              <input id="visited-before-yes" name="visitedBefore" type="radio" value="yes" required />
+              <span>Yes</span>
+            </label>
+            <label class="radio" for="visited-before-no">
+              <input id="visited-before-no" name="visitedBefore" type="radio" value="no" required />
+              <span>No</span>
+            </label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="form-section connect-card__address">
+        <div class="connect-card__section-heading">
+          <p class="form-label">
+            Address <span class="required" aria-hidden="true">*</span>
+          </p>
+          <span class="form-helper">Needed for arrival info, mailings, or hospitality follow-up.</span>
+        </div>
+        <div class="address-grid">
+          <div class="form-field">
+            <label for="address-street">Street address <span class="required" aria-hidden="true">*</span></label>
+            <input
+              id="address-street"
+              data-address-part
+              name="addressStreet"
+              type="text"
+              required
+              placeholder="123 Main St"
+              autocomplete="address-line1"
+            />
+          </div>
+          <div class="form-field form-field--wide">
+            <label for="address-line2">Line 2 (apt, suite, etc.)</label>
+            <input
+              id="address-line2"
+              data-address-part
+              name="addressLine2"
+              type="text"
+              placeholder="Suite 4"
+              autocomplete="address-line2"
+            />
+          </div>
+          <div class="form-field">
+            <label for="address-city">City <span class="required" aria-hidden="true">*</span></label>
+            <input
+              id="address-city"
+              data-address-part
+              name="addressCity"
+              type="text"
+              required
+              placeholder="Springfield"
+              autocomplete="address-level2"
+            />
+          </div>
+          <div class="form-field">
+            <label for="address-state">State <span class="required" aria-hidden="true">*</span></label>
+            <input
+              id="address-state"
+              data-address-part
+              name="addressState"
+              type="text"
+              required
+              placeholder="MA"
+              autocomplete="address-level1"
+            />
+          </div>
+          <div class="form-field">
+            <label for="address-zip">ZIP code <span class="required" aria-hidden="true">*</span></label>
+            <input
+              id="address-zip"
+              data-address-part
+              name="addressZip"
+              type="text"
+              required
+              placeholder="01118"
+              autocomplete="postal-code"
+            />
+          </div>
+          <div class="form-field">
+            <label for="address-country">Country</label>
+            <span class="form-helper">Optional unless you are visiting from outside the U.S.</span>
+            <input
+              id="address-country"
+              data-address-part
+              name="addressCountry"
+              type="text"
+              placeholder="United States"
+              autocomplete="country"
+            />
+          </div>
+        </div>
+        <input type="hidden" id="address-summary" name="address" required />
+      </div>
+
+      <div class="form-section">
+        <label for="connection-reason">What best describes your reason for connecting?</label>
+        <select id="connection-reason" name="connectionReason" required>
+          <option value="">Choose one</option>
+          {connectionReasons.map((item) => (
+            <option value={item.value}>{item.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div class="form-section connect-card__interests">
+        <p id="interests-label" class="form-label">
+          I’d like the team to follow up about:
+          <span class="required" aria-hidden="true">*</span>
+        </p>
+        <p class="form-helper">Choose all that apply so we can match you with the right team.</p>
+        <div
+          class="checkbox-grid"
+          role="group"
+          aria-labelledby="interests-label"
+          aria-describedby="interests-error"
+        >
+          {interestOptions.map((item) => (
+            <label class="checkbox" for={interestsId(item.value)}>
+              <input id={interestsId(item.value)} name="interests[]" value={item.value} type="checkbox" />
+              <span>{item.label}</span>
+            </label>
+          ))}
+        </div>
+        <p id="interests-error" class="form-error" role="alert" aria-live="assertive" hidden></p>
+      </div>
+
+      <div class="form-section">
+        <label for="preferred-contact">Preferred follow-up method <span class="required" aria-hidden="true">*</span></label>
+        <select id="preferred-contact" name="preferredContact" required>
+          <option value="">Select</option>
+          {preferredContactOptions.map((item) => (
+            <option value={item.value}>{item.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div class="form-section">
+        <label for="notes">Anything else we should know?</label>
+        <textarea
+          id="notes"
+          name="notes"
+          rows="4"
+          placeholder="Share a prayer request, questions about ministry, or a time to connect."
+        ></textarea>
+      </div>
+
+      <input type="hidden" name="redirectUrl" value={thankYouUrl} />
+      <input type="hidden" name="formSource" value="connect-card-web" />
+
+      <div class="form-section turnstile">
+        {turnstileSiteKey ? (
+          <div class="cf-turnstile" data-sitekey={turnstileSiteKey}></div>
+        ) : (
+          <p class="muted small">
+            For spam protection, set <code>PUBLIC_TURNSTILE_SITE_KEY</code> and <code>PRIVATE_TURNSTILE_SECRET_KEY</code> (used
+            server-side) so we can verify the widget before writing to the sheet.
+          </p>
+        )}
+      </div>
+
+      <p class="privacy-note small muted">
+        Privacy note: We ask for phone, visit details, and address so the pastor, hospitality, or children’s team can respond
+        with arrival information, ministry invitations, or resources you request. We will not share personal data outside the house
+        of worship without permission.
+      </p>
+
+      <div class="form-actions">
+        <button type="submit" class="primary-action">
+          Submit a Connect Card
+        </button>
+        <a class="ghost-action" href="/connect/contact">Need help now?</a>
+      </div>
+    </form>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+(function () {
+  const focusFirstInvalidField = (form) => {
+    const firstInvalid = form.querySelector(":invalid");
+    if (firstInvalid instanceof HTMLElement && document.activeElement !== firstInvalid) {
+      firstInvalid.focus();
+    }
+  };
+
+  const init = () => {
+    const form = document.querySelector(".connect-card__form");
+    if (!form) return;
+
+    const addressInputs = Array.from(form.querySelectorAll("[data-address-part]"));
+    const addressSummary = form.querySelector("#address-summary");
+
+    const updateAddressSummary = () => {
+      if (!addressSummary) return;
+      const parts = addressInputs.map((input) => input.value.trim()).filter(Boolean);
+      addressSummary.value = parts.join(", ");
+    };
+
+    addressInputs.forEach((input) => input.addEventListener("input", updateAddressSummary));
+    updateAddressSummary();
+
+    const interestInputs = Array.from(form.querySelectorAll('input[name="interests[]"]'));
+    const interestErrorElement = form.querySelector("#interests-error");
+
+    const showInterestError = (message) => {
+      if (!interestErrorElement) return;
+      interestErrorElement.textContent = message;
+      interestErrorElement.hidden = false;
+    };
+
+    const hideInterestError = () => {
+      if (!interestErrorElement) return;
+      interestErrorElement.textContent = "";
+      interestErrorElement.hidden = true;
+    };
+
+    if (interestInputs.length) {
+      const interestErrorMessage = "Select at least one interest so we can best support you.";
+
+      const resetInterestValidation = () => {
+        interestInputs.forEach((input) => input.setCustomValidity(""));
+        hideInterestError();
+      };
+
+      interestInputs.forEach((input) => {
+        input.setAttribute("aria-describedby", "interests-error");
+        input.addEventListener("change", resetInterestValidation);
+      });
+
+      form.addEventListener("submit", (event) => {
+        const hasAny = interestInputs.some((input) => input.checked);
+        if (!hasAny) {
+          interestInputs[0].setCustomValidity(interestErrorMessage);
+          showInterestError(interestErrorMessage);
+          if (typeof form.reportValidity === "function") {
+            form.reportValidity();
+          }
+          interestInputs[0].focus();
+          event.preventDefault();
+          return;
+        }
+      });
+    }
+
+    form.addEventListener("submit", () => {
+      setTimeout(() => focusFirstInvalidField(form), 0);
+    });
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+<style>
+  .connect-card {
+    max-width: 52rem;
+  }
+
+  .connect-card__intro + .connect-card__gallery,
+  .connect-card__gallery + .connect-card__form {
+    margin-top: var(--space-6);
+  }
+
+  .connect-card__gallery {
+    background: var(--color-surface-2);
+    border-radius: var(--radius-3);
+    padding: var(--space-4) var(--space-5);
+    border: 1px solid var(--color-border);
+  }
+
+  .connect-card__gallery-head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+
+  .connect-card__gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-3);
+  }
+
+  .connect-card__photo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .connect-card__photo img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: var(--radius-2);
+    display: block;
+  }
+
+  .connect-card__photo-tag {
+    text-transform: uppercase;
+    font-size: var(--font-size-0);
+    color: var(--color-primary);
+    letter-spacing: 0.08em;
+  }
+
+  .connect-card__photo figcaption p {
+    margin: 0;
+  }
+
+  .connect-card__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .connect-card__grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .form-field--wide {
+    grid-column: span 2;
+  }
+
+  .connect-card__form label {
+    font-weight: 700;
+  }
+
+  .connect-card__form input,
+  .connect-card__form select,
+  .connect-card__form textarea {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    padding: var(--space-3);
+    font: inherit;
+    background: var(--color-white);
+  }
+
+  .connect-card__form textarea {
+    resize: vertical;
+    min-height: 3rem;
+  }
+
+  .required {
+    margin-left: 0.25rem;
+    color: var(--color-secondary);
+  }
+
+  .form-helper {
+    display: block;
+    font-size: var(--font-size-0);
+    color: var(--color-text-muted);
+    font-weight: 400;
+  }
+
+  .form-error {
+    margin: 0;
+    font-size: var(--font-size-0);
+    color: #b00020;
+  }
+
+  .form-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .connect-card__visited fieldset {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    padding: var(--space-3);
+    margin: 0;
+  }
+
+  .connect-card__visited legend {
+    font-weight: 700;
+  }
+
+  .radio-group {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .radio {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .radio input {
+    margin: 0;
+    accent-color: var(--color-primary);
+  }
+
+  .connect-card__address {
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-3);
+    padding: var(--space-4);
+    background: var(--color-surface);
+  }
+
+  .connect-card__section-heading {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .address-grid {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+
+  .connect-card__interests .checkbox-grid {
+    display: grid;
+    gap: var(--space-2);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  .checkbox input {
+    margin: 0;
+    accent-color: var(--color-primary);
+  }
+
+  .turnstile {
+    padding: var(--space-3);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-2);
+    background: var(--color-surface-2);
+  }
+
+  .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-items: center;
+  }
+
+  .primary-action {
+    background: var(--color-primary);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-3);
+    padding: var(--space-3) var(--space-5);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .ghost-action {
+    color: var(--color-primary);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  .connect-card .privacy-note {
+    margin: 0;
+  }
+
+  @media (min-width: 720px) {
+    .connect-card__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .form-field:nth-child(odd) {
+      min-width: 0;
+    }
+  }
+</style>
+</file>
+
 <file path="web/src/pages/connect/prayer/index.astro">
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
@@ -9550,57 +10984,6 @@ const hasPrayerForm = Boolean(prayerFormUrl && prayerFormUrl !== "TBD");
       <p class="small muted">
         Please avoid including sensitive information.
       </p>
-    </section>
-  </div>
-</BaseLayout>
-</file>
-
-<file path="web/src/pages/connect/worship-with-us/index.astro">
----
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import Schedule from "../../../components/ui/Schedule.astro";
-import { site } from "../../../data/site";
-import { prayerMeetingDetails } from "../../../data/activities";
----
-
-<BaseLayout
-  title="Worship With Us"
-  description={`Learn what Sabbath School, Worship Service, and midweek Prayer Meeting are like at ${site.name}.`}
->
-  <div class="stack">
-    <h1>Worship With Us</h1>
-
-    <Schedule title="Weekly Schedule" items={site.schedule} />
-
-    <section class="card stack--tight">
-      <h2>Sabbath School</h2>
-      <p class="muted">
-        Sabbath School is a Bible study time for all ages, with classes for children and adults.
-      </p>
-    </section>
-
-    <section class="card stack--tight">
-      <h2>Worship Service</h2>
-      <p class="muted">
-        Our worship service includes singing, prayer, Scripture, and a message from the Bible.
-      </p>
-    </section>
-
-    <section class="card stack--tight">
-      <h2>Midweek Prayer Meeting</h2>
-      <p class="muted">
-        Join us midweek for prayer, encouragement, and Bible study.
-      </p>
-      <ul class="muted">
-        <li><strong>When:</strong> {prayerMeetingDetails.day} · {prayerMeetingDetails.time}</li>
-        <li><strong>In person:</strong> {prayerMeetingDetails.location}</li>
-        <li><strong>Online:</strong>
-          <a href={prayerMeetingDetails.zoomUrl} target="_blank" rel="noreferrer">Join via Zoom</a>
-        </li>
-        <li><strong>Dial-in:</strong> {prayerMeetingDetails.dialIn}</li>
-        <li><strong>Meeting ID:</strong> {prayerMeetingDetails.meetingId}</li>
-        <li><strong>Passcode:</strong> {prayerMeetingDetails.passcode}</li>
-      </ul>
     </section>
   </div>
 </BaseLayout>
@@ -9815,44 +11198,6 @@ for (const path of PAGES) {
 }
 </file>
 
-<file path="web/astro.config.mjs">
-import cloudflare from "@astrojs/cloudflare";
-import mdx from "@astrojs/mdx";
-import sitemap from "@astrojs/sitemap";
-import compress from "astro-compress";
-import icon from "astro-icon";
-import pagefind from "astro-pagefind";
-import { defineConfig } from "astro/config";
-
-const site = process.env.PUBLIC_SITE_URL;
-
-export default defineConfig({
-  // Used for canonical URLs + sitemap/robots generation.
-  // In Cloudflare Pages: set PUBLIC_SITE_URL to your production domain (e.g. https://example.org)
-  site: site ?? "http://localhost:4321",
-  trailingSlash: "never",
-
-  integrations: [
-    mdx(),
-    icon(),
-    compress(),
-    pagefind(),
-    sitemap({
-      // Internal site search is not a page you want indexed.
-      filter: (page) => !page.endsWith("/search"),
-    }),
-  ],
-
-  output: "static",
-  adapter: cloudflare(),
-  vite: {
-    ssr: {
-      noExternal: ["@fontsource-variable/inter"],
-    },
-  },
-});
-</file>
-
 <file path="web/src/components/Footer.astro">
 ---
 import { site } from "../data/site";
@@ -9911,157 +11256,6 @@ const year = new Date().getFullYear();
 </footer>
 </file>
 
-<file path="web/src/data/activities.ts">
-export type ActivityCategory = "service" | "ministry" | "event" | "community";
-
-export type RecurringActivity = {
-  id: string;
-  title: string;
-  cadence: string;
-  time?: string;
-  day?: string;
-  link?: string;
-  note?: string;
-  category?: ActivityCategory;
-};
-
-export type OneOffEvent = {
-  title: string;
-  start: string;
-  link?: string;
-  note?: string;
-};
-
-export const recurringActivities: RecurringActivity[] = [
-  {
-    id: "sabbath-school",
-    title: "Sabbath School",
-    cadence: "Weekly study groups for every age",
-    day: "Saturday",
-    time: "10:00 AM",
-    link: "/ministries/adult-sabbath-school",
-    note: "Classes for children, youth, and adults in-person",
-    category: "service",
-  },
-  {
-    id: "worship-service",
-    title: "Worship service",
-    cadence: "Celebration via music and preaching",
-    day: "Saturday",
-    time: "11:15 AM",
-    link: "/connect/worship-with-us",
-    note: "Livestream + in-person fellowship",
-    category: "service",
-  },
-  {
-    id: "prayer-meeting",
-    title: "Prayer meeting",
-    cadence: "Midweek prayer, praise, and study",
-    day: "Wednesday",
-    time: "7:00 PM",
-    link: "/connect/prayer",
-    note: "Hybrid gathering with scripture focus",
-    category: "service",
-  },
-  {
-    id: "nar-anon",
-    title: "Nar-Anon",
-    cadence: "Thursdays · 7:00 PM – 8:30 PM in the Mother’s room",
-    day: "Thursday",
-    time: "7:00 PM – 8:30 PM",
-    note: "Support for families and friends affected by addiction",
-    category: "community",
-  },
-  {
-    id: "pathfinders",
-    title: "Pathfinders and Adventurers",
-    cadence: "First and third Sabbath of each month",
-    time: "3:00 PM – 5:00 PM",
-    link: "/ministries/pathfinders",
-    note: "Public",
-    category: "ministry",
-  },
-  {
-    id: "table-talk",
-    title: "Table Talk",
-    cadence: "Second Sabbath of every month",
-    day: "Saturday",
-    note: "Youth and young adult conversations around faith",
-    link: "/ministries/youth-young-adults",
-    category: "ministry",
-  },
-  {
-    id: "board-meeting",
-    title: "Board meeting",
-    cadence: "Second Tuesday of every month",
-    link: "/ministries/board-meeting",
-    note: "Members only",
-    category: "event",
-  },
-  {
-    id: "mens-fellowship",
-    title: "Men's fellowship",
-    cadence: "Fridays · 7:00 PM",
-    day: "Friday",
-    time: "7:00 PM",
-    note: "Bible study, prayer, and brotherhood",
-    category: "service",
-  },
-  {
-    id: "womens-ministry",
-    title: "Women's ministry",
-    cadence: "First Tuesday of every month",
-    link: "/ministries/womens-ministry",
-    note: "Public",
-    category: "ministry",
-  },
-  {
-    id: "community-meal",
-    title: "Free spaghetti dinner",
-    cadence: "Fourth Wednesday each month",
-    link: "/ministries/community-meal-spaghetti",
-    note: "Public outreach meal",
-    category: "community",
-  },
-  {
-    id: "bible-study",
-    title: "Bible study",
-    cadence: "Fourth Sabbath",
-    link: "/ministries/bible-study",
-    note: "Public",
-    category: "ministry",
-  },
-];
-
-export const oneOffEvents: OneOffEvent[] = [];
-
-export type PrayerMeetingDetails = {
-  title: string;
-  day: string;
-  time: string;
-  location: string;
-  zoomUrl: string;
-  dialIn: string;
-  meetingId: string;
-  passcode: string;
-};
-
-const PRAYER_MEETING_ZOOM_URL =
-  import.meta.env.PUBLIC_PRAYER_MEETING_ZOOM_URL ??
-  "https://us02web.zoom.us/j/87430121210?pwd=QVNCRUlXcDdtU2dUSUdrbFdVdDlMUT09";
-
-export const prayerMeetingDetails: PrayerMeetingDetails = {
-  title: "Midweek Prayer Meeting",
-  day: "Wednesday",
-  time: "7:00 PM",
-  location: "Church annex",
-  zoomUrl: PRAYER_MEETING_ZOOM_URL,
-  dialIn: "(646) 558-8656",
-  meetingId: "874 3012 1210",
-  passcode: "487844",
-};
-</file>
-
 <file path="web/src/data/site-links.json">
 {
   "givingUrl": "https://adventistgiving.org/",
@@ -10089,6 +11283,57 @@ import { site } from "../../../data/site";
   description={`Service times, directions, parking, and what to expect when visiting ${site.name}.`}
 >
   <PlanVisitContent />
+</BaseLayout>
+</file>
+
+<file path="web/src/pages/connect/worship-with-us/index.astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Schedule from "../../../components/ui/Schedule.astro";
+import { site } from "../../../data/site";
+import { prayerMeetingDetails } from "../../../data/activities";
+---
+
+<BaseLayout
+  title="Worship With Us"
+  description={`Learn what Sabbath School, Worship Service, and midweek Prayer Meeting are like at ${site.name}.`}
+>
+  <div class="stack">
+    <h1>Worship With Us</h1>
+
+    <Schedule title="Weekly Schedule" items={site.schedule} />
+
+    <section class="card stack--tight">
+      <h2>Sabbath School</h2>
+      <p class="muted">
+        Sabbath School is a Bible study time for all ages, with classes for children and adults.
+      </p>
+    </section>
+
+    <section class="card stack--tight">
+      <h2>Worship Service</h2>
+      <p class="muted">
+        Our worship service includes singing, prayer, Scripture, and a message from the Bible.
+      </p>
+    </section>
+
+    <section class="card stack--tight">
+      <h2>Midweek Prayer Meeting</h2>
+      <p class="muted">
+        Join us midweek for prayer, encouragement, and Bible study.
+      </p>
+      <ul class="muted">
+        <li><strong>When:</strong> {prayerMeetingDetails.day} · {prayerMeetingDetails.time}</li>
+        <li><strong>In person:</strong> {prayerMeetingDetails.location}</li>
+        <li><strong>Online:</strong>
+          <a href={prayerMeetingDetails.zoomUrl} target="_blank" rel="noreferrer">Join via Zoom</a>
+        </li>
+        <li><strong>Dial-in:</strong> {prayerMeetingDetails.dialIn}</li>
+        <li><strong>Meeting ID:</strong> {prayerMeetingDetails.meetingId}</li>
+        <li><strong>Passcode:</strong> {prayerMeetingDetails.passcode}</li>
+      </ul>
+    </section>
+  </div>
 </BaseLayout>
 </file>
 
@@ -10648,6 +11893,61 @@ export const collections = {
   updates,
   verses,
 };
+</file>
+
+<file path="web/astro.config.mjs">
+import cloudflare from "@astrojs/cloudflare";
+import mdx from "@astrojs/mdx";
+import sitemap from "@astrojs/sitemap";
+import compress from "astro-compress";
+import icon from "astro-icon";
+import { defineConfig } from "astro/config";
+
+const site = process.env.PUBLIC_SITE_URL;
+
+async function tryLoadPagefindIntegration() {
+  try {
+    const { default: pagefind } = await import("astro-pagefind");
+    return pagefind();
+  } catch (error) {
+    if (error?.code === "ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING") {
+      console.warn(
+        "[astro-pagefind] Skipping the search integration because Node cannot strip TypeScript in node_modules. " +
+          "Run Node 24 or lower to keep search enabled."
+      );
+      return null;
+    }
+    throw error;
+  }
+}
+
+const pagefindIntegration = await tryLoadPagefindIntegration();
+
+export default defineConfig({
+  // Used for canonical URLs + sitemap/robots generation.
+  // In Cloudflare Pages: set PUBLIC_SITE_URL to your production domain (e.g. https://example.org)
+  site: site ?? "http://localhost:4321",
+  trailingSlash: "never",
+
+  integrations: [
+    mdx(),
+    icon(),
+    compress(),
+    ...(pagefindIntegration ? [pagefindIntegration] : []),
+    sitemap({
+      // Internal site search is not a page you want indexed.
+      filter: (page) => !page.endsWith("/search"),
+    }),
+  ],
+
+  output: "static",
+  adapter: cloudflare(),
+  vite: {
+    ssr: {
+      noExternal: ["@fontsource-variable/inter"],
+    },
+  },
+});
 </file>
 
 <file path="web/src/components/global/Footer.astro">
@@ -11237,6 +12537,157 @@ We proudly display both club insignias so families can recognize the young peopl
 To learn more about our Pathfinders and Adventurers Clubs or to get involved, email [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) or visit our [Contact page](/connect/contact).
 </file>
 
+<file path="web/src/data/activities.ts">
+export type ActivityCategory = "service" | "ministry" | "event" | "community";
+
+export type RecurringActivity = {
+  id: string;
+  title: string;
+  cadence: string;
+  time?: string;
+  day?: string;
+  link?: string;
+  note?: string;
+  category?: ActivityCategory;
+};
+
+export type OneOffEvent = {
+  title: string;
+  start: string;
+  link?: string;
+  note?: string;
+};
+
+export const recurringActivities: RecurringActivity[] = [
+  {
+    id: "sabbath-school",
+    title: "Sabbath School",
+    cadence: "Weekly study groups for every age",
+    day: "Saturday",
+    time: "10:00 AM",
+    link: "/ministries/adult-sabbath-school",
+    note: "Classes for children, youth, and adults in-person",
+    category: "service",
+  },
+  {
+    id: "worship-service",
+    title: "Worship service",
+    cadence: "Celebration via music and preaching",
+    day: "Saturday",
+    time: "11:15 AM",
+    link: "/connect/worship-with-us",
+    note: "Livestream + in-person fellowship",
+    category: "service",
+  },
+  {
+    id: "prayer-meeting",
+    title: "Prayer meeting",
+    cadence: "Midweek prayer, praise, and study",
+    day: "Wednesday",
+    time: "7:00 PM",
+    link: "/connect/prayer",
+    note: "Hybrid gathering with scripture focus",
+    category: "service",
+  },
+  {
+    id: "nar-anon",
+    title: "Nar-Anon",
+    cadence: "Thursdays · 7:00 PM – 8:30 PM in the Mother’s room",
+    day: "Thursday",
+    time: "7:00 PM – 8:30 PM",
+    note: "Support for families and friends affected by addiction",
+    category: "community",
+  },
+  {
+    id: "pathfinders",
+    title: "Pathfinders and Adventurers",
+    cadence: "First and third Sabbath of each month",
+    time: "3:00 PM – 5:00 PM",
+    link: "/ministries/pathfinders",
+    note: "Public",
+    category: "ministry",
+  },
+  {
+    id: "table-talk",
+    title: "Table Talk",
+    cadence: "Second Sabbath of every month",
+    day: "Saturday",
+    note: "Youth and young adult conversations around faith",
+    link: "/ministries/youth-young-adults",
+    category: "ministry",
+  },
+  {
+    id: "board-meeting",
+    title: "Board meeting",
+    cadence: "Second Tuesday of every month",
+    link: "/ministries/board-meeting",
+    note: "Members only",
+    category: "event",
+  },
+  {
+    id: "mens-fellowship",
+    title: "Men's fellowship",
+    cadence: "Fridays · 7:00 PM",
+    day: "Friday",
+    time: "7:00 PM",
+    note: "Bible study, prayer, and brotherhood",
+    category: "service",
+  },
+  {
+    id: "womens-ministry",
+    title: "Women's ministry",
+    cadence: "First Tuesday of every month",
+    link: "/ministries/womens-ministry",
+    note: "Public",
+    category: "ministry",
+  },
+  {
+    id: "community-meal",
+    title: "Free spaghetti dinner",
+    cadence: "Fourth Wednesday each month",
+    link: "/ministries/community-meal-spaghetti",
+    note: "Public outreach meal",
+    category: "community",
+  },
+  {
+    id: "bible-study",
+    title: "Bible study",
+    cadence: "Fourth Sabbath",
+    link: "/ministries/bible-study",
+    note: "Public",
+    category: "ministry",
+  },
+];
+
+export const oneOffEvents: OneOffEvent[] = [];
+
+export type PrayerMeetingDetails = {
+  title: string;
+  day: string;
+  time: string;
+  location: string;
+  zoomUrl: string;
+  dialIn: string;
+  meetingId: string;
+  passcode: string;
+};
+
+const PRAYER_MEETING_ZOOM_URL =
+  import.meta.env.PUBLIC_PRAYER_MEETING_ZOOM_URL ??
+  "https://us02web.zoom.us/j/87430121210?pwd=QVNCRUlXcDdtU2dUSUdrbFdVdDlMUT09";
+
+export const prayerMeetingDetails: PrayerMeetingDetails = {
+  title: "Midweek Prayer Meeting",
+  day: "Wednesday",
+  time: "7:00 PM",
+  location: "Church annex",
+  zoomUrl: PRAYER_MEETING_ZOOM_URL,
+  dialIn: "(646) 558-8656",
+  meetingId: "874 3012 1210",
+  passcode: "487844",
+};
+</file>
+
 <file path="web/src/pages/connect/contact/index.astro">
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
@@ -11357,60 +12808,6 @@ const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAd
     </section>
   </div>
 </BaseLayout>
-</file>
-
-<file path="web/package.json">
-{
-  "name": "web",
-  "type": "module",
-  "version": "0.0.1",
-  "private": true,
-  "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "check": "astro check",
-    "test:e2e": "npm run build && playwright test",
-    "test:e2e:ci": "playwright test",
-    "test:links": "npm run build && linkinator ./dist --config ./linkinator.config.json",
-    "test:links:ci": "linkinator ./dist --config ./linkinator.config.json",
-    "lighthouse": "npm run build && lhci autorun --config=./lighthouserc.cjs",
-    "lighthouse:ci": "lhci autorun --config=./lighthouserc.cjs",
-    "qa": "npm run check && npm run test:e2e && npm run test:links && npm run lighthouse",
-    "format": "prettier --write ."
-  },
-  "dependencies": {
-    "@astrojs/check": "0.9.6",
-    "@astrojs/cloudflare": "12.6.12",
-    "@astrojs/mdx": "^4.3.1",
-    "@astrojs/rss": "^4.0.12",
-    "@astrojs/sitemap": "^3.5.1",
-    "@astrojs/svelte": "^7.0.2",
-    "@fontsource-variable/inter": "^5.2.5",
-    "astro": "^5.4.2",
-    "astro-compress": "^2.3.3",
-    "astro-icon": "^1.1.5",
-    "astro-pagefind": "^1.7.0",
-    "gray-matter": "^4.0.3",
-    "sharp": "^0.34.2",
-    "svelte": "^5.25.3",
-    "zod": "^3.24.2",
-    "node-addon-api": "^8.5.0"
-  },
-  "devDependencies": {
-    "@axe-core/playwright": "^4.11.0",
-    "@lhci/cli": "^0.15.1",
-    "@playwright/test": "^1.51.1",
-    "@types/node": "^22.13.9",
-    "linkinator": "^7.5.0",
-    "prettier": "^3.5.3",
-    "prettier-plugin-astro": "^0.14.1",
-    "prettier-plugin-svelte": "^3.3.3",
-    "typescript": "5.9.3",
-    "node-gyp": "^9.4.1"
-  }
-}
 </file>
 
 <file path="web/playwright.config.ts">
@@ -11572,6 +12969,64 @@ Through these ministries, we aim to help children build faith, grow friendships,
 - https://www.youtube.com/c/adventistchildrensministries
 - https://www.faithfinders.com/god-sent-his-son-to-be-my-friend-bible-study-guides
 - https://www.gracelink.net/podcast
+</file>
+
+<file path="web/package.json">
+{
+  "name": "web",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "patch:yargs-parser": "node scripts/patch-yargs-parser.js",
+    "astro": "npm run patch:yargs-parser && node ./node_modules/astro/astro.js",
+    "dev": "npm run astro -- dev",
+    "start": "npm run dev",
+    "build": "npm run astro -- build",
+    "preview": "npm run astro -- preview",
+    "check": "npm run astro -- check",
+    "test:e2e": "npm run build && playwright test",
+    "test:e2e:ci": "playwright test",
+    "test:links": "npm run build && linkinator ./dist --config ./linkinator.config.json",
+    "test:links:ci": "linkinator ./dist --config=./linkinator.config.json",
+    "lighthouse": "npm run build && lhci autorun --config=./lighthouserc.cjs",
+    "lighthouse:ci": "lhci autorun --config=./lighthouserc.cjs",
+    "qa": "npm run check && npm run test:e2e && npm run test:links && npm run lighthouse",
+    "format": "prettier --write .",
+    "postinstall": "node scripts/patch-yargs-parser.js"
+  },
+  "dependencies": {
+    "@astrojs/check": "0.9.6",
+    "@astrojs/cloudflare": "12.6.12",
+    "@astrojs/mdx": "^4.3.1",
+    "@astrojs/rss": "^4.0.12",
+    "@astrojs/sitemap": "^3.5.1",
+    "@astrojs/svelte": "^7.0.2",
+    "@fontsource-variable/inter": "^5.2.5",
+    "astro": "5.17.2",
+    "astro-compress": "^2.3.3",
+    "astro-icon": "^1.1.5",
+    "astro-pagefind": "^1.7.0",
+    "gray-matter": "^4.0.3",
+    "html-escaper": "3.0.3",
+    "node-addon-api": "^8.5.0",
+    "sharp": "^0.34.2",
+    "svelte": "^5.25.3",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.51.1",
+    "@types/node": "^22.13.9",
+    "linkinator": "^7.5.0",
+    "node-gyp": "^9.4.1",
+    "prettier": "^3.5.3",
+    "prettier-plugin-astro": "^0.14.1",
+    "prettier-plugin-svelte": "^3.3.3",
+    "typescript": "5.9.3"
+  }
+}
 </file>
 
 <file path="web/src/layouts/BaseLayout.astro">
@@ -12039,9 +13494,9 @@ type RosterMember = TeamMember & { section: TeamSection };
 
 const teamRoster: RosterMember[] = [
   { role: "Pastor", name: PASTOR_NAME, email: PUBLIC_EMAIL, section: "leadership" },
-  { role: "Head Elder", name: "Elder Trevor Crossfield", email: PUBLIC_EMAIL, section: "leadership" },
-  { role: "Head Deacon", name: "Church Office", email: PUBLIC_EMAIL, section: "leadership" },
-  { role: "Head Deaconess", name: "Melinda Lajoie", email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Head Elder", name: "Elder Paul Moulema", email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Head Deacon", name: "Elder Trevor Crossfield", email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Head Deaconess", name: "Belinda Behnava", email: PUBLIC_EMAIL, section: "leadership" },
   { role: "Church Clerk", name: "Myrna L Leiper", email: PUBLIC_EMAIL, section: "leadership" },
   { role: "Assistant Bulletin Secretary", name: "Loreli Gaetki", email: PUBLIC_EMAIL, section: "leadership" },
   {
@@ -12050,8 +13505,8 @@ const teamRoster: RosterMember[] = [
     email: PUBLIC_EMAIL,
     section: "leadership",
   },
-  { role: "Stewardship", name: "Dan Hayes", email: PUBLIC_EMAIL, section: "leadership" },
-  { role: "Treasurer", name: "Church Office", email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Stewardship", name: "Melinda Lajoie", email: PUBLIC_EMAIL, section: "leadership" },
+  { role: "Treasurer", name: "Dan Hayes", email: PUBLIC_EMAIL, section: "leadership" },
   {
     role: "Children’s Ministry",
     name: "Giselle Davey",
@@ -12089,16 +13544,16 @@ const teamRoster: RosterMember[] = [
     email: PUBLIC_EMAIL,
     section: "ministries",
   },
-  { role: "Media & Audio Visual", name: "Josue Marrero", email: PUBLIC_EMAIL, section: "ministries" },
-  { role: "Prayer Ministry", name: "Bernice McKenzie", email: PUBLIC_EMAIL, section: "ministries" },
+  { role: "Audiovisual", name: "Josue Marrero", email: PUBLIC_EMAIL, section: "ministries" },
+  { role: "Prayer Ministry", name: "Anthia Elliott", email: PUBLIC_EMAIL, section: "ministries" },
   {
     role: "Social Committee",
-    name: "Teddy Williamson · David McKenzie",
+    name: "Belinda Behnava",
     email: PUBLIC_EMAIL,
     section: "ministries",
   },
   { role: "Health Ministry", name: "Gary Peiffer", email: PUBLIC_EMAIL, section: "ministries" },
-  { role: "Communications", name: "Belinda Behnava · David McKenzie", email: PUBLIC_EMAIL, section: "ministries" },
+  { role: "Communications", name: "Belinda Behnava", email: PUBLIC_EMAIL, section: "ministries" },
   { role: "Music Director", name: "Berline Guirand", email: PUBLIC_EMAIL, section: "ministries" },
 ];
 
