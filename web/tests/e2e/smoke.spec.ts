@@ -3,9 +3,13 @@ import { test, expect } from "@playwright/test";
 test.describe("Smoke - cross browser", () => {
   test("home renders primary navigation and CTA", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("header")).toBeVisible();
-    await expect(page.getByRole("link", { name: /watch live/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /give/i })).toBeVisible();
+    await expect(page.locator("header.site-header")).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Watch Live", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Give", exact: true }),
+    ).toBeVisible();
   });
 
   test("plan a visit page loads key content", async ({ page }) => {

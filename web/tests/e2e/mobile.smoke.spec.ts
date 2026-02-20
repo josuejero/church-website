@@ -5,9 +5,15 @@ test.describe("Smoke - mobile device", () => {
     page,
   }) => {
     await page.goto("/");
-    await expect(page.locator("header nav")).toBeVisible();
-    await expect(page.getByRole("link", { name: /give/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /watch live/i })).toBeVisible();
+    await expect(
+      page.locator("header.site-header nav.nav--desktop"),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Give", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Watch Live", exact: true }),
+    ).toBeVisible();
   });
 
   test("visit page loads key content and CTA", async ({ page }) => {
