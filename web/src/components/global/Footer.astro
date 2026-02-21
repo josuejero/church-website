@@ -238,6 +238,17 @@ const accessibilityHref = "/accessibility";
     gap: var(--space-2);
   }
 
+  .line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: baseline;
+  }
+
+  .line span {
+    min-width: 0;
+  }
+
   .line .day,
   .line .time,
   .line .label {
@@ -267,6 +278,19 @@ const accessibilityHref = "/accessibility";
     flex-wrap: wrap;
     gap: var(--space-3);
     margin-top: var(--space-1);
+  }
+
+  @media (max-width: 780px) {
+    .line {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .line .day,
+    .line .time,
+    .line .label {
+      white-space: normal;
+    }
   }
 
   @media (max-width: 520px) {

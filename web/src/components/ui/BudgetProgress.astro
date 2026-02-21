@@ -1,6 +1,8 @@
 ---
 import budget from "../../data/budget.json";
 
+const { embedded = false } = Astro.props;
+
 const { goal = 0, received = 0, updatedAt } = budget;
 const normalizedGoal = Math.max(0, goal);
 const normalizedReceived = Math.max(0, received);
@@ -27,7 +29,7 @@ const formattedUpdatedAt = updatedAt
   : null;
 ---
 
-<section class="budget-progress card" aria-label="Budget progress widget">
+<section class:list={["budget-progress", !embedded && "card"]} aria-label="Budget progress widget">
   <div class="budget-progress__heading">
     <p class="muted">Annual operating budget</p>
     <h2>Budget progress</h2>

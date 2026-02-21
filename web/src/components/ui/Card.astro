@@ -37,7 +37,7 @@ const classes = ["card", variant === "featured" ? "card--featured" : null, href 
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
-    min-height: 160px;
+    min-height: var(--card-min-height, auto);
     justify-content: space-between;
   }
 

@@ -99,7 +99,7 @@
   --color-muted: var(--color-text-muted);
 
   /* Semantic colors */
-  --color-info-border: #d6b5b8; /* brand-tinted info */
+  --color-info-border: #8a1f24; /* stronger, brand-tinted info accent */
   --color-info-bg: #fbf3f4;
 
   --color-warn-border: #f59e0b;
