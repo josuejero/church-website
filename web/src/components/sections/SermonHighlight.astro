@@ -1,5 +1,6 @@
 ---
 import Button from "../ui/Button.astro";
+import SectionHeading from "../ui/SectionHeading.astro";
 import YouTubeEmbed from "../media/YouTubeEmbed.astro";
 import videos from "../../data/videos.json";
 import { site } from "../../data/site";
@@ -34,9 +35,7 @@ const youtubeHref = hasYouTube ? site.portals.youtubeChannelUrl : "/media/videos
 ---
 
 <section class="stack">
-  <header class="section-heading">
-    <h2 class="section-heading__title">{title}</h2>
-  </header>
+  <SectionHeading title={title} />
 
   {!latest ? (
     <p class="muted">No videos are listed yet.</p>

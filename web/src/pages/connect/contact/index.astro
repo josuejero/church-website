@@ -38,7 +38,7 @@ const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAd
 
       <div class="cluster">
         <Button href={site.contact.mapsUrl} external variant="secondary">Open in Maps</Button>
-        <Button href="/connect/plan-a-visit" variant="ghost">Plan a Visit</Button>
+        <Button href="/connect/plan-a-visit" variant="tertiary">Plan a Visit</Button>
       </div>
       </section>
 
@@ -87,12 +87,12 @@ const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAd
 
       <div class="cluster">
         <Button href="/media/live" variant="secondary">Watch Live</Button>
-        <Button href="/give" variant="ghost">Give</Button>
+        <Button href="/give" variant="tertiary">Give</Button>
         {hasYouTube ? (
-          <Button href={site.portals.youtubeChannelUrl} external variant="ghost">YouTube</Button>
+          <Button href={site.portals.youtubeChannelUrl} external variant="tertiary">YouTube</Button>
         ) : null}
         {hasFacebook ? (
-          <Button href={site.portals.facebookUrl} external variant="ghost">Facebook</Button>
+          <Button href={site.portals.facebookUrl} external variant="tertiary">Facebook</Button>
         ) : null}
       </div>
     </section>

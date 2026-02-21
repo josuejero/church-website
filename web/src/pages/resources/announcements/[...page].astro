@@ -82,8 +82,8 @@ const rssUrl = "/resources/announcements/rss.xml";
     )}
 
     <div class="cluster--between pagination">
-      {showPrev ? <Button href={prevHref} variant="ghost">Newer announcements</Button> : <span />}
-      {showNext ? <Button href={nextHref} variant="ghost">Older announcements</Button> : null}
+      {showPrev ? <Button href={prevHref} variant="tertiary">Newer announcements</Button> : <span />}
+      {showNext ? <Button href={nextHref} variant="tertiary">Older announcements</Button> : null}
     </div>
 
     <section class="card stack--tight">
@@ -105,7 +105,7 @@ const rssUrl = "/resources/announcements/rss.xml";
 
     <div class="cluster">
       <Button href="/resources/announcements" variant="secondary">Back to current announcements</Button>
-      <Button href={updatesUrl} variant="ghost">Visit updates page</Button>
+      <Button href={updatesUrl} variant="tertiary">Visit updates page</Button>
     </div>
   </div>
 </BaseLayout>

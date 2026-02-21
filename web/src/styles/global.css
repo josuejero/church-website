@@ -36,15 +36,16 @@ img {
 }
 
 a {
-  color: var(--color-primary);
+  color: var(--color-primary-link);
+  font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 0.18em;
-  text-decoration-thickness: 0.12em;
+  text-decoration-thickness: 0.16em;
 }
 
 a:hover {
   color: var(--color-primary-hover);
-  text-decoration-thickness: 0.14em;
+  text-decoration-thickness: 0.19em;
 }
 
 /* Focus styles (WCAG-friendly: visible, thick enough, offset from element) */
@@ -133,6 +134,22 @@ p {
   gap: var(--space-4);
 }
 
+.section-heading__copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.section-heading__action {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+.section-heading__action > * {
+  flex-shrink: 0;
+}
+
 .section-heading__title {
   margin: 0;
 }
@@ -161,9 +178,15 @@ hr {
   border-radius: var(--radius-4);
   padding: var(--space-6);
   box-shadow: var(--shadow-1);
+  transition: box-shadow 180ms ease, border-color 180ms ease, transform 180ms ease;
 }
 
 .card--muted { background: var(--color-surface-muted); }
+
+.card--featured {
+  box-shadow: var(--shadow-2);
+  border-color: color-mix(in oklab, var(--color-border) 72%, var(--color-primary) 28%);
+}
 
 .card--link {
   display: block;
@@ -184,9 +207,11 @@ hr {
 }
 
 .link {
-  color: var(--color-primary);
+  color: var(--color-primary-link);
+  font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 0.18em;
+  text-decoration-thickness: 0.19em;
 }
 
 /* Badges + chips (used in /components and content pages) */

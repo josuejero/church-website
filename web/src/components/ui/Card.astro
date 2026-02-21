@@ -3,14 +3,16 @@ type Props = {
   title: string;
   description?: string;
   href?: string;
+  variant?: "standard" | "featured";
 };
 
-const { title, description, href } = Astro.props as Props;
+const { title, description, href, variant = "standard" } = Astro.props as Props;
 const hasDescription = Boolean(description?.trim?.());
+const classes = ["card", variant === "featured" ? "card--featured" : null, href ? "card--link" : ""].filter(Boolean).join(" ");
 ---
 
 {href ? (
-  <a class="card card--link" href={href} aria-label={title}>
+  <a class={classes} href={href} aria-label={title}>
     <div class="card__body">
       <div>
         <div class="card__title">{title}</div>
@@ -20,7 +22,7 @@ const hasDescription = Boolean(description?.trim?.());
     </div>
   </a>
 ) : (
-  <div class="card">
+  <div class={classes}>
     <div class="card__body">
       <div>
         <div class="card__title">{title}</div>

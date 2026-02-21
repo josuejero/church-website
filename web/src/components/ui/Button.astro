@@ -1,5 +1,5 @@
 ---
-export type Variant = "primary" | "secondary" | "ghost";
+export type Variant = "primary" | "secondary" | "tertiary" | "ghost";
 export type Size = "sm" | "md" | "lg";
 
 type Props = {
@@ -85,9 +85,24 @@ const className = `btn btn--${variant} btn--${size}`;
     background: var(--color-gray-100);
   }
 
+  .btn--tertiary {
+    background: transparent;
+    border-color: transparent;
+    color: var(--color-primary-link);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+    text-decoration-thickness: 0.18em;
+  }
+
+  .btn--tertiary:hover {
+    color: var(--color-primary-hover);
+    text-decoration-thickness: 0.21em;
+  }
+
   .btn--ghost {
     background: transparent;
     border-color: var(--color-border);
+    color: var(--color-primary);
   }
 
   .btn--ghost:hover {

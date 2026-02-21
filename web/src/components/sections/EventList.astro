@@ -1,6 +1,7 @@
 ---
 import Button from "../ui/Button.astro";
 import ContentCard from "../content/ContentCard.astro";
+import SectionHeading from "../ui/SectionHeading.astro";
 import { getCollection } from "astro:content";
 import { site } from "../../data/site";
 
@@ -30,14 +31,13 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
 ---
 
 <section class="stack">
-  <header class="section-heading section-heading--horizontal cluster cluster--between cluster--baseline">
-    <h2 class="section-heading__title">{title}</h2>
+  <SectionHeading title={title}>
     {showViewAll && (
-      <a class="link" href="/events">
+      <Button slot="action" variant="tertiary" href="/events">
         View all
-      </a>
+      </Button>
     )}
-  </header>
+  </SectionHeading>
 
   {upcoming.length === 0 ? (
     <div class="card card--muted event-empty-state stack--tight">
@@ -55,7 +55,7 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
       </div>
       <div class="event-empty-state__actions cluster cluster--loose">
         <Button variant="secondary" href="/events">View calendar</Button>
-        <Button variant="ghost" href="/connect/contact">Contact us</Button>
+        <Button variant="tertiary" href="/connect/contact">Contact us</Button>
       </div>
     </div>
   ) : (

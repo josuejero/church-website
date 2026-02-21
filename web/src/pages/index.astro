@@ -8,6 +8,7 @@ import HighlightsScroller from "../components/ui/HighlightsScroller.astro";
 import PrayerMeetingCallout from "../components/sections/PrayerMeetingCallout.astro";
 import RecurringActivities from "../components/sections/RecurringActivities.astro";
 import SermonHighlight from "../components/sections/SermonHighlight.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
 import { Image } from "astro:assets";
 import { site } from "../data/site";
 import heroBg from "../assets/photos/first-springfield-exterior.png";
@@ -98,13 +99,11 @@ const ministryCards = [
       class="home-grid__section home-grid__cards home-grid__cards--ministries"
     />
 
-    <section class="stack home-grid__section home-grid__giving" aria-label="Giving">
-      <header class="section-heading">
-        <h2 class="section-heading__title">Giving</h2>
-        <p class="section-heading__subtitle">
-          Support First Springfield’s ministries through faithful giving—every gift helps us worship, serve, and reach our neighbors.
-        </p>
-      </header>
+    <section class="stack home-grid__section home-grid__giving card card--featured" aria-label="Giving">
+      <SectionHeading
+        title="Giving"
+        subtitle="Support First Springfield’s ministries through faithful giving—every gift helps us worship, serve, and reach our neighbors."
+      />
 
       <BudgetProgress />
 
@@ -127,7 +126,7 @@ const ministryCards = [
       </div>
 
       <div class="photo-montage__grid">
-        <article class="photo-card">
+        <article class="card photo-card">
           <Image
             src={heroBg}
             alt="First Springfield Church exterior bathed in daylight"
@@ -143,7 +142,7 @@ const ministryCards = [
           </div>
         </article>
 
-        <article class="photo-card">
+        <article class="card photo-card">
           <Image
             src={bridgeDusk}
             alt="The church and bridge illuminated at dusk"
@@ -234,11 +233,6 @@ const ministryCards = [
 
   .home-grid__giving {
     gap: var(--space-4);
-    padding: var(--space-6);
-    border-radius: var(--radius-3);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    box-shadow: var(--shadow-2);
   }
 
   .home-grid__giving-copy {
@@ -274,11 +268,8 @@ const ministryCards = [
   }
 
   .photo-card {
-    border-radius: var(--radius-3);
-    border: 1px solid var(--color-border);
+    padding: 0;
     overflow: hidden;
-    background: var(--color-surface);
-    box-shadow: var(--shadow-2);
     display: flex;
     flex-direction: column;
   }
@@ -296,7 +287,8 @@ const ministryCards = [
 
   .photo-card__caption h3 {
     margin: 0 0 0.35rem;
-    font-size: 1.1rem;
+    font-size: var(--type-scale-h3-size);
+    line-height: var(--type-scale-h3-line-height);
   }
 
   .photo-card__caption p {

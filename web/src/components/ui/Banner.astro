@@ -26,7 +26,7 @@ const toneClass = tone === "warn" ? "banner--warn" : "banner--info";
   <div class="banner__inner">
     <div class="banner__msg">{message}</div>
     {ctaLabel && ctaHref ? (
-      <Button href={ctaHref} variant="ghost" size="sm" external={ctaExternal}>
+      <Button href={ctaHref} variant="tertiary" size="sm" external={ctaExternal}>
         {ctaLabel}
       </Button>
     ) : null}

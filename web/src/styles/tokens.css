@@ -72,6 +72,7 @@
 
   /* Optional deeper shade (used for gradients / emphasis) */
   --color-primary-700: #3b0d12;
+  --color-primary-link: var(--color-primary-700);
 
   /* Neutrals */
   --color-black: #0b0f17;

@@ -1,0 +1,27 @@
+---
+type Props = {
+  title?: string;
+  subtitle?: string;
+};
+
+const { title, subtitle } = Astro.props as Props;
+const hasTitle = Boolean(title?.trim());
+const hasSubtitle = Boolean(subtitle?.trim());
+const hasActionSlot = Boolean(Astro.slots?.action);
+const shouldRender = hasTitle || hasSubtitle || hasActionSlot;
+const classes = ["section-heading", hasActionSlot ? "section-heading--horizontal" : ""].filter(Boolean).join(" ");
+---
+
+{shouldRender && (
+  <header class={classes}>
+    <div class="section-heading__copy">
+      {hasTitle && <h2 class="section-heading__title">{title}</h2>}
+      {hasSubtitle && <p class="section-heading__subtitle">{subtitle}</p>}
+    </div>
+    {hasActionSlot && (
+      <div class="section-heading__action">
+        <slot name="action" />
+      </div>
+    )}
+  </header>
+)}

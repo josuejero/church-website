@@ -191,7 +191,11 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     color: var(--color-text);
     font-weight: 600;
     text-decoration: none;
-    padding: 0.2rem 0.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--target-min);
+    padding: 0.45rem 0.85rem;
     border-radius: var(--radius-2);
   }
 
@@ -226,7 +230,7 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
   .nav {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: var(--space-3);
     justify-content: center;
     flex-wrap: wrap;
   }
@@ -239,7 +243,9 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     color: inherit;
     font-weight: 700;
     opacity: 0.9;
-    padding: 0.55rem 0.7rem;
+    padding: 0.65rem 0.9rem;
+    min-width: var(--target-min);
+    justify-content: center;
     border-radius: 999px;
   }
 
@@ -283,7 +289,7 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     list-style: none;
     cursor: pointer;
     user-select: none;
-    padding: 0.55rem 0.7rem;
+    padding: 0.65rem 0.9rem;
     border-radius: 999px;
     border: 1px solid var(--color-border);
     background: var(--color-white);
@@ -292,6 +298,7 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     gap: var(--space-2);
     font-weight: 700;
     min-height: var(--target-min);
+    min-width: var(--target-min);
   }
 
   .menu__summary::-webkit-details-marker {
