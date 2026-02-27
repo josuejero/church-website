@@ -28,7 +28,10 @@ const {
 const hasMetaSlot = Boolean(Astro.slots?.meta);
 ---
 
-<section class="heroBanner fullbleed" style={`--hero-object-position:${objectPosition};`}>
+<section
+  class="heroBanner fullbleed"
+  style={`--hero-object-position:${objectPosition};`}
+>
   <div class="heroBanner__media" aria-hidden="true">
     <Image
       src={background}
@@ -53,13 +56,14 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
 <style>
   .heroBanner {
     position: relative;
-    min-height: clamp(70vh, 78vh, 95vh);
+    min-height: clamp(30rem, 68vh, 48rem);
     border-bottom: 1px solid var(--color-border);
     overflow: hidden;
     --hero-border-radius: var(--radius-4);
     border-radius: var(--hero-border-radius);
     --hero-content-offset-x: clamp(var(--space-4), 3vw, var(--space-7));
     --hero-content-offset-y: clamp(var(--space-5), 5vw, var(--space-7));
+    background: linear-gradient(180deg, #202937 0%, #111827 100%);
   }
 
   .heroBanner__media {
@@ -74,7 +78,7 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
     height: 100%;
     object-fit: cover;
     object-position: var(--hero-object-position);
-    transform: scale(1.02);
+    transform: scale(1.015);
     border-radius: inherit;
   }
 
@@ -83,13 +87,13 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
     inset: 0;
     border-radius: inherit;
     background: linear-gradient(
-      180deg,
-      rgba(8, 11, 18, 0.75) 0%,
-      rgba(11, 15, 23, 0.68) 45%,
-      rgba(11, 15, 23, 0.85) 100%
+      165deg,
+      rgba(10, 14, 24, 0.68) 0%,
+      rgba(12, 17, 27, 0.58) 40%,
+      rgba(12, 17, 27, 0.85) 100%
     );
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(2px) saturate(112%);
+    -webkit-backdrop-filter: blur(2px) saturate(112%);
   }
 
   .heroBanner__content {
@@ -97,27 +101,36 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
     z-index: 1;
     display: flex;
     justify-content: flex-start;
-    align-items: center;
+    align-items: flex-end;
     width: 100%;
     min-height: 100%;
     padding: var(--hero-content-offset-y) var(--hero-content-offset-x);
   }
 
   /* Keep the existing “card” look, but make it sit nicely on the photo */
-:global(.heroBanner .hero.card) {
-    background: rgba(255, 255, 255, 0.95);
+  :global(.heroBanner .hero.card) {
+    background: linear-gradient(
+      170deg,
+      rgba(255, 255, 255, 0.94) 0%,
+      rgba(255, 255, 255, 0.9) 100%
+    );
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-color: var(--color-border);
+    border-color: color-mix(
+      in oklab,
+      var(--color-border) 72%,
+      var(--color-primary) 28%
+    );
     border-radius: var(--radius-4);
-    box-shadow: var(--shadow-1);
-    max-width: min(440px, 100%);
+    box-shadow: var(--shadow-2);
+    width: 100%;
+    max-width: none;
     padding: var(--space-6);
   }
 
   @media (max-width: 720px) {
     .heroBanner {
-      min-height: clamp(18rem, 42vh, 26rem);
+      min-height: clamp(21rem, 48vh, 30rem);
       --hero-content-offset-x: var(--space-4);
       --hero-content-offset-y: var(--space-4);
       --hero-object-position: 50% 50%;

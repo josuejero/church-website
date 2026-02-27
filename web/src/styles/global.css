@@ -25,7 +25,16 @@ body {
 body {
   font-family: var(--font-family-sans);
   color: var(--color-text);
-  background: var(--color-surface);
+  background: linear-gradient(
+    180deg,
+    color-mix(
+        in oklab,
+        var(--color-surface-muted) 72%,
+        var(--color-surface) 28%
+      )
+      0%,
+    var(--color-surface) 18rem
+  );
   font-size: var(--type-scale-body-size);
   line-height: var(--type-scale-body-line-height);
 }
@@ -49,13 +58,31 @@ a:hover {
 }
 
 /* Focus styles (WCAG-friendly: visible, thick enough, offset from element) */
-:where(a, button, summary, input, select, textarea, [role="button"], [tabindex]):focus-visible {
+:where(
+  a,
+  button,
+  summary,
+  input,
+  select,
+  textarea,
+  [role="button"],
+  [tabindex]
+):focus-visible {
   outline: var(--focus-ring);
   outline-offset: 3px;
 }
 
 /* Prevent accidental focus rings when clicking */
-:where(a, button, summary, input, select, textarea, [role="button"], [tabindex]):focus:not(:focus-visible) {
+:where(
+    a,
+    button,
+    summary,
+    input,
+    select,
+    textarea,
+    [role="button"],
+    [tabindex]
+  ):focus:not(:focus-visible) {
   outline: none;
 }
 
@@ -68,7 +95,7 @@ a:hover {
 }
 
 .main {
-  padding: var(--space-8) 0;
+  padding: clamp(var(--space-6), 3.4vw, var(--space-10)) 0;
 }
 
 h1,
@@ -125,7 +152,7 @@ p {
 .section-heading {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 0.4rem;
   margin: 0;
 }
 
@@ -155,18 +182,26 @@ p {
 
 .section-heading__title {
   margin: 0;
+  font-size: clamp(1.45rem, 1.2rem + 0.86vw, 1.9rem);
+  line-height: 1.2;
 }
 
 .section-heading__subtitle {
   margin: 0;
   color: var(--color-text-muted);
-  font-size: var(--type-scale-body-size);
-  line-height: var(--type-scale-body-line-height);
+  font-size: clamp(0.98rem, 0.95rem + 0.2vw, 1.08rem);
+  line-height: 1.58;
 }
-.muted { color: var(--color-text-muted); }
-.center { text-align: center; }
+.muted {
+  color: var(--color-text-muted);
+}
+.center {
+  text-align: center;
+}
 
-button { font: inherit; }
+button {
+  font: inherit;
+}
 
 hr {
   border: 0;
@@ -177,31 +212,50 @@ hr {
 /* Card utility */
 .card {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid
+    color-mix(in oklab, var(--color-border) 84%, var(--color-primary) 16%);
   border-radius: var(--radius-4);
   padding: var(--space-6);
-  box-shadow: var(--shadow-1);
-  transition: box-shadow 180ms ease, border-color 180ms ease, transform 180ms ease;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 10px 22px rgba(0, 0, 0, 0.05);
+  transition:
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
 }
 
-.card--muted { background: var(--color-surface-muted); }
+.card--muted {
+  background: var(--color-surface-muted);
+}
 
 .card--featured {
   box-shadow: var(--shadow-2);
-  border-color: color-mix(in oklab, var(--color-border) 72%, var(--color-primary) 28%);
+  border-color: color-mix(
+    in oklab,
+    var(--color-border) 72%,
+    var(--color-primary) 28%
+  );
 }
 
 .card--link {
   display: block;
   color: inherit;
   text-decoration: none;
-  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
 }
 
 .card--link:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-2);
-  border-color: color-mix(in oklab, var(--color-border) 70%, var(--color-primary) 30%);
+  border-color: color-mix(
+    in oklab,
+    var(--color-border) 70%,
+    var(--color-primary) 30%
+  );
 }
 
 .card--link:focus-visible {
@@ -234,8 +288,16 @@ hr {
 }
 
 .badge--primary {
-  border-color: color-mix(in oklab, var(--color-primary) 45%, var(--color-border) 55%);
-  background: color-mix(in oklab, var(--color-primary) 8%, var(--color-surface) 92%);
+  border-color: color-mix(
+    in oklab,
+    var(--color-primary) 45%,
+    var(--color-border) 55%
+  );
+  background: color-mix(
+    in oklab,
+    var(--color-primary) 8%,
+    var(--color-surface) 92%
+  );
   color: var(--color-primary);
 }
 
@@ -279,7 +341,9 @@ hr {
   gap: var(--space-1);
 }
 
-.form label { font-weight: 700; }
+.form label {
+  font-weight: 700;
+}
 
 .form :where(input, select, textarea) {
   border: 1px solid var(--color-border);
@@ -317,16 +381,24 @@ hr {
 }
 
 /* Prose / rich text */
-.prose > * { margin: 0; }
-.prose > * + * { margin-top: var(--space-4); }
+.prose > * {
+  margin: 0;
+}
+.prose > * + * {
+  margin-top: var(--space-4);
+}
 
 .prose :where(h2, h3, h4) {
   margin-top: var(--space-6);
   margin-bottom: var(--space-2);
 }
 
-.prose :where(ul, ol) { padding-left: 1.4rem; }
-.prose :where(li + li) { margin-top: var(--space-2); }
+.prose :where(ul, ol) {
+  padding-left: 1.4rem;
+}
+.prose :where(li + li) {
+  margin-top: var(--space-2);
+}
 
 .prose :where(blockquote) {
   margin-left: 0;
@@ -336,7 +408,9 @@ hr {
 }
 
 .prose :where(code) {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
   font-size: 0.95em;
   padding: 0.1rem 0.3rem;
   border-radius: 0.4rem;
@@ -383,15 +457,25 @@ hr {
 /* Layout utilities */
 .stack,
 .stack--tight,
-.stack--loose { display: grid; }
+.stack--loose {
+  display: grid;
+}
 
-.stack { gap: var(--space-6); }
-.stack--tight { gap: var(--space-2); }
-.stack--loose { gap: var(--space-8); }
+.stack {
+  gap: var(--space-6);
+}
+.stack--tight {
+  gap: var(--space-2);
+}
+.stack--loose {
+  gap: var(--space-8);
+}
 
 .stack > *,
 .stack--tight > *,
-.stack--loose > * { margin: 0; }
+.stack--loose > * {
+  margin: 0;
+}
 
 .cluster {
   display: flex;
@@ -400,11 +484,20 @@ hr {
   gap: var(--space-3);
 }
 
-.cluster--between { justify-content: space-between; }
-.cluster--baseline { align-items: baseline; }
-.cluster--loose { gap: var(--space-4); }
+.cluster--between {
+  justify-content: space-between;
+}
+.cluster--baseline {
+  align-items: baseline;
+}
+.cluster--loose {
+  gap: var(--space-4);
+}
 
-.grid { display: grid; gap: var(--space-4); }
+.grid {
+  display: grid;
+  gap: var(--space-4);
+}
 
 .grid--cards {
   display: grid;
@@ -426,7 +519,9 @@ hr {
   z-index: 999;
 }
 
-.skip-link:focus { transform: translateY(0); }
+.skip-link:focus {
+  transform: translateY(0);
+}
 
 @media (max-width: 860px) {
   :root {

@@ -1,6 +1,9 @@
 ---
 import { oneOffEvents, recurringActivities } from "../../data/activities";
-import type { ActivityCategory, RecurringActivity } from "../../data/activities";
+import type {
+  ActivityCategory,
+  RecurringActivity,
+} from "../../data/activities";
 import { site } from "../../data/site";
 import SectionHeading from "../ui/SectionHeading.astro";
 
@@ -16,15 +19,16 @@ const now = new Date();
 const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 const fmtDate = new Intl.DateTimeFormat(site.locale, {
   dateStyle: "medium",
-  timeZone: site.timeZone
+  timeZone: site.timeZone,
 });
 const fmtDateTime = new Intl.DateTimeFormat(site.locale, {
   dateStyle: "medium",
   timeStyle: "short",
-  timeZone: site.timeZone
+  timeZone: site.timeZone,
 });
 
-const isFilled = (value?: string) => Boolean(value && value.trim() && value !== "TBD");
+const isFilled = (value?: string) =>
+  Boolean(value && value.trim() && value !== "TBD");
 const cleanedRecurring = recurringActivities.filter((activity) => {
   const title = activity.title?.trim();
   if (!title || title.toLowerCase().startsWith("etc")) {
@@ -39,7 +43,7 @@ const oneOffUpcoming = oneOffEvents
     return {
       ...event,
       startAt,
-      hasTime: event.start.includes("T")
+      hasTime: event.start.includes("T"),
     };
   })
   .filter((event) => {
@@ -68,7 +72,7 @@ const recurringGroupOrder: (ActivityCategory | "other")[] = [
   "ministry",
   "community",
   "event",
-  "other"
+  "other",
 ];
 
 const activityGroupLabels: Record<ActivityCategory | "other", string> = {
@@ -76,10 +80,12 @@ const activityGroupLabels: Record<ActivityCategory | "other", string> = {
   ministry: "Study & discipleship",
   community: "Community & outreach",
   event: "Special events",
-  other: "Other gatherings"
+  other: "Other gatherings",
 };
 
-const groupedRecurring = cleanedRecurring.reduce<Record<ActivityCategory | "other", RecurringActivity[]>>(
+const groupedRecurring = cleanedRecurring.reduce<
+  Record<ActivityCategory | "other", RecurringActivity[]>
+>(
   (groups, activity) => {
     const key = (activity.category ?? "other") as ActivityCategory | "other";
     if (!groups[key]) {
@@ -88,16 +94,19 @@ const groupedRecurring = cleanedRecurring.reduce<Record<ActivityCategory | "othe
     groups[key].push(activity);
     return groups;
   },
-  {} as Record<ActivityCategory | "other", RecurringActivity[]>
+  {} as Record<ActivityCategory | "other", RecurringActivity[]>,
 );
 
-const activeRecurringGroups = recurringGroupOrder.filter((groupKey) => groupedRecurring[groupKey]?.length);
+const activeRecurringGroups = recurringGroupOrder.filter(
+  (groupKey) => groupedRecurring[groupKey]?.length,
+);
 
 const describeRecurringActivity = (activity: RecurringActivity) => {
   const scheduleLine = buildScheduleLine(activity);
   const cadence = activity.cadence?.trim();
   const schedule = scheduleLine || cadence || "Details coming soon";
-  const metadata = scheduleLine && cadence && cadence !== scheduleLine ? cadence : undefined;
+  const metadata =
+    scheduleLine && cadence && cadence !== scheduleLine ? cadence : undefined;
   return { schedule, metadata };
 };
 ---
@@ -105,73 +114,82 @@ const describeRecurringActivity = (activity: RecurringActivity) => {
 <section class="stack">
   <SectionHeading title={title} subtitle={subtitle} />
 
-  {oneOffUpcoming.length > 0 && (
-    <div class="activity-section stack--tight">
-      <h3 class="activity-section__title">One-off events</h3>
-      <div class="activity-list" role="list">
-        {oneOffUpcoming.map((event) => (
-          <article class="activity-card" role="listitem">
-            <p class="activity-card__schedule">
-              {event.hasTime ? fmtDateTime.format(event.startAt) : fmtDate.format(event.startAt)}
-            </p>
-            <div class="activity-card__heading">
-              {event.link ? (
-                <a class="activity-card__title" href={event.link}>
-                  {event.title}
-                </a>
-              ) : (
-                <span class="activity-card__title">{event.title}</span>
+  {
+    oneOffUpcoming.length > 0 && (
+      <div class="activity-section stack--tight">
+        <h3 class="activity-section__title">One-off events</h3>
+        <div class="activity-list" role="list">
+          {oneOffUpcoming.map((event) => (
+            <article class="activity-card" role="listitem">
+              <p class="activity-card__schedule">
+                {event.hasTime
+                  ? fmtDateTime.format(event.startAt)
+                  : fmtDate.format(event.startAt)}
+              </p>
+              <div class="activity-card__heading">
+                {event.link ? (
+                  <a class="activity-card__title" href={event.link}>
+                    {event.title}
+                  </a>
+                ) : (
+                  <span class="activity-card__title">{event.title}</span>
+                )}
+              </div>
+              {showNotes && event.note && (
+                <p class="activity-card__note">{event.note}</p>
               )}
-            </div>
-            {showNotes && event.note && (
-              <p class="activity-card__note">{event.note}</p>
-            )}
-          </article>
-        ))}
+            </article>
+          ))}
+        </div>
       </div>
-    </div>
-  )}
+    )
+  }
 
-  {activeRecurringGroups.length > 0 && (
-    <div class="activity-section stack--tight">
-      <h3 class="activity-section__title">Recurring activities</h3>
-      {activeRecurringGroups.map((groupKey) => {
-        const activities = groupedRecurring[groupKey] ?? [];
-        return (
-          <div class="activity-group">
-            <h4 class="activity-group__heading">
-              {activityGroupLabels[groupKey] ?? "Activities"}
-            </h4>
-            <div class="activity-list" role="list">
-              {activities.map((activity) => {
-                const { schedule, metadata } = describeRecurringActivity(activity);
-                return (
-                  <article class="activity-card" role="listitem">
-                    <p class="activity-card__schedule">{schedule}</p>
-                    <div class="activity-card__heading">
-                      {activity.link ? (
-                        <a class="activity-card__title" href={activity.link}>
-                          {activity.title}
-                        </a>
-                      ) : (
-                        <span class="activity-card__title">{activity.title}</span>
+  {
+    activeRecurringGroups.length > 0 && (
+      <div class="activity-section stack--tight">
+        <h3 class="activity-section__title">Recurring activities</h3>
+        {activeRecurringGroups.map((groupKey) => {
+          const activities = groupedRecurring[groupKey] ?? [];
+          return (
+            <div class="activity-group">
+              <h4 class="activity-group__heading">
+                {activityGroupLabels[groupKey] ?? "Activities"}
+              </h4>
+              <div class="activity-list" role="list">
+                {activities.map((activity) => {
+                  const { schedule, metadata } =
+                    describeRecurringActivity(activity);
+                  return (
+                    <article class="activity-card" role="listitem">
+                      <p class="activity-card__schedule">{schedule}</p>
+                      <div class="activity-card__heading">
+                        {activity.link ? (
+                          <a class="activity-card__title" href={activity.link}>
+                            {activity.title}
+                          </a>
+                        ) : (
+                          <span class="activity-card__title">
+                            {activity.title}
+                          </span>
+                        )}
+                      </div>
+                      {metadata && (
+                        <p class="activity-card__meta">{metadata}</p>
                       )}
-                    </div>
-                    {metadata && (
-                      <p class="activity-card__meta">{metadata}</p>
-                    )}
-                    {showNotes && activity.note && (
-                      <p class="activity-card__note">{activity.note}</p>
-                    )}
-                  </article>
-                );
-              })}
+                      {showNotes && activity.note && (
+                        <p class="activity-card__note">{activity.note}</p>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        );
-      })}
-    </div>
-  )}
+          );
+        })}
+      </div>
+    )
+  }
 </section>
 
 <style>
@@ -191,29 +209,29 @@ const describeRecurringActivity = (activity: RecurringActivity) => {
 
   .activity-group__heading {
     margin: 0;
-    font-size: var(--font-size-1);
-    font-weight: 600;
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: var(--color-primary);
     margin-bottom: var(--space-3);
   }
 
   .activity-list {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-4);
-    background: var(--color-surface);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   }
 
   .activity-card {
-    padding: var(--space-5) var(--space-6);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-3);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-1);
+    padding: var(--space-4);
     display: grid;
     gap: var(--space-3);
-    background: var(--color-surface);
-  }
-
-  .activity-card + .activity-card {
-    border-top: 1px solid var(--color-border);
+    height: 100%;
   }
 
   .activity-card__heading {
@@ -222,10 +240,11 @@ const describeRecurringActivity = (activity: RecurringActivity) => {
   }
 
   .activity-card__title {
-    font-size: var(--font-size-3);
-    font-weight: 600;
+    font-size: clamp(1.08rem, 0.98rem + 0.33vw, 1.22rem);
+    font-weight: 700;
     color: inherit;
     text-decoration: none;
+    line-height: 1.35;
   }
 
   .activity-card__title:hover {
@@ -234,21 +253,22 @@ const describeRecurringActivity = (activity: RecurringActivity) => {
 
   .activity-card__schedule {
     margin: 0;
-    font-size: var(--type-scale-small-size);
+    font-size: 0.75rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--color-text-muted);
+    color: var(--color-primary);
+    font-weight: 700;
   }
 
   .activity-card__meta {
     margin: 0;
-    font-size: var(--type-scale-body-size);
+    font-size: var(--font-size-1);
     color: var(--color-text-muted);
   }
 
   .activity-card__note {
     margin: 0;
-    font-size: var(--type-scale-small-size);
+    font-size: var(--font-size-0);
     color: var(--color-text-muted);
   }
 </style>

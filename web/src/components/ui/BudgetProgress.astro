@@ -29,7 +29,10 @@ const formattedUpdatedAt = updatedAt
   : null;
 ---
 
-<section class:list={["budget-progress", !embedded && "card"]} aria-label="Budget progress widget">
+<section
+  class:list={["budget-progress", !embedded && "card"]}
+  aria-label="Budget progress widget"
+>
   <div class="budget-progress__heading">
     <p class="muted">Annual operating budget</p>
     <h2>Budget progress</h2>
@@ -54,13 +57,18 @@ const formattedUpdatedAt = updatedAt
     aria-valuenow={percentRaised}
     aria-label={`${percentRaised}% of goal met`}
   >
-    <span class="budget-progress__bar-fill" style={`width: ${percentRaised}%`}></span>
+    <span class="budget-progress__bar-fill" style={`width: ${percentRaised}%`}
+    ></span>
   </div>
 
   <p class="budget-progress__percent">{percentRaised}% of the goal met</p>
-  {formattedUpdatedAt && (
-    <p class="budget-progress__updated small muted">Updated {formattedUpdatedAt}</p>
-  )}
+  {
+    formattedUpdatedAt && (
+      <p class="budget-progress__updated small muted">
+        Updated {formattedUpdatedAt}
+      </p>
+    )
+  }
 </section>
 
 <style>
@@ -70,35 +78,73 @@ const formattedUpdatedAt = updatedAt
     flex-direction: column;
   }
 
+  .budget-progress__heading {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  .budget-progress__heading > .muted {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+
   .budget-progress__heading h2 {
     margin: 0;
-    font-size: var(--font-size-3);
+    font-size: clamp(1.25rem, 1.07rem + 0.58vw, 1.55rem);
   }
 
   .budget-progress__totals {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .budget-progress__totals > div {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    background: color-mix(
+      in oklab,
+      var(--color-surface) 94%,
+      var(--color-surface-muted) 6%
+    );
+    padding: var(--space-3);
+    display: grid;
+    gap: 0.1rem;
   }
 
   .budget-progress__amount {
     margin: 0;
-    font-size: var(--font-size-3);
+    font-size: clamp(1.25rem, 1.02rem + 0.7vw, 1.6rem);
     font-weight: 700;
   }
 
   .budget-progress__bar {
     position: relative;
-    height: 12px;
+    height: 14px;
     background: var(--color-surface-muted);
     border-radius: var(--radius-4);
     overflow: hidden;
+    border: 1px solid
+      color-mix(in oklab, var(--color-border) 78%, var(--color-primary) 22%);
   }
 
   .budget-progress__bar-fill {
     display: block;
     height: 100%;
-    background: linear-gradient(90deg, var(--color-primary), #8c222b);
+    background: linear-gradient(
+      90deg,
+      color-mix(
+          in oklab,
+          var(--color-primary-700) 50%,
+          var(--color-primary) 50%
+        )
+        0%,
+      #8c222b 50%,
+      #a32933 100%
+    );
     border-radius: var(--radius-4);
     transition: width 220ms ease;
   }

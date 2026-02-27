@@ -11,10 +11,14 @@ type Props = {
   showViewAll?: boolean;
 };
 
-const { title = "Upcoming Events", limit = 3, showViewAll = true } = Astro.props;
+const {
+  title = "Upcoming Events",
+  limit = 3,
+  showViewAll = true,
+} = Astro.props;
 
 const events = await getCollection("events", ({ data }) =>
-  import.meta.env.PROD ? data.draft !== true : true
+  import.meta.env.PROD ? data.draft !== true : true,
 );
 
 const now = new Date();
@@ -26,57 +30,118 @@ const upcoming = events
 const fmt = new Intl.DateTimeFormat(site.locale, {
   dateStyle: "medium",
   timeStyle: "short",
-  timeZone: site.timeZone
+  timeZone: site.timeZone,
 });
 ---
 
-<section class="stack">
+<section class="stack event-list">
   <SectionHeading title={title}>
-    {showViewAll && (
-      <Button slot="action" variant="tertiary" href="/events">
-        View all
-      </Button>
-    )}
+    {
+      showViewAll && (
+        <Button slot="action" variant="tertiary" href="/events">
+          View all
+        </Button>
+      )
+    }
   </SectionHeading>
 
-  {upcoming.length === 0 ? (
-    <div class="card card--muted event-empty-state stack--tight">
-      <span class="event-empty-state__icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" role="presentation">
-          <rect x="3" y="5" width="18" height="16" rx="3" ry="3" fill="none" stroke="var(--color-primary)" stroke-width="1.5" />
-          <line x1="3" y1="9" x2="21" y2="9" stroke="var(--color-primary)" stroke-width="1.5" />
-          <line x1="8" y1="2" x2="8" y2="6" stroke="var(--color-primary)" stroke-width="1.5" />
-          <line x1="16" y1="2" x2="16" y2="6" stroke="var(--color-primary)" stroke-width="1.5" />
-        </svg>
-      </span>
-      <div class="event-empty-state__content stack--tight">
-        <h3 class="event-empty-state__title">Nothing on the calendar yet</h3>
-        <p class="event-empty-state__text">No upcoming events are published yet. We&apos;re keeping the schedule updated, so check back soon.</p>
+  {
+    upcoming.length === 0 ? (
+      <div class="card card--muted event-empty-state stack--tight">
+        <span class="event-empty-state__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="presentation">
+            <rect
+              x="3"
+              y="5"
+              width="18"
+              height="16"
+              rx="3"
+              ry="3"
+              fill="none"
+              stroke="var(--color-primary)"
+              stroke-width="1.5"
+            />
+            <line
+              x1="3"
+              y1="9"
+              x2="21"
+              y2="9"
+              stroke="var(--color-primary)"
+              stroke-width="1.5"
+            />
+            <line
+              x1="8"
+              y1="2"
+              x2="8"
+              y2="6"
+              stroke="var(--color-primary)"
+              stroke-width="1.5"
+            />
+            <line
+              x1="16"
+              y1="2"
+              x2="16"
+              y2="6"
+              stroke="var(--color-primary)"
+              stroke-width="1.5"
+            />
+          </svg>
+        </span>
+        <div class="event-empty-state__content stack--tight">
+          <h3 class="event-empty-state__title">Nothing on the calendar yet</h3>
+          <p class="event-empty-state__text">
+            No upcoming events are published yet. We&apos;re keeping the
+            schedule updated, so check back soon.
+          </p>
+        </div>
+        <div class="event-empty-state__actions cluster cluster--loose">
+          <Button variant="secondary" href="/events">
+            View calendar
+          </Button>
+          <Button variant="tertiary" href="/connect/contact">
+            Contact us
+          </Button>
+        </div>
       </div>
-      <div class="event-empty-state__actions cluster cluster--loose">
-        <Button variant="secondary" href="/events">View calendar</Button>
-        <Button variant="tertiary" href="/connect/contact">Contact us</Button>
+    ) : (
+      <div class="grid--cards">
+        {upcoming.map((e) => (
+          <ContentCard
+            href={`/events/${e.id}`}
+            title={e.data.title}
+            summary={e.data.summary}
+            meta={fmt.format(e.data.start)}
+            tags={e.data.tags}
+          />
+        ))}
       </div>
-    </div>
-  ) : (
-    <div class="grid--cards">
-      {upcoming.map((e) => (
-        <ContentCard
-          href={`/events/${e.id}`}
-          title={e.data.title}
-          summary={e.data.summary}
-          meta={fmt.format(e.data.start)}
-          tags={e.data.tags}
-        />
-      ))}
-    </div>
-  )}
+    )
+  }
 </section>
 
 <style>
+  .event-list :global(.grid--cards > .card) {
+    height: 100%;
+  }
+
   .event-empty-state {
     text-align: center;
     justify-items: center;
+    border-color: color-mix(
+      in oklab,
+      var(--color-border) 72%,
+      var(--color-primary) 28%
+    );
+    background: linear-gradient(
+      170deg,
+      color-mix(
+          in oklab,
+          var(--color-surface-muted) 84%,
+          var(--color-primary) 16%
+        )
+        0%,
+      var(--color-surface) 100%
+    );
   }
 
   .event-empty-state__icon {
@@ -98,12 +163,13 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
 
   .event-empty-state__title {
     margin: 0;
-    font-size: var(--type-scale-h3-size);
+    font-size: clamp(1.16rem, 1rem + 0.48vw, 1.35rem);
   }
 
   .event-empty-state__text {
     margin: 0;
     color: var(--color-text-muted);
+    max-width: 58ch;
   }
 
   .event-empty-state__actions {

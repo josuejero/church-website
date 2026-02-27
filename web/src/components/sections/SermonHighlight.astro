@@ -24,46 +24,88 @@ const list = (videos as Video[]).slice().sort((a, b) => {
 
 const latest = list[0];
 const hasEmbed = latest && latest.youtubeId && latest.youtubeId !== "TBD";
-const hasYouTube = Boolean(site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD");
+const hasYouTube = Boolean(
+  site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD",
+);
 
 const fmt = new Intl.DateTimeFormat(site.locale, {
   dateStyle: "medium",
-  timeZone: site.timeZone
+  timeZone: site.timeZone,
 });
 const meta = latest?.date ? fmt.format(new Date(latest.date)) : undefined;
-const youtubeHref = hasYouTube ? site.portals.youtubeChannelUrl : "/media/videos";
+const youtubeHref = hasYouTube
+  ? site.portals.youtubeChannelUrl
+  : "/media/videos";
 ---
 
-<section class="stack">
+<section class="stack sermon-highlight">
   <SectionHeading title={title} />
 
-  {!latest ? (
-    <p class="muted">No videos are listed yet.</p>
-  ) : (
-    <div class="card stack">
-      <div class="stack--tight">
-        {meta && <p class="muted small">{meta}</p>}
-        <h3>{latest.title}</h3>
-        {latest.summary && <p class="text-body">{latest.summary}</p>}
-      </div>
+  {
+    !latest ? (
+      <p class="muted">No videos are listed yet.</p>
+    ) : (
+      <div class="card stack sermon-highlight__card">
+        <div class="stack--tight">
+          {meta && <p class="muted small sermon-highlight__meta">{meta}</p>}
+          <h3 class="sermon-highlight__title">{latest.title}</h3>
+          {latest.summary && <p class="text-body">{latest.summary}</p>}
+        </div>
 
-      {hasEmbed ? (
-        <YouTubeEmbed
-          title={latest.title}
-          embedUrl={`https://www.youtube.com/embed/${latest.youtubeId}`}
-        />
-      ) : (
-        <p class="small muted">
-          New sermon video coming soon. Check back soon or browse the video archive.
-        </p>
-      )}
+        {hasEmbed ? (
+          <YouTubeEmbed
+            title={latest.title}
+            embedUrl={`https://www.youtube.com/embed/${latest.youtubeId}`}
+          />
+        ) : (
+          <p class="small muted">
+            New sermon video coming soon. Check back soon or browse the video
+            archive.
+          </p>
+        )}
 
-      <div class="cluster">
-        {hasYouTube ? (
-          <Button href={youtubeHref} variant="primary" external>Open YouTube</Button>
-        ) : null}
-        <Button href="/media/videos" variant="secondary">More videos</Button>
+        <div class="cluster sermon-highlight__actions">
+          {hasYouTube ? (
+            <Button href={youtubeHref} variant="primary" external>
+              Open YouTube
+            </Button>
+          ) : null}
+          <Button href="/media/videos" variant="secondary">
+            More videos
+          </Button>
+        </div>
       </div>
-    </div>
-  )}
+    )
+  }
 </section>
+
+<style>
+  .sermon-highlight__card {
+    height: 100%;
+    background: linear-gradient(
+      175deg,
+      color-mix(in oklab, var(--color-surface) 94%, var(--color-primary) 6%) 0%,
+      var(--color-surface) 100%
+    );
+    border-color: color-mix(
+      in oklab,
+      var(--color-border) 74%,
+      var(--color-primary) 26%
+    );
+  }
+
+  .sermon-highlight__meta {
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .sermon-highlight__title {
+    margin: 0;
+    font-size: clamp(1.3rem, 1.04rem + 0.72vw, 1.7rem);
+    line-height: 1.25;
+  }
+
+  .sermon-highlight__actions {
+    margin-top: auto;
+  }
+</style>
