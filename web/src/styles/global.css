@@ -60,12 +60,15 @@ a:hover {
 }
 
 .container {
-  width: min(var(--container-max), calc(100% - var(--container-pad) * 2));
+  width: 100%;
+  max-width: var(--container-max);
   margin: 0 auto;
+  padding: 0 var(--container-pad);
+  display: block;
 }
 
 .main {
-  padding: var(--space-8) var(--container-pad);
+  padding: var(--space-8) 0;
 }
 
 h1,
@@ -426,5 +429,35 @@ hr {
 .skip-link:focus { transform: translateY(0); }
 
 @media (max-width: 860px) {
-  .main { padding: var(--space-6) 0; }
+  :root {
+    --container-pad: 1rem;
+  }
+
+  .main {
+    padding: var(--space-6) 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .card {
+    padding: var(--space-4);
+  }
+
+  .stack {
+    gap: var(--space-4);
+  }
+
+  .stack--loose {
+    gap: var(--space-6);
+  }
+
+  .grid--cards {
+    gap: var(--space-3);
+  }
+}
+
+@media (max-width: 420px) {
+  :root {
+    --container-pad: 0.875rem;
+  }
 }

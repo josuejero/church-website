@@ -96,6 +96,8 @@ web/
       2025-12-13.pdf
       2025-12-20.pdf
       2026-01-03.pdf
+    scripts/
+      highlights-carousel.js
     _headers
     .assetsignore
   scripts/
@@ -105,7 +107,6 @@ web/
           lib/
             string-utils.js
             yargs-parser-types.js
-            yargs-parser.js
     generate-pagefind-index.mjs
     patch-yargs-parser.js
   src/
@@ -336,6 +337,8 @@ web/
   tests/
     e2e/
       content-collections.spec.ts
+      header-layout.spec.ts
+      highlights-carousel.spec.ts
       mobile.smoke.spec.ts
       phase-5-media-portals.spec.ts
       phase-6-search-and-analytics.spec.ts
@@ -372,6 +375,116 @@ SECURITY.md
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="web/public/scripts/highlights-carousel.js">
+(() => {
+  if (typeof document === "undefined") return;
+  if (window.__highlightsCarouselInitialized) return;
+  window.__highlightsCarouselInitialized = true;
+
+  const initHighlightsCarousel = () => {
+    const carousel = document.querySelector(".highlights-carousel");
+    if (!carousel) return;
+    const track = carousel.querySelector(".highlights-carousel__track");
+    const slides = carousel.querySelectorAll(".highlights-carousel__slide");
+    if (!track || slides.length === 0) return;
+
+    let currentIndex = 0;
+    const slideCount = slides.length;
+    const intervalMs = 6000;
+    let timerId;
+
+    const updateTrack = () => {
+      track.style.transform = `translateX(-${currentIndex * 100}%)`;
+    };
+
+    const advanceSlide = () => {
+      currentIndex = (currentIndex + 1) % slideCount;
+      updateTrack();
+    };
+
+    const scheduleAutoAdvance = (delay = intervalMs) => {
+      if (timerId) {
+        clearTimeout(timerId);
+      }
+      timerId = window.setTimeout(() => {
+        advanceSlide();
+        scheduleAutoAdvance(intervalMs);
+      }, delay);
+    };
+
+    scheduleAutoAdvance(1000);
+  };
+
+  initHighlightsCarousel();
+})();
+</file>
+
+<file path="web/tests/e2e/header-layout.spec.ts">
+import { test, expect } from "@playwright/test";
+
+test.describe("Header layout", () => {
+  test("desktop nav stays on one line", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+
+    const nav = page.locator("nav.nav--desktop");
+    await expect(nav).toBeVisible();
+    await expect(nav).toHaveCSS("flex-wrap", "nowrap");
+
+    const ministriesLink = nav.getByRole("link", { name: "Ministries", exact: true });
+    await expect(ministriesLink).toHaveCSS("white-space", "nowrap");
+  });
+
+  test("tablet breakpoint shows mobile menu instead of nav", async ({ page }) => {
+    await page.setViewportSize({ width: 1050, height: 900 });
+    await page.goto("/");
+
+    await expect(page.locator("nav.nav--desktop")).toBeHidden();
+    await expect(page.locator("details.menu")).toBeVisible();
+  });
+});
+</file>
+
+<file path="web/tests/e2e/highlights-carousel.spec.ts">
+import { expect, test } from "@playwright/test";
+
+test.describe("Highlights carousel", () => {
+  test("auto-advances to the next highlight and respects looping", async ({ page }) => {
+    await page.addInitScript(() => {
+      const originalSetInterval = window.setInterval;
+      window.setInterval = (callback, ms, ...rest) => {
+        const adjusted = ms === 6000 ? 1000 : ms;
+        return originalSetInterval(callback, adjusted, ...rest);
+      };
+    });
+
+    await page.goto("/");
+    const track = page.locator(".highlights-carousel__track");
+    await expect(track).toBeVisible();
+
+    const slides = page.locator(".highlights-carousel__slide");
+    const slideCount = await slides.count();
+    expect(slideCount).toBeGreaterThan(1);
+    const firstSlideText = (await slides.nth(0).textContent())?.trim();
+
+    await page.waitForTimeout(1200);
+    const transformAfterAdvance = await track.evaluate((el) => el.style.transform);
+    expect(transformAfterAdvance).toBe("translateX(-100%)");
+
+    await page.waitForTimeout(1200);
+    const secondSlideText = (await slides.nth(1).textContent())?.trim();
+    if (firstSlideText) {
+      expect(secondSlideText).not.toBe(firstSlideText);
+    }
+  });
+
+  test("does not render manual carousel controls", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator(".highlights-carousel__control")).toHaveCount(0);
+  });
+});
+</file>
 
 <file path=".github/ISSUE_TEMPLATE/content-update.md">
 ---
@@ -1348,1054 +1461,6 @@ export var DefaultValuesForTypeKey;
 })(DefaultValuesForTypeKey || (DefaultValuesForTypeKey = {}));
 </file>
 
-<file path="web/scripts/vendor/yargs-parser/build/lib/yargs-parser.js">
-/**
- * @license
- * Copyright (c) 2016, Contributors
- * SPDX-License-Identifier: ISC
- */
-import { tokenizeArgString } from './tokenize-arg-string.js';
-import { DefaultValuesForTypeKey } from './yargs-parser-types.js';
-import { camelCase, decamelize, looksLikeNumber } from './string-utils.js';
-let mixin;
-export class YargsParser {
-    constructor(_mixin) {
-        mixin = _mixin;
-    }
-    parse(argsInput, options) {
-        const opts = Object.assign({
-            alias: undefined,
-            array: undefined,
-            boolean: undefined,
-            config: undefined,
-            configObjects: undefined,
-            configuration: undefined,
-            coerce: undefined,
-            count: undefined,
-            default: undefined,
-            envPrefix: undefined,
-            narg: undefined,
-            normalize: undefined,
-            string: undefined,
-            number: undefined,
-            __: undefined,
-            key: undefined
-        }, options);
-        // allow a string argument to be passed in rather
-        // than an argv array.
-        const args = tokenizeArgString(argsInput);
-        // tokenizeArgString adds extra quotes to args if argsInput is a string
-        // only strip those extra quotes in processValue if argsInput is a string
-        const inputIsString = typeof argsInput === 'string';
-        // aliases might have transitive relationships, normalize this.
-        const aliases = combineAliases(Object.assign(Object.create(null), opts.alias));
-        const configuration = Object.assign({
-            'boolean-negation': true,
-            'camel-case-expansion': true,
-            'combine-arrays': false,
-            'dot-notation': true,
-            'duplicate-arguments-array': true,
-            'flatten-duplicate-arrays': true,
-            'greedy-arrays': true,
-            'halt-at-non-option': false,
-            'nargs-eats-options': false,
-            'negation-prefix': 'no-',
-            'parse-numbers': true,
-            'parse-positional-numbers': true,
-            'populate--': false,
-            'set-placeholder-key': false,
-            'short-option-groups': true,
-            'strip-aliased': false,
-            'strip-dashed': false,
-            'unknown-options-as-args': false
-        }, opts.configuration);
-        const defaults = Object.assign(Object.create(null), opts.default);
-        const configObjects = opts.configObjects || [];
-        const envPrefix = opts.envPrefix;
-        const notFlagsOption = configuration['populate--'];
-        const notFlagsArgv = notFlagsOption ? '--' : '_';
-        const newAliases = Object.create(null);
-        const defaulted = Object.create(null);
-        // allow a i18n handler to be passed in, default to a fake one (util.format).
-        const __ = opts.__ || mixin.format;
-        const flags = {
-            aliases: Object.create(null),
-            arrays: Object.create(null),
-            bools: Object.create(null),
-            strings: Object.create(null),
-            numbers: Object.create(null),
-            counts: Object.create(null),
-            normalize: Object.create(null),
-            configs: Object.create(null),
-            nargs: Object.create(null),
-            coercions: Object.create(null),
-            keys: []
-        };
-        const negative = /^-([0-9]+(\.[0-9]+)?|\.[0-9]+)$/;
-        const negatedBoolean = new RegExp('^--' + configuration['negation-prefix'] + '(.+)');
-        [].concat(opts.array || []).filter(Boolean).forEach(function (opt) {
-            const key = typeof opt === 'object' ? opt.key : opt;
-            // assign to flags[bools|strings|numbers]
-            const assignment = Object.keys(opt).map(function (key) {
-                const arrayFlagKeys = {
-                    boolean: 'bools',
-                    string: 'strings',
-                    number: 'numbers'
-                };
-                return arrayFlagKeys[key];
-            }).filter(Boolean).pop();
-            // assign key to be coerced
-            if (assignment) {
-                flags[assignment][key] = true;
-            }
-            flags.arrays[key] = true;
-            flags.keys.push(key);
-        });
-        [].concat(opts.boolean || []).filter(Boolean).forEach(function (key) {
-            flags.bools[key] = true;
-            flags.keys.push(key);
-        });
-        [].concat(opts.string || []).filter(Boolean).forEach(function (key) {
-            flags.strings[key] = true;
-            flags.keys.push(key);
-        });
-        [].concat(opts.number || []).filter(Boolean).forEach(function (key) {
-            flags.numbers[key] = true;
-            flags.keys.push(key);
-        });
-        [].concat(opts.count || []).filter(Boolean).forEach(function (key) {
-            flags.counts[key] = true;
-            flags.keys.push(key);
-        });
-        [].concat(opts.normalize || []).filter(Boolean).forEach(function (key) {
-            flags.normalize[key] = true;
-            flags.keys.push(key);
-        });
-        if (typeof opts.narg === 'object') {
-            Object.entries(opts.narg).forEach(([key, value]) => {
-                if (typeof value === 'number') {
-                    flags.nargs[key] = value;
-                    flags.keys.push(key);
-                }
-            });
-        }
-        if (typeof opts.coerce === 'object') {
-            Object.entries(opts.coerce).forEach(([key, value]) => {
-                if (typeof value === 'function') {
-                    flags.coercions[key] = value;
-                    flags.keys.push(key);
-                }
-            });
-        }
-        if (typeof opts.config !== 'undefined') {
-            if (Array.isArray(opts.config) || typeof opts.config === 'string') {
-                ;
-                [].concat(opts.config).filter(Boolean).forEach(function (key) {
-                    flags.configs[key] = true;
-                });
-            }
-            else if (typeof opts.config === 'object') {
-                Object.entries(opts.config).forEach(([key, value]) => {
-                    if (typeof value === 'boolean' || typeof value === 'function') {
-                        flags.configs[key] = value;
-                    }
-                });
-            }
-        }
-        // create a lookup table that takes into account all
-        // combinations of aliases: {f: ['foo'], foo: ['f']}
-        extendAliases(opts.key, aliases, opts.default, flags.arrays);
-        // apply default values to all aliases.
-        Object.keys(defaults).forEach(function (key) {
-            (flags.aliases[key] || []).forEach(function (alias) {
-                defaults[alias] = defaults[key];
-            });
-        });
-        let error = null;
-        checkConfiguration();
-        let notFlags = [];
-        const argv = Object.assign(Object.create(null), { _: [] });
-        // TODO(bcoe): for the first pass at removing object prototype  we didn't
-        // remove all prototypes from objects returned by this API, we might want
-        // to gradually move towards doing so.
-        const argvReturn = {};
-        for (let i = 0; i < args.length; i++) {
-            const arg = args[i];
-            const truncatedArg = arg.replace(/^-{3,}/, '---');
-            let broken;
-            let key;
-            let letters;
-            let m;
-            let next;
-            let value;
-            // any unknown option (except for end-of-options, "--")
-            if (arg !== '--' && /^-/.test(arg) && isUnknownOptionAsArg(arg)) {
-                pushPositional(arg);
-                // ---, ---=, ----, etc,
-            }
-            else if (truncatedArg.match(/^---+(=|$)/)) {
-                // options without key name are invalid.
-                pushPositional(arg);
-                continue;
-                // -- separated by =
-            }
-            else if (arg.match(/^--.+=/) || (!configuration['short-option-groups'] && arg.match(/^-.+=/))) {
-                // Using [\s\S] instead of . because js doesn't support the
-                // 'dotall' regex modifier. See:
-                // http://stackoverflow.com/a/1068308/13216
-                m = arg.match(/^--?([^=]+)=([\s\S]*)$/);
-                // arrays format = '--f=a b c'
-                if (m !== null && Array.isArray(m) && m.length >= 3) {
-                    if (checkAllAliases(m[1], flags.arrays)) {
-                        i = eatArray(i, m[1], args, m[2]);
-                    }
-                    else if (checkAllAliases(m[1], flags.nargs) !== false) {
-                        // nargs format = '--f=monkey washing cat'
-                        i = eatNargs(i, m[1], args, m[2]);
-                    }
-                    else {
-                        setArg(m[1], m[2], true);
-                    }
-                }
-            }
-            else if (arg.match(negatedBoolean) && configuration['boolean-negation']) {
-                m = arg.match(negatedBoolean);
-                if (m !== null && Array.isArray(m) && m.length >= 2) {
-                    key = m[1];
-                    setArg(key, checkAllAliases(key, flags.arrays) ? [false] : false);
-                }
-                // -- separated by space.
-            }
-            else if (arg.match(/^--.+/) || (!configuration['short-option-groups'] && arg.match(/^-[^-]+/))) {
-                m = arg.match(/^--?(.+)/);
-                if (m !== null && Array.isArray(m) && m.length >= 2) {
-                    key = m[1];
-                    if (checkAllAliases(key, flags.arrays)) {
-                        // array format = '--foo a b c'
-                        i = eatArray(i, key, args);
-                    }
-                    else if (checkAllAliases(key, flags.nargs) !== false) {
-                        // nargs format = '--foo a b c'
-                        // should be truthy even if: flags.nargs[key] === 0
-                        i = eatNargs(i, key, args);
-                    }
-                    else {
-                        next = args[i + 1];
-                        if (next !== undefined && (!next.match(/^-/) ||
-                            next.match(negative)) &&
-                            !checkAllAliases(key, flags.bools) &&
-                            !checkAllAliases(key, flags.counts)) {
-                            setArg(key, next);
-                            i++;
-                        }
-                        else if (/^(true|false)$/.test(next)) {
-                            setArg(key, next);
-                            i++;
-                        }
-                        else {
-                            setArg(key, defaultValue(key));
-                        }
-                    }
-                }
-                // dot-notation flag separated by '='.
-            }
-            else if (arg.match(/^-.\..+=/)) {
-                m = arg.match(/^-([^=]+)=([\s\S]*)$/);
-                if (m !== null && Array.isArray(m) && m.length >= 3) {
-                    setArg(m[1], m[2]);
-                }
-                // dot-notation flag separated by space.
-            }
-            else if (arg.match(/^-.\..+/) && !arg.match(negative)) {
-                next = args[i + 1];
-                m = arg.match(/^-(.\..+)/);
-                if (m !== null && Array.isArray(m) && m.length >= 2) {
-                    key = m[1];
-                    if (next !== undefined && !next.match(/^-/) &&
-                        !checkAllAliases(key, flags.bools) &&
-                        !checkAllAliases(key, flags.counts)) {
-                        setArg(key, next);
-                        i++;
-                    }
-                    else {
-                        setArg(key, defaultValue(key));
-                    }
-                }
-            }
-            else if (arg.match(/^-[^-]+/) && !arg.match(negative)) {
-                letters = arg.slice(1, -1).split('');
-                broken = false;
-                for (let j = 0; j < letters.length; j++) {
-                    next = arg.slice(j + 2);
-                    if (letters[j + 1] && letters[j + 1] === '=') {
-                        value = arg.slice(j + 3);
-                        key = letters[j];
-                        if (checkAllAliases(key, flags.arrays)) {
-                            // array format = '-f=a b c'
-                            i = eatArray(i, key, args, value);
-                        }
-                        else if (checkAllAliases(key, flags.nargs) !== false) {
-                            // nargs format = '-f=monkey washing cat'
-                            i = eatNargs(i, key, args, value);
-                        }
-                        else {
-                            setArg(key, value);
-                        }
-                        broken = true;
-                        break;
-                    }
-                    if (next === '-') {
-                        setArg(letters[j], next);
-                        continue;
-                    }
-                    // current letter is an alphabetic character and next value is a number
-                    if (/[A-Za-z]/.test(letters[j]) &&
-                        /^-?\d+(\.\d*)?(e-?\d+)?$/.test(next) &&
-                        checkAllAliases(next, flags.bools) === false) {
-                        setArg(letters[j], next);
-                        broken = true;
-                        break;
-                    }
-                    if (letters[j + 1] && letters[j + 1].match(/\W/)) {
-                        setArg(letters[j], next);
-                        broken = true;
-                        break;
-                    }
-                    else {
-                        setArg(letters[j], defaultValue(letters[j]));
-                    }
-                }
-                key = arg.slice(-1)[0];
-                if (!broken && key !== '-') {
-                    if (checkAllAliases(key, flags.arrays)) {
-                        // array format = '-f a b c'
-                        i = eatArray(i, key, args);
-                    }
-                    else if (checkAllAliases(key, flags.nargs) !== false) {
-                        // nargs format = '-f a b c'
-                        // should be truthy even if: flags.nargs[key] === 0
-                        i = eatNargs(i, key, args);
-                    }
-                    else {
-                        next = args[i + 1];
-                        if (next !== undefined && (!/^(-|--)[^-]/.test(next) ||
-                            next.match(negative)) &&
-                            !checkAllAliases(key, flags.bools) &&
-                            !checkAllAliases(key, flags.counts)) {
-                            setArg(key, next);
-                            i++;
-                        }
-                        else if (/^(true|false)$/.test(next)) {
-                            setArg(key, next);
-                            i++;
-                        }
-                        else {
-                            setArg(key, defaultValue(key));
-                        }
-                    }
-                }
-            }
-            else if (arg.match(/^-[0-9]$/) &&
-                arg.match(negative) &&
-                checkAllAliases(arg.slice(1), flags.bools)) {
-                // single-digit boolean alias, e.g: xargs -0
-                key = arg.slice(1);
-                setArg(key, defaultValue(key));
-            }
-            else if (arg === '--') {
-                notFlags = args.slice(i + 1);
-                break;
-            }
-            else if (configuration['halt-at-non-option']) {
-                notFlags = args.slice(i);
-                break;
-            }
-            else {
-                pushPositional(arg);
-            }
-        }
-        // order of precedence:
-        // 1. command line arg
-        // 2. value from env var
-        // 3. value from config file
-        // 4. value from config objects
-        // 5. configured default value
-        applyEnvVars(argv, true); // special case: check env vars that point to config file
-        applyEnvVars(argv, false);
-        setConfig(argv);
-        setConfigObjects();
-        applyDefaultsAndAliases(argv, flags.aliases, defaults, true);
-        applyCoercions(argv);
-        if (configuration['set-placeholder-key'])
-            setPlaceholderKeys(argv);
-        // for any counts either not in args or without an explicit default, set to 0
-        Object.keys(flags.counts).forEach(function (key) {
-            if (!hasKey(argv, key.split('.')))
-                setArg(key, 0);
-        });
-        // '--' defaults to undefined.
-        if (notFlagsOption && notFlags.length)
-            argv[notFlagsArgv] = [];
-        notFlags.forEach(function (key) {
-            argv[notFlagsArgv].push(key);
-        });
-        if (configuration['camel-case-expansion'] && configuration['strip-dashed']) {
-            Object.keys(argv).filter(key => key !== '--' && key.includes('-')).forEach(key => {
-                delete argv[key];
-            });
-        }
-        if (configuration['strip-aliased']) {
-            ;
-            [].concat(...Object.keys(aliases).map(k => aliases[k])).forEach(alias => {
-                if (configuration['camel-case-expansion'] && alias.includes('-')) {
-                    delete argv[alias.split('.').map(prop => camelCase(prop)).join('.')];
-                }
-                delete argv[alias];
-            });
-        }
-        // Push argument into positional array, applying numeric coercion:
-        function pushPositional(arg) {
-            const maybeCoercedNumber = maybeCoerceNumber('_', arg);
-            if (typeof maybeCoercedNumber === 'string' || typeof maybeCoercedNumber === 'number') {
-                argv._.push(maybeCoercedNumber);
-            }
-        }
-        // how many arguments should we consume, based
-        // on the nargs option?
-        function eatNargs(i, key, args, argAfterEqualSign) {
-            let ii;
-            let toEat = checkAllAliases(key, flags.nargs);
-            // NaN has a special meaning for the array type, indicating that one or
-            // more values are expected.
-            toEat = typeof toEat !== 'number' || isNaN(toEat) ? 1 : toEat;
-            if (toEat === 0) {
-                if (!isUndefined(argAfterEqualSign)) {
-                    error = Error(__('Argument unexpected for: %s', key));
-                }
-                setArg(key, defaultValue(key));
-                return i;
-            }
-            let available = isUndefined(argAfterEqualSign) ? 0 : 1;
-            if (configuration['nargs-eats-options']) {
-                // classic behavior, yargs eats positional and dash arguments.
-                if (args.length - (i + 1) + available < toEat) {
-                    error = Error(__('Not enough arguments following: %s', key));
-                }
-                available = toEat;
-            }
-            else {
-                // nargs will not consume flag arguments, e.g., -abc, --foo,
-                // and terminates when one is observed.
-                for (ii = i + 1; ii < args.length; ii++) {
-                    if (!args[ii].match(/^-[^0-9]/) || args[ii].match(negative) || isUnknownOptionAsArg(args[ii]))
-                        available++;
-                    else
-                        break;
-                }
-                if (available < toEat)
-                    error = Error(__('Not enough arguments following: %s', key));
-            }
-            let consumed = Math.min(available, toEat);
-            if (!isUndefined(argAfterEqualSign) && consumed > 0) {
-                setArg(key, argAfterEqualSign);
-                consumed--;
-            }
-            for (ii = i + 1; ii < (consumed + i + 1); ii++) {
-                setArg(key, args[ii]);
-            }
-            return (i + consumed);
-        }
-        // if an option is an array, eat all non-hyphenated arguments
-        // following it... YUM!
-        // e.g., --foo apple banana cat becomes ["apple", "banana", "cat"]
-        function eatArray(i, key, args, argAfterEqualSign) {
-            let argsToSet = [];
-            let next = argAfterEqualSign || args[i + 1];
-            // If both array and nargs are configured, enforce the nargs count:
-            const nargsCount = checkAllAliases(key, flags.nargs);
-            if (checkAllAliases(key, flags.bools) && !(/^(true|false)$/.test(next))) {
-                argsToSet.push(true);
-            }
-            else if (isUndefined(next) ||
-                (isUndefined(argAfterEqualSign) && /^-/.test(next) && !negative.test(next) && !isUnknownOptionAsArg(next))) {
-                // for keys without value ==> argsToSet remains an empty []
-                // set user default value, if available
-                if (defaults[key] !== undefined) {
-                    const defVal = defaults[key];
-                    argsToSet = Array.isArray(defVal) ? defVal : [defVal];
-                }
-            }
-            else {
-                // value in --option=value is eaten as is
-                if (!isUndefined(argAfterEqualSign)) {
-                    argsToSet.push(processValue(key, argAfterEqualSign, true));
-                }
-                for (let ii = i + 1; ii < args.length; ii++) {
-                    if ((!configuration['greedy-arrays'] && argsToSet.length > 0) ||
-                        (nargsCount && typeof nargsCount === 'number' && argsToSet.length >= nargsCount))
-                        break;
-                    next = args[ii];
-                    if (/^-/.test(next) && !negative.test(next) && !isUnknownOptionAsArg(next))
-                        break;
-                    i = ii;
-                    argsToSet.push(processValue(key, next, inputIsString));
-                }
-            }
-            // If both array and nargs are configured, create an error if less than
-            // nargs positionals were found. NaN has special meaning, indicating
-            // that at least one value is required (more are okay).
-            if (typeof nargsCount === 'number' && ((nargsCount && argsToSet.length < nargsCount) ||
-                (isNaN(nargsCount) && argsToSet.length === 0))) {
-                error = Error(__('Not enough arguments following: %s', key));
-            }
-            setArg(key, argsToSet);
-            return i;
-        }
-        function setArg(key, val, shouldStripQuotes = inputIsString) {
-            if (/-/.test(key) && configuration['camel-case-expansion']) {
-                const alias = key.split('.').map(function (prop) {
-                    return camelCase(prop);
-                }).join('.');
-                addNewAlias(key, alias);
-            }
-            const value = processValue(key, val, shouldStripQuotes);
-            const splitKey = key.split('.');
-            setKey(argv, splitKey, value);
-            // handle populating aliases of the full key
-            if (flags.aliases[key]) {
-                flags.aliases[key].forEach(function (x) {
-                    const keyProperties = x.split('.');
-                    setKey(argv, keyProperties, value);
-                });
-            }
-            // handle populating aliases of the first element of the dot-notation key
-            if (splitKey.length > 1 && configuration['dot-notation']) {
-                ;
-                (flags.aliases[splitKey[0]] || []).forEach(function (x) {
-                    let keyProperties = x.split('.');
-                    // expand alias with nested objects in key
-                    const a = [].concat(splitKey);
-                    a.shift(); // nuke the old key.
-                    keyProperties = keyProperties.concat(a);
-                    // populate alias only if is not already an alias of the full key
-                    // (already populated above)
-                    if (!(flags.aliases[key] || []).includes(keyProperties.join('.'))) {
-                        setKey(argv, keyProperties, value);
-                    }
-                });
-            }
-            // Set normalize getter and setter when key is in 'normalize' but isn't an array
-            if (checkAllAliases(key, flags.normalize) && !checkAllAliases(key, flags.arrays)) {
-                const keys = [key].concat(flags.aliases[key] || []);
-                keys.forEach(function (key) {
-                    Object.defineProperty(argvReturn, key, {
-                        enumerable: true,
-                        get() {
-                            return val;
-                        },
-                        set(value) {
-                            val = typeof value === 'string' ? mixin.normalize(value) : value;
-                        }
-                    });
-                });
-            }
-        }
-        function addNewAlias(key, alias) {
-            if (!(flags.aliases[key] && flags.aliases[key].length)) {
-                flags.aliases[key] = [alias];
-                newAliases[alias] = true;
-            }
-            if (!(flags.aliases[alias] && flags.aliases[alias].length)) {
-                addNewAlias(alias, key);
-            }
-        }
-        function processValue(key, val, shouldStripQuotes) {
-            // strings may be quoted, clean this up as we assign values.
-            if (shouldStripQuotes) {
-                val = stripQuotes(val);
-            }
-            // handle parsing boolean arguments --foo=true --bar false.
-            if (checkAllAliases(key, flags.bools) || checkAllAliases(key, flags.counts)) {
-                if (typeof val === 'string')
-                    val = val === 'true';
-            }
-            let value = Array.isArray(val)
-                ? val.map(function (v) { return maybeCoerceNumber(key, v); })
-                : maybeCoerceNumber(key, val);
-            // increment a count given as arg (either no value or value parsed as boolean)
-            if (checkAllAliases(key, flags.counts) && (isUndefined(value) || typeof value === 'boolean')) {
-                value = increment();
-            }
-            // Set normalized value when key is in 'normalize' and in 'arrays'
-            if (checkAllAliases(key, flags.normalize) && checkAllAliases(key, flags.arrays)) {
-                if (Array.isArray(val))
-                    value = val.map((val) => { return mixin.normalize(val); });
-                else
-                    value = mixin.normalize(val);
-            }
-            return value;
-        }
-        function maybeCoerceNumber(key, value) {
-            if (!configuration['parse-positional-numbers'] && key === '_')
-                return value;
-            if (!checkAllAliases(key, flags.strings) && !checkAllAliases(key, flags.bools) && !Array.isArray(value)) {
-                const shouldCoerceNumber = looksLikeNumber(value) && configuration['parse-numbers'] && (Number.isSafeInteger(Math.floor(parseFloat(`${value}`))));
-                if (shouldCoerceNumber || (!isUndefined(value) && checkAllAliases(key, flags.numbers))) {
-                    value = Number(value);
-                }
-            }
-            return value;
-        }
-        // set args from config.json file, this should be
-        // applied last so that defaults can be applied.
-        function setConfig(argv) {
-            const configLookup = Object.create(null);
-            // expand defaults/aliases, in-case any happen to reference
-            // the config.json file.
-            applyDefaultsAndAliases(configLookup, flags.aliases, defaults);
-            Object.keys(flags.configs).forEach(function (configKey) {
-                const configPath = argv[configKey] || configLookup[configKey];
-                if (configPath) {
-                    try {
-                        let config = null;
-                        const resolvedConfigPath = mixin.resolve(mixin.cwd(), configPath);
-                        const resolveConfig = flags.configs[configKey];
-                        if (typeof resolveConfig === 'function') {
-                            try {
-                                config = resolveConfig(resolvedConfigPath);
-                            }
-                            catch (e) {
-                                config = e;
-                            }
-                            if (config instanceof Error) {
-                                error = config;
-                                return;
-                            }
-                        }
-                        else {
-                            config = mixin.require(resolvedConfigPath);
-                        }
-                        setConfigObject(config);
-                    }
-                    catch (ex) {
-                        // Deno will receive a PermissionDenied error if an attempt is
-                        // made to load config without the --allow-read flag:
-                        if (ex.name === 'PermissionDenied')
-                            error = ex;
-                        else if (argv[configKey])
-                            error = Error(__('Invalid JSON config file: %s', configPath));
-                    }
-                }
-            });
-        }
-        // set args from config object.
-        // it recursively checks nested objects.
-        function setConfigObject(config, prev) {
-            Object.keys(config).forEach(function (key) {
-                const value = config[key];
-                const fullKey = prev ? prev + '.' + key : key;
-                // if the value is an inner object and we have dot-notation
-                // enabled, treat inner objects in config the same as
-                // heavily nested dot notations (foo.bar.apple).
-                if (typeof value === 'object' && value !== null && !Array.isArray(value) && configuration['dot-notation']) {
-                    // if the value is an object but not an array, check nested object
-                    setConfigObject(value, fullKey);
-                }
-                else {
-                    // setting arguments via CLI takes precedence over
-                    // values within the config file.
-                    if (!hasKey(argv, fullKey.split('.')) || (checkAllAliases(fullKey, flags.arrays) && configuration['combine-arrays'])) {
-                        setArg(fullKey, value);
-                    }
-                }
-            });
-        }
-        // set all config objects passed in opts
-        function setConfigObjects() {
-            if (typeof configObjects !== 'undefined') {
-                configObjects.forEach(function (configObject) {
-                    setConfigObject(configObject);
-                });
-            }
-        }
-        function applyEnvVars(argv, configOnly) {
-            if (typeof envPrefix === 'undefined')
-                return;
-            const prefix = typeof envPrefix === 'string' ? envPrefix : '';
-            const env = mixin.env();
-            Object.keys(env).forEach(function (envVar) {
-                if (prefix === '' || envVar.lastIndexOf(prefix, 0) === 0) {
-                    // get array of nested keys and convert them to camel case
-                    const keys = envVar.split('__').map(function (key, i) {
-                        if (i === 0) {
-                            key = key.substring(prefix.length);
-                        }
-                        return camelCase(key);
-                    });
-                    if (((configOnly && flags.configs[keys.join('.')]) || !configOnly) && !hasKey(argv, keys)) {
-                        setArg(keys.join('.'), env[envVar]);
-                    }
-                }
-            });
-        }
-        function applyCoercions(argv) {
-            let coerce;
-            const applied = new Set();
-            Object.keys(argv).forEach(function (key) {
-                if (!applied.has(key)) { // If we haven't already coerced this option via one of its aliases
-                    coerce = checkAllAliases(key, flags.coercions);
-                    if (typeof coerce === 'function') {
-                        try {
-                            const value = maybeCoerceNumber(key, coerce(argv[key]));
-                            ([].concat(flags.aliases[key] || [], key)).forEach(ali => {
-                                applied.add(ali);
-                                argv[ali] = value;
-                            });
-                        }
-                        catch (err) {
-                            error = err;
-                        }
-                    }
-                }
-            });
-        }
-        function setPlaceholderKeys(argv) {
-            flags.keys.forEach((key) => {
-                // don't set placeholder keys for dot notation options 'foo.bar'.
-                if (~key.indexOf('.'))
-                    return;
-                if (typeof argv[key] === 'undefined')
-                    argv[key] = undefined;
-            });
-            return argv;
-        }
-        function applyDefaultsAndAliases(obj, aliases, defaults, canLog = false) {
-            Object.keys(defaults).forEach(function (key) {
-                if (!hasKey(obj, key.split('.'))) {
-                    setKey(obj, key.split('.'), defaults[key]);
-                    if (canLog)
-                        defaulted[key] = true;
-                    (aliases[key] || []).forEach(function (x) {
-                        if (hasKey(obj, x.split('.')))
-                            return;
-                        setKey(obj, x.split('.'), defaults[key]);
-                    });
-                }
-            });
-        }
-        function hasKey(obj, keys) {
-            let o = obj;
-            if (!configuration['dot-notation'])
-                keys = [keys.join('.')];
-            keys.slice(0, -1).forEach(function (key) {
-                o = (o[key] || {});
-            });
-            const key = keys[keys.length - 1];
-            if (typeof o !== 'object')
-                return false;
-            else
-                return key in o;
-        }
-        function setKey(obj, keys, value) {
-            let o = obj;
-            if (!configuration['dot-notation'])
-                keys = [keys.join('.')];
-            keys.slice(0, -1).forEach(function (key) {
-                // TODO(bcoe): in the next major version of yargs, switch to
-                // Object.create(null) for dot notation:
-                key = sanitizeKey(key);
-                if (typeof o === 'object' && o[key] === undefined) {
-                    o[key] = {};
-                }
-                if (typeof o[key] !== 'object' || Array.isArray(o[key])) {
-                    // ensure that o[key] is an array, and that the last item is an empty object.
-                    if (Array.isArray(o[key])) {
-                        o[key].push({});
-                    }
-                    else {
-                        o[key] = [o[key], {}];
-                    }
-                    // we want to update the empty object at the end of the o[key] array, so set o to that object
-                    o = o[key][o[key].length - 1];
-                }
-                else {
-                    o = o[key];
-                }
-            });
-            // TODO(bcoe): in the next major version of yargs, switch to
-            // Object.create(null) for dot notation:
-            const key = sanitizeKey(keys[keys.length - 1]);
-            const isTypeArray = checkAllAliases(keys.join('.'), flags.arrays);
-            const isValueArray = Array.isArray(value);
-            let duplicate = configuration['duplicate-arguments-array'];
-            // nargs has higher priority than duplicate
-            if (!duplicate && checkAllAliases(key, flags.nargs)) {
-                duplicate = true;
-                if ((!isUndefined(o[key]) && flags.nargs[key] === 1) || (Array.isArray(o[key]) && o[key].length === flags.nargs[key])) {
-                    o[key] = undefined;
-                }
-            }
-            if (value === increment()) {
-                o[key] = increment(o[key]);
-            }
-            else if (Array.isArray(o[key])) {
-                if (duplicate && isTypeArray && isValueArray) {
-                    o[key] = configuration['flatten-duplicate-arrays'] ? o[key].concat(value) : (Array.isArray(o[key][0]) ? o[key] : [o[key]]).concat([value]);
-                }
-                else if (!duplicate && Boolean(isTypeArray) === Boolean(isValueArray)) {
-                    o[key] = value;
-                }
-                else {
-                    o[key] = o[key].concat([value]);
-                }
-            }
-            else if (o[key] === undefined && isTypeArray) {
-                o[key] = isValueArray ? value : [value];
-            }
-            else if (duplicate && !(o[key] === undefined ||
-                checkAllAliases(key, flags.counts) ||
-                checkAllAliases(key, flags.bools))) {
-                o[key] = [o[key], value];
-            }
-            else {
-                o[key] = value;
-            }
-        }
-        // extend the aliases list with inferred aliases.
-        function extendAliases(...args) {
-            args.forEach(function (obj) {
-                Object.keys(obj || {}).forEach(function (key) {
-                    // short-circuit if we've already added a key
-                    // to the aliases array, for example it might
-                    // exist in both 'opts.default' and 'opts.key'.
-                    if (flags.aliases[key])
-                        return;
-                    flags.aliases[key] = [].concat(aliases[key] || []);
-                    // For "--option-name", also set argv.optionName
-                    flags.aliases[key].concat(key).forEach(function (x) {
-                        if (/-/.test(x) && configuration['camel-case-expansion']) {
-                            const c = camelCase(x);
-                            if (c !== key && flags.aliases[key].indexOf(c) === -1) {
-                                flags.aliases[key].push(c);
-                                newAliases[c] = true;
-                            }
-                        }
-                    });
-                    // For "--optionName", also set argv['option-name']
-                    flags.aliases[key].concat(key).forEach(function (x) {
-                        if (x.length > 1 && /[A-Z]/.test(x) && configuration['camel-case-expansion']) {
-                            const c = decamelize(x, '-');
-                            if (c !== key && flags.aliases[key].indexOf(c) === -1) {
-                                flags.aliases[key].push(c);
-                                newAliases[c] = true;
-                            }
-                        }
-                    });
-                    flags.aliases[key].forEach(function (x) {
-                        flags.aliases[x] = [key].concat(flags.aliases[key].filter(function (y) {
-                            return x !== y;
-                        }));
-                    });
-                });
-            });
-        }
-        function checkAllAliases(key, flag) {
-            const toCheck = [].concat(flags.aliases[key] || [], key);
-            const keys = Object.keys(flag);
-            const setAlias = toCheck.find(key => keys.includes(key));
-            return setAlias ? flag[setAlias] : false;
-        }
-        function hasAnyFlag(key) {
-            const flagsKeys = Object.keys(flags);
-            const toCheck = [].concat(flagsKeys.map(k => flags[k]));
-            return toCheck.some(function (flag) {
-                return Array.isArray(flag) ? flag.includes(key) : flag[key];
-            });
-        }
-        function hasFlagsMatching(arg, ...patterns) {
-            const toCheck = [].concat(...patterns);
-            return toCheck.some(function (pattern) {
-                const match = arg.match(pattern);
-                return match && hasAnyFlag(match[1]);
-            });
-        }
-        // based on a simplified version of the short flag group parsing logic
-        function hasAllShortFlags(arg) {
-            // if this is a negative number, or doesn't start with a single hyphen, it's not a short flag group
-            if (arg.match(negative) || !arg.match(/^-[^-]+/)) {
-                return false;
-            }
-            let hasAllFlags = true;
-            let next;
-            const letters = arg.slice(1).split('');
-            for (let j = 0; j < letters.length; j++) {
-                next = arg.slice(j + 2);
-                if (!hasAnyFlag(letters[j])) {
-                    hasAllFlags = false;
-                    break;
-                }
-                if ((letters[j + 1] && letters[j + 1] === '=') ||
-                    next === '-' ||
-                    (/[A-Za-z]/.test(letters[j]) && /^-?\d+(\.\d*)?(e-?\d+)?$/.test(next)) ||
-                    (letters[j + 1] && letters[j + 1].match(/\W/))) {
-                    break;
-                }
-            }
-            return hasAllFlags;
-        }
-        function isUnknownOptionAsArg(arg) {
-            return configuration['unknown-options-as-args'] && isUnknownOption(arg);
-        }
-        function isUnknownOption(arg) {
-            arg = arg.replace(/^-{3,}/, '--');
-            // ignore negative numbers
-            if (arg.match(negative)) {
-                return false;
-            }
-            // if this is a short option group and all of them are configured, it isn't unknown
-            if (hasAllShortFlags(arg)) {
-                return false;
-            }
-            // e.g. '--count=2'
-            const flagWithEquals = /^-+([^=]+?)=[\s\S]*$/;
-            // e.g. '-a' or '--arg'
-            const normalFlag = /^-+([^=]+?)$/;
-            // e.g. '-a-'
-            const flagEndingInHyphen = /^-+([^=]+?)-$/;
-            // e.g. '-abc123'
-            const flagEndingInDigits = /^-+([^=]+?\d+)$/;
-            // e.g. '-a/usr/local'
-            const flagEndingInNonWordCharacters = /^-+([^=]+?)\W+.*$/;
-            // check the different types of flag styles, including negatedBoolean, a pattern defined near the start of the parse method
-            return !hasFlagsMatching(arg, flagWithEquals, negatedBoolean, normalFlag, flagEndingInHyphen, flagEndingInDigits, flagEndingInNonWordCharacters);
-        }
-        // make a best effort to pick a default value
-        // for an option based on name and type.
-        function defaultValue(key) {
-            if (!checkAllAliases(key, flags.bools) &&
-                !checkAllAliases(key, flags.counts) &&
-                `${key}` in defaults) {
-                return defaults[key];
-            }
-            else {
-                return defaultForType(guessType(key));
-            }
-        }
-        // return a default value, given the type of a flag.,
-        function defaultForType(type) {
-            const def = {
-                [DefaultValuesForTypeKey.BOOLEAN]: true,
-                [DefaultValuesForTypeKey.STRING]: '',
-                [DefaultValuesForTypeKey.NUMBER]: undefined,
-                [DefaultValuesForTypeKey.ARRAY]: []
-            };
-            return def[type];
-        }
-        // given a flag, enforce a default type.
-        function guessType(key) {
-            let type = DefaultValuesForTypeKey.BOOLEAN;
-            if (checkAllAliases(key, flags.strings))
-                type = DefaultValuesForTypeKey.STRING;
-            else if (checkAllAliases(key, flags.numbers))
-                type = DefaultValuesForTypeKey.NUMBER;
-            else if (checkAllAliases(key, flags.bools))
-                type = DefaultValuesForTypeKey.BOOLEAN;
-            else if (checkAllAliases(key, flags.arrays))
-                type = DefaultValuesForTypeKey.ARRAY;
-            return type;
-        }
-        function isUndefined(num) {
-            return num === undefined;
-        }
-        // check user configuration settings for inconsistencies
-        function checkConfiguration() {
-            // count keys should not be set as array/narg
-            Object.keys(flags.counts).find(key => {
-                if (checkAllAliases(key, flags.arrays)) {
-                    error = Error(__('Invalid configuration: %s, opts.count excludes opts.array.', key));
-                    return true;
-                }
-                else if (checkAllAliases(key, flags.nargs)) {
-                    error = Error(__('Invalid configuration: %s, opts.count excludes opts.narg.', key));
-                    return true;
-                }
-                return false;
-            });
-        }
-        return {
-            aliases: Object.assign({}, flags.aliases),
-            argv: Object.assign(argvReturn, argv),
-            configuration: configuration,
-            defaulted: Object.assign({}, defaulted),
-            error: error,
-            newAliases: Object.assign({}, newAliases)
-        };
-    }
-}
-// if any aliases reference each other, we should
-// merge them together.
-function combineAliases(aliases) {
-    const aliasArrays = [];
-    const combined = Object.create(null);
-    let change = true;
-    // turn alias lookup hash {key: ['alias1', 'alias2']} into
-    // a simple array ['key', 'alias1', 'alias2']
-    Object.keys(aliases).forEach(function (key) {
-        aliasArrays.push([].concat(aliases[key], key));
-    });
-    // combine arrays until zero changes are
-    // made in an iteration.
-    while (change) {
-        change = false;
-        for (let i = 0; i < aliasArrays.length; i++) {
-            for (let ii = i + 1; ii < aliasArrays.length; ii++) {
-                const intersect = aliasArrays[i].filter(function (v) {
-                    return aliasArrays[ii].indexOf(v) !== -1;
-                });
-                if (intersect.length) {
-                    aliasArrays[i] = aliasArrays[i].concat(aliasArrays[ii]);
-                    aliasArrays.splice(ii, 1);
-                    change = true;
-                    break;
-                }
-            }
-        }
-    }
-    // map arrays back to the hash-lookup (de-dupe while
-    // we're at it).
-    aliasArrays.forEach(function (aliasArray) {
-        aliasArray = aliasArray.filter(function (v, i, self) {
-            return self.indexOf(v) === i;
-        });
-        const lastAlias = aliasArray.pop();
-        if (lastAlias !== undefined && typeof lastAlias === 'string') {
-            combined[lastAlias] = aliasArray;
-        }
-    });
-    return combined;
-}
-// this function should only be called when a count is given as an arg
-// it is NOT called to set a default value
-// thus we can start the count at 1 instead of 0
-function increment(orig) {
-    return orig !== undefined ? orig + 1 : 1;
-}
-// TODO(bcoe): in the next major version of yargs, switch to
-// Object.create(null) for dot notation:
-function sanitizeKey(key) {
-    if (key === '__proto__')
-        return '___proto___';
-    return key;
-}
-function stripQuotes(val) {
-    return (typeof val === 'string' &&
-        (val[0] === "'" || val[0] === '"') &&
-        val[val.length - 1] === val[0])
-        ? val.substring(1, val.length - 1)
-        : val;
-}
-</file>
-
 <file path="web/scripts/generate-pagefind-index.mjs">
 import path from "node:path";
 import { promises as fs } from "node:fs";
@@ -2769,121 +1834,6 @@ const timeLabel = `${meeting.day} · ${meeting.time}`;
     .prayer-callout__cta {
       justify-content: flex-end;
     }
-  }
-</style>
-</file>
-
-<file path="web/src/components/ui/BudgetProgress.astro">
----
-import budget from "../../data/budget.json";
-
-const { goal = 0, received = 0, updatedAt } = budget;
-const normalizedGoal = Math.max(0, goal);
-const normalizedReceived = Math.max(0, received);
-const percentRaised = normalizedGoal
-  ? Math.min(100, Math.round((normalizedReceived / normalizedGoal) * 100))
-  : 0;
-
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
-
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "long",
-  day: "numeric",
-  year: "numeric",
-});
-
-const formattedGoal = currencyFormatter.format(normalizedGoal);
-const formattedReceived = currencyFormatter.format(normalizedReceived);
-const formattedUpdatedAt = updatedAt
-  ? dateFormatter.format(new Date(updatedAt))
-  : null;
----
-
-<section class="budget-progress card" aria-label="Budget progress widget">
-  <div class="budget-progress__heading">
-    <p class="muted">Annual operating budget</p>
-    <h2>Budget progress</h2>
-  </div>
-
-  <div class="budget-progress__totals">
-    <div>
-      <p class="muted">Goal</p>
-      <p class="budget-progress__amount">{formattedGoal}</p>
-    </div>
-    <div>
-      <p class="muted">Received</p>
-      <p class="budget-progress__amount">{formattedReceived}</p>
-    </div>
-  </div>
-
-  <div
-    class="budget-progress__bar"
-    role="progressbar"
-    aria-valuemin="0"
-    aria-valuemax="100"
-    aria-valuenow={percentRaised}
-    aria-label={`${percentRaised}% of goal met`}
-  >
-    <span class="budget-progress__bar-fill" style={`width: ${percentRaised}%`}></span>
-  </div>
-
-  <p class="budget-progress__percent">{percentRaised}% of the goal met</p>
-  {formattedUpdatedAt && (
-    <p class="budget-progress__updated small muted">Updated {formattedUpdatedAt}</p>
-  )}
-</section>
-
-<style>
-  .budget-progress {
-    gap: var(--space-4);
-    display: flex;
-    flex-direction: column;
-  }
-
-  .budget-progress__heading h2 {
-    margin: 0;
-    font-size: var(--font-size-3);
-  }
-
-  .budget-progress__totals {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: var(--space-4);
-  }
-
-  .budget-progress__amount {
-    margin: 0;
-    font-size: var(--font-size-3);
-    font-weight: 700;
-  }
-
-  .budget-progress__bar {
-    position: relative;
-    height: 12px;
-    background: var(--color-surface-muted);
-    border-radius: var(--radius-4);
-    overflow: hidden;
-  }
-
-  .budget-progress__bar-fill {
-    display: block;
-    height: 100%;
-    background: linear-gradient(90deg, var(--color-primary), #8c222b);
-    border-radius: var(--radius-4);
-    transition: width 220ms ease;
-  }
-
-  .budget-progress__percent {
-    margin: 0;
-    font-weight: 600;
-  }
-
-  .budget-progress__updated {
-    margin: 0;
   }
 </style>
 </file>
@@ -5160,24 +4110,158 @@ const props = Astro.props as Props;
 <HeroUI {...props} />
 </file>
 
+<file path="web/src/components/ui/BudgetProgress.astro">
+---
+import budget from "../../data/budget.json";
+
+const { embedded = false } = Astro.props;
+
+const { goal = 0, received = 0, updatedAt } = budget;
+const normalizedGoal = Math.max(0, goal);
+const normalizedReceived = Math.max(0, received);
+const percentRaised = normalizedGoal
+  ? Math.min(100, Math.round((normalizedReceived / normalizedGoal) * 100))
+  : 0;
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "long",
+  day: "numeric",
+  year: "numeric",
+});
+
+const formattedGoal = currencyFormatter.format(normalizedGoal);
+const formattedReceived = currencyFormatter.format(normalizedReceived);
+const formattedUpdatedAt = updatedAt
+  ? dateFormatter.format(new Date(updatedAt))
+  : null;
+---
+
+<section class:list={["budget-progress", !embedded && "card"]} aria-label="Budget progress widget">
+  <div class="budget-progress__heading">
+    <p class="muted">Annual operating budget</p>
+    <h2>Budget progress</h2>
+  </div>
+
+  <div class="budget-progress__totals">
+    <div>
+      <p class="muted">Goal</p>
+      <p class="budget-progress__amount">{formattedGoal}</p>
+    </div>
+    <div>
+      <p class="muted">Received</p>
+      <p class="budget-progress__amount">{formattedReceived}</p>
+    </div>
+  </div>
+
+  <div
+    class="budget-progress__bar"
+    role="progressbar"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-valuenow={percentRaised}
+    aria-label={`${percentRaised}% of goal met`}
+  >
+    <span class="budget-progress__bar-fill" style={`width: ${percentRaised}%`}></span>
+  </div>
+
+  <p class="budget-progress__percent">{percentRaised}% of the goal met</p>
+  {formattedUpdatedAt && (
+    <p class="budget-progress__updated small muted">Updated {formattedUpdatedAt}</p>
+  )}
+</section>
+
+<style>
+  .budget-progress {
+    gap: var(--space-4);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .budget-progress__heading h2 {
+    margin: 0;
+    font-size: var(--font-size-3);
+  }
+
+  .budget-progress__totals {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .budget-progress__amount {
+    margin: 0;
+    font-size: var(--font-size-3);
+    font-weight: 700;
+  }
+
+  .budget-progress__bar {
+    position: relative;
+    height: 12px;
+    background: var(--color-surface-muted);
+    border-radius: var(--radius-4);
+    overflow: hidden;
+  }
+
+  .budget-progress__bar-fill {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary), #8c222b);
+    border-radius: var(--radius-4);
+    transition: width 220ms ease;
+  }
+
+  .budget-progress__percent {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .budget-progress__updated {
+    margin: 0;
+  }
+</style>
+</file>
+
 <file path="web/src/components/ui/CardGrid.astro">
 ---
 type Props = {
   /** Fixed number of columns (e.g. 3). */
   columns?: number;
-  /** Responsive min column width in px (auto-fit). */
-  columnsMin?: number;
+  /** Responsive min column width (auto-fit). */
+  columnsMin?: number | string;
+  class?: string;
 };
 
-const { columns, columnsMin = 240 } = Astro.props;
+const {
+  columns,
+  columnsMin = 220,
+  class: className = "",
+} = Astro.props as Props;
+
+const minTrack =
+  typeof columnsMin === "number" ? `${columnsMin}px` : columnsMin;
 
 const template =
   typeof columns === "number"
     ? `repeat(${columns}, minmax(0, 1fr))`
-    : `repeat(auto-fit, minmax(${columnsMin}px, 1fr))`;
+    : undefined;
+
+const classList = ["grid", className].filter(Boolean).join(" ");
+
+const style = [
+  `--grid-min: ${minTrack}`,
+  template ? `--grid-template: ${template}` : null,
+]
+  .filter(Boolean)
+  .join("; ");
 ---
 
-<div class="grid" style={`grid-template-columns: ${template};`}>
+<div class={classList} style={style}>
   <slot />
 </div>
 
@@ -5185,6 +4269,11 @@ const template =
   .grid {
     display: grid;
     gap: var(--space-4);
+    grid-template-columns: var(
+      --grid-template,
+      repeat(auto-fit, minmax(var(--grid-min, 220px), 1fr))
+    );
+    align-items: stretch;
   }
 </style>
 </file>
@@ -5194,127 +4283,147 @@ const template =
 import weeklyHighlights from "../../data/weekly-highlights";
 
 const highlights = weeklyHighlights.filter((item) => item.text.trim().length > 0);
-const tickerDuration = highlights.length ? Math.max(highlights.length * 4, 24) : 24;
-const marqueeItems = highlights.length ? [...highlights, ...highlights] : [];
 const isExternal = (href?: string) => typeof href === "string" && /^https?:\/\//.test(href);
 ---
 
 {highlights.length > 0 ? (
-  <section class="highlights-scroller" aria-label="Weekly highlights ticker">
-    <div class="highlights-scroller__window">
-      <div
-        class="highlights-scroller__track"
-        role="list"
-        style={`--ticker-duration: ${tickerDuration}s`}
-      >
-        {marqueeItems.map((item) => (
-          <div class="highlights-scroller__item" role="listitem">
-            {item.badge ? <span class="highlights-scroller__badge">{item.badge}</span> : null}
-            {item.href ? (
-              <a
-                class="highlights-scroller__link"
-                href={item.href}
-                target={isExternal(item.href) ? "_blank" : undefined}
-                rel={isExternal(item.href) ? "noreferrer" : undefined}
-              >
-                {item.text}
-              </a>
-            ) : (
-              <span class="highlights-scroller__link">{item.text}</span>
-            )}
-          </div>
+  <section class="highlights-carousel" aria-label="Weekly highlights carousel">
+    <div class="highlights-carousel__viewport">
+      <div class="highlights-carousel__track" role="list">
+        {highlights.map((item) => (
+          <article class="highlights-carousel__slide" role="listitem">
+            <div class="highlights-carousel__card">
+              <div class="highlights-carousel__badge-row">
+                {item.badge ? <span class="highlights-carousel__badge">{item.badge}</span> : null}
+                {item.tag ? <span class="highlights-carousel__tag">{item.tag}</span> : null}
+              </div>
+              <p class="highlights-carousel__text">
+                {item.href ? (
+                  <a
+                    href={item.href}
+                    target={isExternal(item.href) ? "_blank" : undefined}
+                    rel={isExternal(item.href) ? "noreferrer" : undefined}
+                  >
+                    {item.text}
+                  </a>
+                ) : (
+                  item.text
+                )}
+              </p>
+              {item.ctaHref && item.ctaLabel ? (
+                <a
+                  class="highlights-carousel__cta"
+                  href={item.ctaHref}
+                  target={item.external ? "_blank" : undefined}
+                  rel={item.external ? "noreferrer" : undefined}
+                >
+                  {item.ctaLabel}
+                </a>
+              ) : null}
+            </div>
+          </article>
         ))}
       </div>
     </div>
   </section>
 ) : null}
 
+<script src="/scripts/highlights-carousel.js" defer></script>
+
 <style>
-  .highlights-scroller {
+  .highlights-carousel {
     margin: var(--space-8) 0;
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-3);
     background: var(--color-surface);
     box-shadow: var(--shadow-1);
+    border: 1px solid var(--color-border);
+    position: relative;
     overflow: hidden;
   }
 
-  .highlights-scroller__window {
+  .highlights-carousel__viewport {
     overflow: hidden;
   }
 
-  .highlights-scroller__track {
+  .highlights-carousel__track {
     display: flex;
-    align-items: center;
-    gap: var(--space-5);
-    padding: var(--space-3) var(--space-4);
-    min-width: 200%;
-    animation: highlights-scroll var(--ticker-duration, 32s) linear infinite;
+    transition: transform 0.6s ease-in-out;
     will-change: transform;
   }
 
-  .highlights-scroller__item {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    border-right: 1px solid var(--color-border);
-    padding-right: var(--space-4);
-    font-size: 1rem;
-    font-weight: 600;
-    flex: 0 0 auto;
-    white-space: nowrap;
+  .highlights-carousel__slide {
+    flex: 0 0 100%;
+    padding: var(--space-6) var(--space-4);
   }
 
-  .highlights-scroller__link {
+  .highlights-carousel__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .highlights-carousel__badge-row {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  .highlights-carousel__badge,
+  .highlights-carousel__tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.3rem 0.75rem;
+    border-radius: var(--radius-2);
+  }
+
+  .highlights-carousel__badge {
+    background: var(--color-gray-100);
+    color: var(--color-text-muted);
+  }
+
+  .highlights-carousel__tag {
+    background: var(--color-primary);
+    color: var(--color-white);
+  }
+
+  .highlights-carousel__text {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    line-height: 1.3;
+  }
+
+  .highlights-carousel__text a {
     color: inherit;
     text-decoration: none;
   }
 
-  .highlights-scroller__link:hover {
+  .highlights-carousel__text a:hover {
     text-decoration: underline;
   }
 
-  .highlights-scroller__badge {
-    background: var(--color-gray-100);
-    color: var(--color-text-muted);
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    border-radius: var(--radius-2);
-    padding: 0 var(--space-2);
-    height: 1.4rem;
-    display: inline-flex;
-    align-items: center;
+  .highlights-carousel__cta {
+    align-self: flex-start;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-decoration: none;
   }
 
-  .highlights-scroller__window:hover .highlights-scroller__track,
-  .highlights-scroller__window:focus-within .highlights-scroller__track {
-    animation-play-state: paused;
-  }
-
-  @keyframes highlights-scroll {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
+  .highlights-carousel__cta:hover {
+    text-decoration: underline;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .highlights-scroller__track {
-      animation: none;
+    .highlights-carousel__track {
+      transition: none;
     }
   }
 
   @media (max-width: 720px) {
-    .highlights-scroller__track {
-      gap: var(--space-4);
-    }
-
-    .highlights-scroller__item {
-      font-size: 0.95rem;
-      padding-right: var(--space-3);
+    .highlights-carousel__slide {
+      padding: var(--space-5);
     }
   }
 </style>
@@ -8107,6 +7216,22 @@ test.describe("Smoke - mobile device", () => {
     );
     await expect(page.getByRole("link", { name: /give/i })).toBeVisible();
   });
+
+  test("mobile gutters tighten on narrow viewports", async ({ page }) => {
+    const projectName = test.info().project.name;
+    test.skip(projectName !== "mobile-smoke", "mobile project only");
+
+    await page.goto("/");
+
+    const containerPad = await page.evaluate(() =>
+      getComputedStyle(document.documentElement)
+        .getPropertyValue("--container-pad")
+        .trim(),
+    );
+    expect(["0.875rem", ".875rem"]).toContain(containerPad);
+
+    await expect(page.locator(".home-grid")).toHaveCSS("gap", "20px");
+  });
 });
 </file>
 
@@ -8298,6 +7423,7 @@ web/.wrangler/tmp/
 web/.lighthouseci
 web/.wrangler
 package/
+web/scripts/vendor/yargs-parser/build/lib/yargs-parser.js
 </file>
 
 <file path="web/.github/workflows/ci.yml">
@@ -11433,419 +10559,6 @@ export default defineConfig({
 });
 </file>
 
-<file path="web/src/components/global/Header.astro">
----
-import { Image } from "astro:assets";
-import Button from "../ui/Button.astro";
-import churchLogo from "../../assets/photos/church-logo-primary.jpg";
-import { site } from "../../data/site";
-
-const pathname = Astro.url?.pathname ?? "/";
-
-function isActive(href: string) {
-  if (href === "/") return pathname === "/";
-  return pathname === href || pathname.startsWith(href + "/");
-}
-
-function linkAttrs(item: { href: string; external?: boolean }) {
-  return item.external ? { target: "_blank", rel: "noopener noreferrer" } : {};
-}
-
-const utilityNavLabels = new Set(["Events", "Privacy"]);
-const primaryNav = site.nav.filter((item) => !utilityNavLabels.has(item.label));
-const utilityNav = site.nav.filter((item) => utilityNavLabels.has(item.label));
-
-const watchLive = site.quickActions.find((i) => i.label === "Watch Live") ?? site.quickActions[0];
-const give = site.quickActions.find((i) => i.label === "Give") ?? site.quickActions[1];
-const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label && i.label !== give?.label);
----
-
-<header class="site-header">
-  <div class="inner">
-    <a class="brand" href="/" aria-label={site.name}>
-      <Image
-        src={churchLogo}
-        alt={`${site.name} logo`}
-        widths={[36, 44, 56]}
-        sizes="48px"
-        loading="eager"
-        decoding="async"
-        class="brand__logo"
-      />
-      <span class="brand__title">{site.shortName}</span>
-    </a>
-
-    <nav class="nav nav--desktop" aria-label="Primary navigation">
-      {primaryNav.map((item) => (
-        <a
-          href={item.href}
-          aria-current={isActive(item.href) ? "page" : undefined}
-          {...linkAttrs(item)}
-        >
-          {item.label}
-        </a>
-      ))}
-    </nav>
-
-    <div class="right">
-      <div class="cta cta--desktop" aria-label="Primary actions">
-        {watchLive && (
-          <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
-            {watchLive.label}
-          </Button>
-        )}
-        {give && (
-          <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
-            {give.label}
-          </Button>
-        )}
-      </div>
-
-      <div class="cta cta--mobile" aria-label="Primary actions">
-        {watchLive && (
-          <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
-            {watchLive.label}
-          </Button>
-        )}
-        {give && (
-          <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
-            {give.label}
-          </Button>
-        )}
-      </div>
-
-      <details class="menu" aria-label="Mobile menu">
-        <summary class="menu__summary" aria-label="Open menu">
-          <span class="menu__icon" aria-hidden="true">☰</span>
-          <span class="menu__label">Menu</span>
-        </summary>
-
-        <div class="menu__panel">
-          <div class="menu__section" aria-label="Primary navigation" role="navigation">
-            {site.nav.map((item) => (
-              <a
-                class="menu__link"
-                href={item.href}
-                aria-current={isActive(item.href) ? "page" : undefined}
-                {...linkAttrs(item)}
-              >
-                {item.label}
-              </a>
-            ))}
-          </div>
-
-          <div class="menu__divider" role="separator" aria-hidden="true"></div>
-
-          <div class="menu__section" aria-label="Quick actions">
-            <div class="menu__actions">
-              {watchLive && (
-                <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
-                  {watchLive.label}
-                </Button>
-              )}
-              {give && (
-                <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
-                  {give.label}
-                </Button>
-              )}
-            </div>
-
-            {otherQuick.length > 0 && (
-              <div class="menu__quicklinks" aria-label="More quick links">
-                {otherQuick.map((item) => (
-                  <a class="menu__sublink" href={item.href} {...linkAttrs(item)}>
-                    {item.label}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </details>
-    </div>
-  </div>
-
-  {utilityNav.length > 0 && (
-    <nav class="utility-bar" aria-label="Utility navigation">
-      {utilityNav.map((item) => (
-        <a href={item.href} {...linkAttrs(item)}>
-          {item.label}
-        </a>
-      ))}
-    </nav>
-  )}
-</header>
-
-<script>
-  // Close the mobile menu when a link is clicked.
-  document.addEventListener("click", (e) => {
-    const target = e.target;
-    if (!(target instanceof HTMLElement)) return;
-
-    const link = target.closest("a");
-    const details = target.closest("details.menu");
-    if (link && details) details.removeAttribute("open");
-  });
-</script>
-
-<style>
-  .site-header {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: var(--color-white);
-    border-bottom: 1px solid var(--color-border);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  .inner {
-    max-width: var(--container-max);
-    margin: 0 auto;
-    padding: var(--space-3) var(--container-pad);
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: var(--space-4);
-  }
-
-  .utility-bar {
-    width: 100%;
-    max-width: var(--container-max);
-    margin: 0 auto;
-    padding: 0 var(--container-pad) var(--space-1);
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--space-3);
-    border-top: 1px solid var(--color-border);
-    background: var(--color-gray-50);
-    font-size: var(--font-size-0);
-  }
-
-  .utility-bar a {
-    color: var(--color-text);
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: var(--target-min);
-    padding: 0.45rem 0.85rem;
-    border-radius: var(--radius-2);
-  }
-
-  .utility-bar a:hover,
-  .utility-bar a:focus-visible {
-    text-decoration: underline;
-  }
-
-  .brand {
-    text-decoration: none;
-    color: inherit;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-width: max-content;
-  }
-
-  .brand__logo {
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius-3);
-    object-fit: contain;
-    flex-shrink: 0;
-  }
-
-  .brand__title {
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    font-size: var(--font-size-2);
-  }
-
-  .nav {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .nav a {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--target-min);
-    text-decoration: none;
-    color: inherit;
-    font-weight: 700;
-    opacity: 0.9;
-    padding: 0.65rem 0.9rem;
-    min-width: var(--target-min);
-    justify-content: center;
-    border-radius: 999px;
-  }
-
-  .nav a:hover {
-    background: var(--color-gray-50);
-    opacity: 1;
-  }
-
-  .nav a[aria-current="page"] {
-    background: var(--color-gray-100);
-    opacity: 1;
-  }
-
-  .cta {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    justify-content: flex-end;
-    min-width: max-content;
-  }
-
-  .right {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: var(--space-2);
-    min-width: max-content;
-  }
-
-  .cta--mobile {
-    display: none;
-  }
-
-  /* Mobile menu */
-  .menu {
-    display: none;
-    position: relative;
-  }
-
-  .menu__summary {
-    list-style: none;
-    cursor: pointer;
-    user-select: none;
-    padding: 0.65rem 0.9rem;
-    border-radius: 999px;
-    border: 1px solid var(--color-border);
-    background: var(--color-white);
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-weight: 700;
-    min-height: var(--target-min);
-    min-width: var(--target-min);
-  }
-
-  .menu__summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .menu[open] .menu__summary {
-    background: var(--color-gray-50);
-  }
-
-  .menu__panel {
-    position: absolute;
-    right: 0;
-    top: calc(100% + 0.6rem);
-    width: min(92vw, 22rem);
-    background: var(--color-white);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-3);
-    box-shadow: var(--shadow-2);
-    padding: var(--space-3);
-    z-index: 60;
-  }
-
-  .menu__section {
-    display: grid;
-    gap: 0.35rem;
-  }
-
-  .menu__link {
-    display: flex;
-    align-items: center;
-    min-height: var(--target-min);
-    text-decoration: none;
-    color: inherit;
-    font-weight: 700;
-    padding: 0.6rem 0.7rem;
-    border-radius: var(--radius-2);
-  }
-
-  .menu__link:hover {
-    background: var(--color-gray-50);
-  }
-
-  .menu__link[aria-current="page"] {
-    background: var(--color-gray-100);
-  }
-
-  .menu__divider {
-    height: 1px;
-    background: var(--color-border);
-    margin: var(--space-3) 0;
-  }
-
-  .menu__actions {
-    display: flex;
-    gap: var(--space-2);
-    flex-wrap: wrap;
-  }
-
-  .menu__quicklinks {
-    margin-top: var(--space-3);
-    display: grid;
-    gap: 0.25rem;
-  }
-
-  .menu__sublink {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--target-min);
-    text-decoration: none;
-    color: inherit;
-    opacity: 0.9;
-    padding: 0.4rem 0.2rem;
-    font-weight: 700;
-  }
-
-  .menu__sublink:hover {
-    opacity: 1;
-    text-decoration: underline;
-  }
-
-  @media (max-width: 860px) {
-    .cta--desktop {
-      display: none;
-    }
-
-    .cta--mobile {
-      display: flex;
-    }
-
-    .inner {
-      grid-template-columns: auto 1fr auto;
-    }
-
-    .menu {
-      display: block;
-    }
-  }
-
-  @media (max-width: 420px) {
-    .menu__label {
-      display: none;
-    }
-
-    .menu__summary {
-      padding: 0.55rem 0.6rem;
-    }
-  }
-</style>
-</file>
-
 <file path="web/src/components/ui/Banner.astro">
 ---
 import Button from "./Button.astro";
@@ -11914,69 +10627,6 @@ const toneClass = tone === "warn" ? "banner--warn" : "banner--info";
 </style>
 </file>
 
-<file path="web/src/components/ui/Card.astro">
----
-type Props = {
-  title: string;
-  description?: string;
-  href?: string;
-  variant?: "standard" | "featured";
-};
-
-const { title, description, href, variant = "standard" } = Astro.props as Props;
-const hasDescription = Boolean(description?.trim?.());
-const classes = ["card", variant === "featured" ? "card--featured" : null, href ? "card--link" : ""].filter(Boolean).join(" ");
----
-
-{href ? (
-  <a class={classes} href={href} aria-label={title}>
-    <div class="card__body">
-      <div>
-        <div class="card__title">{title}</div>
-        {hasDescription && <p class="card__desc">{description}</p>}
-      </div>
-      <span class="card__cta link" aria-hidden="true">Learn more</span>
-    </div>
-  </a>
-) : (
-  <div class={classes}>
-    <div class="card__body">
-      <div>
-        <div class="card__title">{title}</div>
-        {hasDescription && <p class="card__desc">{description}</p>}
-      </div>
-    </div>
-  </div>
-)}
-
-<style>
-  .card__body {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    min-height: 160px;
-    justify-content: space-between;
-  }
-
-  .card__title {
-    font-weight: 800;
-    font-size: var(--font-size-2);
-    margin-bottom: var(--space-2);
-  }
-
-  .card__desc {
-    margin: 0;
-    font-size: var(--type-scale-body-size);
-    line-height: var(--type-scale-body-line-height);
-    color: var(--color-text);
-  }
-
-  .card__cta {
-    font-weight: 700;
-  }
-</style>
-</file>
-
 <file path="web/src/components/ui/Hero.astro">
 ---
 import Button from "./Button.astro";
@@ -12000,6 +10650,7 @@ const {
   secondaryCtaHref,
   className = ""
 } = Astro.props as Props;
+
 const hasMeta = Boolean(Astro.slots?.meta);
 const rootClass = ["hero", "card", className].filter(Boolean).join(" ");
 ---
@@ -12097,11 +10748,15 @@ const rootClass = ["hero", "card", className].filter(Boolean).join(" ");
     }
   }
 
+  /* Key fix:
+     - remove the 560px max-width cap
+     - let the hero card use the full page width like the rest of the content
+  */
   .hero {
-    max-width: min(560px, 100%);
+    width: 100%;
+    max-width: none;
     margin: 0;
     padding: clamp(1.25rem, 1rem + 0.5vw, 1.75rem);
-    align-self: flex-start;
   }
 
   @media (max-width: 720px) {
@@ -12343,130 +10998,6 @@ import { site } from "../../data/site";
 </BaseLayout>
 </file>
 
-<file path="web/src/styles/tokens.css">
-/* Design tokens: colors, typography, spacing, radius, shadows
-   - Keep these as the single source of truth for styling.
-   - All component/page CSS should reference variables from here.
-*/
-
-:root {
-  /* Typography */
-  --font-family-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, "Noto Sans", "Liberation Sans", sans-serif;
-
-  /* Font sizes (step scale) */
-  --font-size-0: 0.95rem;
-  --font-size-1: 1rem;
-  --font-size-2: 1.15rem;
-  --font-size-3: 1.35rem;
-  --font-size-4: 1.7rem;
-  --font-size-5: 2.2rem;
-
-  /* Type ramp tokens */
-  --type-scale-h1-size: var(--font-size-5);
-  --type-scale-h1-line-height: 1.2;
-  --type-scale-h1-weight: 800;
-  --type-scale-h1-letter-spacing: -0.02em;
-
-  --type-scale-h2-size: var(--font-size-4);
-  --type-scale-h2-line-height: 1.3;
-  --type-scale-h2-weight: 700;
-  --type-scale-h2-letter-spacing: -0.02em;
-
-  --type-scale-h3-size: var(--font-size-3);
-  --type-scale-h3-line-height: 1.4;
-  --type-scale-h3-weight: 700;
-
-  --type-scale-body-size: var(--font-size-2);
-  --type-scale-body-line-height: 1.65;
-  --type-scale-body-letter-spacing: 0;
-
-  --type-scale-small-size: var(--font-size-0);
-  --type-scale-small-line-height: 1.45;
-
-  /* Spacing scale (fixes missing vars used across the repo) */
-  --space-0: 0;
-  --space-1: 0.25rem;  /* 4px */
-  --space-2: 0.5rem;   /* 8px */
-  --space-3: 0.75rem;  /* 12px */
-  --space-4: 1rem;     /* 16px */
-  --space-5: 1.25rem;  /* 20px  (was missing) */
-  --space-6: 1.5rem;   /* 24px */
-  --space-7: 1.75rem;  /* 28px  (was missing) */
-  --space-8: 2rem;     /* 32px */
-  --space-10: 2.5rem;  /* 40px  (was missing) */
-  --space-12: 3rem;    /* 48px */
-  --space-16: 4rem;    /* 64px */
-
-  /* Radii */
-  --radius-2: 0.5rem;
-  --radius-3: 0.75rem;
-  --radius-4: 1rem;
-
-  /* Shadows */
-  --shadow-1: 0 1px 2px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
-  --shadow-2: 0 2px 8px rgba(0,0,0,0.10), 0 16px 48px rgba(0,0,0,0.08);
-
-  /* Layout */
-  --container-max: 72rem;
-  --container-pad: 1.75rem;
-  --target-min: 44px;
-
-  /* Brand */
-  --color-primary: #6c1d25;
-  --color-primary-hover: #4c1117;
-
-  /* Optional deeper shade (used for gradients / emphasis) */
-  --color-primary-700: #3b0d12;
-  --color-primary-link: var(--color-primary-700);
-
-  /* Neutrals */
-  --color-black: #0b0f17;
-  --color-text: #0b0f17;
-  --color-white: #ffffff;
-
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-300: #d1d5db;
-  --color-gray-600: #4b5563;
-
-  /* Surfaces */
-  --color-surface: #ffffff;
-  --color-surface-2: #f3f4f6;
-  --color-surface-muted: #f9fafb;
-
-  --color-border: #e5e7eb;
-
-  /* Text accents */
-  --color-text-muted: #4b5563;
-
-  /* Alias used in a few components */
-  --color-muted: var(--color-text-muted);
-
-  /* Semantic colors */
-  --color-info-border: #d6b5b8; /* brand-tinted info */
-  --color-info-bg: #fbf3f4;
-
-  --color-warn-border: #f59e0b;
-  --color-warn-bg: #fff7ed;
-
-  --color-danger: #b00020;
-  --color-danger-border: #b91c1c;
-  --color-danger-bg: #fee2e2;
-
-  --color-success-border: #34d399;
-  --color-success-bg: #ecfdf5;
-
-  /* Alias used by connect-card page */
-  --color-secondary: var(--color-danger);
-
-  /* Focus */
-  --color-focus: #2563eb;
-  --focus-ring: 3px solid var(--color-focus);
-}
-</file>
-
 <file path="web/playwright.config.ts">
 import { defineConfig, devices } from "@playwright/test";
 
@@ -12584,6 +11115,357 @@ Lighthouse category assertions operate on a 0–1 scale in CI configs, so 0.90 c
 
 - If Playwright fails locally, run `npx playwright install --with-deps` and consult Playwright’s docs on CI workflows/setup patterns.
 - If Lighthouse CI fails, inspect large images or heavyweight scripts, optimize them, and rerun `npm run lighthouse`; budgets guard performance, accessibility, best practices, and SEO.
+</file>
+
+<file path="web/src/components/ui/Card.astro">
+---
+type Props = {
+  title: string;
+  description?: string;
+  href?: string;
+  variant?: "standard" | "featured";
+};
+
+const { title, description, href, variant = "standard" } = Astro.props as Props;
+const hasDescription = Boolean(description?.trim?.());
+const classes = ["card", variant === "featured" ? "card--featured" : null, href ? "card--link" : ""].filter(Boolean).join(" ");
+---
+
+{href ? (
+  <a class={classes} href={href} aria-label={title}>
+    <div class="card__body">
+      <div>
+        <div class="card__title">{title}</div>
+        {hasDescription && <p class="card__desc">{description}</p>}
+      </div>
+      <span class="card__cta link" aria-hidden="true">Learn more</span>
+    </div>
+  </a>
+) : (
+  <div class={classes}>
+    <div class="card__body">
+      <div>
+        <div class="card__title">{title}</div>
+        {hasDescription && <p class="card__desc">{description}</p>}
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .card__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-height: var(--card-min-height, auto);
+    justify-content: space-between;
+  }
+
+  .card__title {
+    font-weight: 800;
+    font-size: var(--font-size-2);
+    margin-bottom: var(--space-2);
+  }
+
+  .card__desc {
+    margin: 0;
+    font-size: var(--type-scale-body-size);
+    line-height: var(--type-scale-body-line-height);
+    color: var(--color-text);
+  }
+
+  .card__cta {
+    font-weight: 700;
+  }
+</style>
+</file>
+
+<file path="web/src/content/ministries/children.md">
+---
+title: "Children’s Ministry"
+summary: "Nurturing every child to know Jesus through story, song, and a safe, joyful community."
+leaderName: "Giselle Davey"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "Sabbath mornings (see programs below)"
+category: "Children & Youth"
+ctaLabel: "Contact us"
+ctaHref: "/connect/contact"
+tags: ["kids", "families", "faith formation"]
+---
+
+## Children’s Ministry
+
+Coordinator: Giselle Davey
+
+The mission of the Children’s Ministries Department is to nurture children of every age into a loving, serving relationship with Jesus. We are committed to creating a safe, joyful, and faith-filled environment where every child can grow spiritually, emotionally, socially, and mentally while learning how deeply they are loved by God.
+
+We seek to fulfill this mission by partnering closely with families to encourage Bible learning, worship, service, and fellowship through programs that welcome the whole child.
+
+### Our Programs & Meeting Times
+
+- • Sabbath School begins every Sabbath at 10:00 AM, offering engaging Bible-based lessons for children of all ages.
+- • Children’s Choir Practice takes place every Sabbath from 10:55–11:10 AM, helping kids worship God through music and shared praise.
+- • Children’s Church is held on the first and third Sabbath of each month, immediately following the Children’s Story, starting June 2026. Children’s Church is designed for children ages 3–9 and includes Bible stories, crafts, singing, a short sermonette, and snacks. For the safety of all children, parents are required to sign children in and out each Sabbath. All other Children’s Ministry programs are open to every child in Springfield and beyond.
+- • Vacation Bible School (VBS): July 28 to July 30 from 6 pm to 7:15 pm.
+
+Through these ministries, we aim to help children build faith, grow friendships, serve others, and develop a strong foundation that will guide them throughout their lives.
+
+### Special Dates
+
+- **Global Children’s Day — March 21, 2026:** We celebrate children worldwide with stories, songs, and acts of kindness, inviting each child to share in the joy of knowing Jesus.
+- **Children’s Sabbath — July 25, 2026:** Our worship services highlight children through music, scripture, and stories as they help lead the congregation in gratitude.
+
+### Resources
+
+- https://www.youtube.com/c/adventistchildrensministries
+- https://www.faithfinders.com/god-sent-his-son-to-be-my-friend-bible-study-guides
+- https://www.gracelink.net/podcast
+</file>
+
+<file path="web/src/pages/connect/contact/index.astro">
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Button from "../../../components/ui/Button.astro";
+import Schedule from "../../../components/ui/Schedule.astro";
+import MapEmbed from "../../../components/ui/MapEmbed.astro";
+import { site } from "../../../data/site";
+import { tel } from "../../../lib/links";
+
+const phoneHref = tel(site.contact.phone);
+const pastorCellHref = tel(site.contact.pastorCell);
+const pastorCellLabel = site.contact.pastorCellLabel ?? "Pastor (call/text)";
+const pastorDisplayName = site.contact.pastorName ?? "the pastor";
+const hasPastorCell = Boolean(site.contact.pastorCell && site.contact.pastorCell.trim());
+const hasContactForm = site.portals.contactFormUrl && site.portals.contactFormUrl !== "TBD";
+const hasFacebook = site.portals.facebookUrl && site.portals.facebookUrl !== "TBD";
+const hasYouTube = site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD";
+const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAddress.trim().length);
+---
+
+<BaseLayout
+  title="Contact"
+  description={`Contact ${site.name}: address, service times, phone, and email.`}
+>
+  <div class="stack">
+    <h1>Contact</h1>
+
+    <section class="card stack" aria-labelledby="contact-address">
+      <h2 id="contact-address">Address</h2>
+      <p class="muted">
+        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">{site.contact.address}</a>
+      </p>
+
+      {hasMailing ? (
+        <p class="small muted">
+          Mail: {site.contact.mailingAddress}
+        </p>
+      ) : null}
+
+      <div class="cluster">
+        <Button href={site.contact.mapsUrl} external variant="secondary">Open in Maps</Button>
+        <Button href="/connect/plan-a-visit" variant="tertiary">Plan a Visit</Button>
+      </div>
+      </section>
+
+      <section class="card stack" aria-labelledby="contact-map">
+        <h2 id="contact-map">Map</h2>
+        <p class="muted">
+          Prefer Google Maps? <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">Open directions</a>.
+        </p>
+        <MapEmbed src={site.map.embedSrc} title={`${site.name} location map`} />
+      </section>
+
+    <Schedule title="Service Times" items={site.schedule} />
+
+    {hasPastorCell ? (
+      <section class="card stack" aria-labelledby="contact-pastor">
+        <h2 id="contact-pastor">{pastorCellLabel}</h2>
+        <p class="muted">
+          The church phone may not be answered 24/7. For a faster response, call or text {pastorDisplayName}:
+          <a href={pastorCellHref}>{site.contact.pastorCell}</a>
+        </p>
+      </section>
+    ) : null}
+
+    <section class="card stack" aria-labelledby="contact-phone">
+      <h2 id="contact-phone">Phone</h2>
+      <p class="muted">
+        <a href={phoneHref}>{site.contact.phone}</a>
+      </p>
+      <p class="small muted">
+        If nobody answers, please leave a message and include a callback number.
+      </p>
+    </section>
+
+    <section class="card stack--tight" aria-labelledby="contact-email">
+      <h2 id="contact-email">Email</h2>
+      <p class="muted">
+        <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+      </p>
+    </section>
+
+    <section class="card stack" aria-labelledby="contact-watch-give">
+      <h2 id="contact-watch-give">Watch &amp; Give</h2>
+      <p class="muted">
+        Watch live (when available) or give online.
+      </p>
+
+      <div class="cluster">
+        <Button href="/media/live" variant="secondary">Watch Live</Button>
+        <Button href="/give" variant="tertiary">Give</Button>
+        {hasYouTube ? (
+          <Button href={site.portals.youtubeChannelUrl} external variant="tertiary">YouTube</Button>
+        ) : null}
+        {hasFacebook ? (
+          <Button href={site.portals.facebookUrl} external variant="tertiary">Facebook</Button>
+        ) : null}
+      </div>
+    </section>
+
+    <section class="card stack" aria-labelledby="contact-form">
+      <h2 id="contact-form">Message us</h2>
+      {hasContactForm ? (
+        <>
+          <p class="muted">
+            Use our contact form and we’ll follow up as soon as possible.
+          </p>
+          <Button href={site.portals.contactFormUrl} external variant="secondary">Open contact form</Button>
+          <p class="small muted">
+            Please avoid including sensitive information.
+          </p>
+        </>
+      ) : (
+        <p class="muted">
+          A contact form is coming soon. For now, please call or email us.
+        </p>
+      )}
+    </section>
+  </div>
+</BaseLayout>
+</file>
+
+<file path="web/src/styles/tokens.css">
+/* Design tokens: colors, typography, spacing, radius, shadows
+   - Keep these as the single source of truth for styling.
+   - All component/page CSS should reference variables from here.
+*/
+
+:root {
+  /* Typography */
+  --font-family-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", "Liberation Sans", sans-serif;
+
+  /* Font sizes (step scale) */
+  --font-size-0: 0.95rem;
+  --font-size-1: 1rem;
+  --font-size-2: 1.15rem;
+  --font-size-3: 1.35rem;
+  --font-size-4: 1.7rem;
+  --font-size-5: 2.2rem;
+
+  /* Type ramp tokens */
+  --type-scale-h1-size: var(--font-size-5);
+  --type-scale-h1-line-height: 1.2;
+  --type-scale-h1-weight: 800;
+  --type-scale-h1-letter-spacing: -0.02em;
+
+  --type-scale-h2-size: var(--font-size-4);
+  --type-scale-h2-line-height: 1.3;
+  --type-scale-h2-weight: 700;
+  --type-scale-h2-letter-spacing: -0.02em;
+
+  --type-scale-h3-size: var(--font-size-3);
+  --type-scale-h3-line-height: 1.4;
+  --type-scale-h3-weight: 700;
+
+  --type-scale-body-size: var(--font-size-2);
+  --type-scale-body-line-height: 1.65;
+  --type-scale-body-letter-spacing: 0;
+
+  --type-scale-small-size: var(--font-size-0);
+  --type-scale-small-line-height: 1.45;
+
+  /* Spacing scale (fixes missing vars used across the repo) */
+  --space-0: 0;
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px  (was missing) */
+  --space-6: 1.5rem;   /* 24px */
+  --space-7: 1.75rem;  /* 28px  (was missing) */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px  (was missing) */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+
+  /* Radii */
+  --radius-2: 0.5rem;
+  --radius-3: 0.75rem;
+  --radius-4: 1rem;
+
+  /* Shadows */
+  --shadow-1: 0 1px 2px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
+  --shadow-2: 0 2px 8px rgba(0,0,0,0.10), 0 16px 48px rgba(0,0,0,0.08);
+
+  /* Layout */
+  --container-max: 84rem;
+  --container-pad: 1.75rem;
+  --target-min: 44px;
+
+  /* Brand */
+  --color-primary: #6c1d25;
+  --color-primary-hover: #4c1117;
+
+  /* Optional deeper shade (used for gradients / emphasis) */
+  --color-primary-700: #3b0d12;
+  --color-primary-link: var(--color-primary-700);
+
+  /* Neutrals */
+  --color-black: #0b0f17;
+  --color-text: #0b0f17;
+  --color-white: #ffffff;
+
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-600: #4b5563;
+
+  /* Surfaces */
+  --color-surface: #ffffff;
+  --color-surface-2: #f3f4f6;
+  --color-surface-muted: #f9fafb;
+
+  --color-border: #e5e7eb;
+
+  /* Text accents */
+  --color-text-muted: #4b5563;
+
+  /* Alias used in a few components */
+  --color-muted: var(--color-text-muted);
+
+  /* Semantic colors */
+  --color-info-border: #8a1f24; /* stronger, brand-tinted info accent */
+  --color-info-bg: #fbf3f4;
+
+  --color-warn-border: #f59e0b;
+  --color-warn-bg: #fff7ed;
+
+  --color-danger: #b00020;
+  --color-danger-border: #b91c1c;
+  --color-danger-bg: #fee2e2;
+
+  --color-success-border: #34d399;
+  --color-success-bg: #ecfdf5;
+
+  /* Alias used by connect-card page */
+  --color-secondary: var(--color-danger);
+
+  /* Focus */
+  --color-focus: #2563eb;
+  --focus-ring: 3px solid var(--color-focus);
+}
 </file>
 
 <file path="web/src/components/global/Footer.astro">
@@ -12827,6 +11709,17 @@ const accessibilityHref = "/accessibility";
     gap: var(--space-2);
   }
 
+  .line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: baseline;
+  }
+
+  .line span {
+    min-width: 0;
+  }
+
   .line .day,
   .line .time,
   .line .label {
@@ -12858,6 +11751,19 @@ const accessibilityHref = "/accessibility";
     margin-top: var(--space-1);
   }
 
+  @media (max-width: 780px) {
+    .line {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .line .day,
+    .line .time,
+    .line .label {
+      white-space: normal;
+    }
+  }
+
   @media (max-width: 520px) {
     .col {
       min-width: 100%;
@@ -12866,168 +11772,460 @@ const accessibilityHref = "/accessibility";
 </style>
 </file>
 
-<file path="web/src/content/ministries/children.md">
+<file path="web/src/components/global/Header.astro">
 ---
-title: "Children’s Ministry"
-summary: "Nurturing every child to know Jesus through story, song, and a safe, joyful community."
-leaderName: "Giselle Davey"
-leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "Sabbath mornings (see programs below)"
-category: "Children & Youth"
-ctaLabel: "Contact us"
-ctaHref: "/connect/contact"
-tags: ["kids", "families", "faith formation"]
----
+import { Image } from "astro:assets";
+import Button from "../ui/Button.astro";
+import churchLogo from "../../assets/photos/church-logo-primary.jpg";
+import { site } from "../../data/site";
 
-## Children’s Ministry
+const pathname = Astro.url?.pathname ?? "/";
 
-Coordinator: Giselle Davey
+function isActive(href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(href + "/");
+}
 
-The mission of the Children’s Ministries Department is to nurture children of every age into a loving, serving relationship with Jesus. We are committed to creating a safe, joyful, and faith-filled environment where every child can grow spiritually, emotionally, socially, and mentally while learning how deeply they are loved by God.
+function linkAttrs(item: { href: string; external?: boolean }) {
+  return item.external ? { target: "_blank", rel: "noopener noreferrer" } : {};
+}
 
-We seek to fulfill this mission by partnering closely with families to encourage Bible learning, worship, service, and fellowship through programs that welcome the whole child.
+const utilityNavLabels = new Set(["Events", "Privacy"]);
+const primaryNav = site.nav.filter((item) => !utilityNavLabels.has(item.label));
+const utilityNav = site.nav.filter((item) => utilityNavLabels.has(item.label));
 
-### Our Programs & Meeting Times
-
-- • Sabbath School begins every Sabbath at 10:00 AM, offering engaging Bible-based lessons for children of all ages.
-- • Children’s Choir Practice takes place every Sabbath from 10:55–11:10 AM, helping kids worship God through music and shared praise.
-- • Children’s Church is held on the first and third Sabbath of each month, immediately following the Children’s Story, starting June 2026. Children’s Church is designed for children ages 3–9 and includes Bible stories, crafts, singing, a short sermonette, and snacks. For the safety of all children, parents are required to sign children in and out each Sabbath. All other Children’s Ministry programs are open to every child in Springfield and beyond.
-- • Vacation Bible School (VBS): July 28 to July 30 from 6 pm to 7:15 pm.
-
-Through these ministries, we aim to help children build faith, grow friendships, serve others, and develop a strong foundation that will guide them throughout their lives.
-
-### Special Dates
-
-- **Global Children’s Day — March 21, 2026:** We celebrate children worldwide with stories, songs, and acts of kindness, inviting each child to share in the joy of knowing Jesus.
-- **Children’s Sabbath — July 25, 2026:** Our worship services highlight children through music, scripture, and stories as they help lead the congregation in gratitude.
-
-### Resources
-
-- https://www.youtube.com/c/adventistchildrensministries
-- https://www.faithfinders.com/god-sent-his-son-to-be-my-friend-bible-study-guides
-- https://www.gracelink.net/podcast
-</file>
-
-<file path="web/src/pages/connect/contact/index.astro">
----
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import Button from "../../../components/ui/Button.astro";
-import Schedule from "../../../components/ui/Schedule.astro";
-import MapEmbed from "../../../components/ui/MapEmbed.astro";
-import { site } from "../../../data/site";
-import { tel } from "../../../lib/links";
-
-const phoneHref = tel(site.contact.phone);
-const pastorCellHref = tel(site.contact.pastorCell);
-const pastorCellLabel = site.contact.pastorCellLabel ?? "Pastor (call/text)";
-const pastorDisplayName = site.contact.pastorName ?? "the pastor";
-const hasPastorCell = Boolean(site.contact.pastorCell && site.contact.pastorCell.trim());
-const hasContactForm = site.portals.contactFormUrl && site.portals.contactFormUrl !== "TBD";
-const hasFacebook = site.portals.facebookUrl && site.portals.facebookUrl !== "TBD";
-const hasYouTube = site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD";
-const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAddress.trim().length);
+const watchLive = site.quickActions.find((i) => i.label === "Watch Live") ?? site.quickActions[0];
+const give = site.quickActions.find((i) => i.label === "Give") ?? site.quickActions[1];
+const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label && i.label !== give?.label);
 ---
 
-<BaseLayout
-  title="Contact"
-  description={`Contact ${site.name}: address, service times, phone, and email.`}
->
-  <div class="stack">
-    <h1>Contact</h1>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/" aria-label={site.name}>
+      <Image
+        src={churchLogo}
+        alt={`${site.name} logo`}
+        widths={[36, 44, 56]}
+        sizes="48px"
+        loading="eager"
+        decoding="async"
+        class="brand__logo"
+      />
+      <span class="brand__title">{site.shortName}</span>
+    </a>
 
-    <section class="card stack" aria-labelledby="contact-address">
-      <h2 id="contact-address">Address</h2>
-      <p class="muted">
-        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">{site.contact.address}</a>
-      </p>
+    <nav class="nav nav--desktop" aria-label="Primary navigation">
+      {primaryNav.map((item) => (
+        <a
+          href={item.href}
+          aria-current={isActive(item.href) ? "page" : undefined}
+          {...linkAttrs(item)}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
 
-      {hasMailing ? (
-        <p class="small muted">
-          Mail: {site.contact.mailingAddress}
-        </p>
-      ) : null}
-
-      <div class="cluster">
-        <Button href={site.contact.mapsUrl} external variant="secondary">Open in Maps</Button>
-        <Button href="/connect/plan-a-visit" variant="tertiary">Plan a Visit</Button>
+    <div class="right">
+      <div class="cta cta--desktop" aria-label="Primary actions">
+        {watchLive && (
+          <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
+            {watchLive.label}
+          </Button>
+        )}
+        {give && (
+          <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
+            {give.label}
+          </Button>
+        )}
       </div>
-      </section>
 
-      <section class="card stack" aria-labelledby="contact-map">
-        <h2 id="contact-map">Map</h2>
-        <p class="muted">
-          Prefer Google Maps? <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">Open directions</a>.
-        </p>
-        <MapEmbed src={site.map.embedSrc} title={`${site.name} location map`} />
-      </section>
-
-    <Schedule title="Service Times" items={site.schedule} />
-
-    {hasPastorCell ? (
-      <section class="card stack" aria-labelledby="contact-pastor">
-        <h2 id="contact-pastor">{pastorCellLabel}</h2>
-        <p class="muted">
-          The church phone may not be answered 24/7. For a faster response, call or text {pastorDisplayName}:
-          <a href={pastorCellHref}>{site.contact.pastorCell}</a>
-        </p>
-      </section>
-    ) : null}
-
-    <section class="card stack" aria-labelledby="contact-phone">
-      <h2 id="contact-phone">Phone</h2>
-      <p class="muted">
-        <a href={phoneHref}>{site.contact.phone}</a>
-      </p>
-      <p class="small muted">
-        If nobody answers, please leave a message and include a callback number.
-      </p>
-    </section>
-
-    <section class="card stack--tight" aria-labelledby="contact-email">
-      <h2 id="contact-email">Email</h2>
-      <p class="muted">
-        <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
-      </p>
-    </section>
-
-    <section class="card stack" aria-labelledby="contact-watch-give">
-      <h2 id="contact-watch-give">Watch &amp; Give</h2>
-      <p class="muted">
-        Watch live (when available) or give online.
-      </p>
-
-      <div class="cluster">
-        <Button href="/media/live" variant="secondary">Watch Live</Button>
-        <Button href="/give" variant="tertiary">Give</Button>
-        {hasYouTube ? (
-          <Button href={site.portals.youtubeChannelUrl} external variant="tertiary">YouTube</Button>
-        ) : null}
-        {hasFacebook ? (
-          <Button href={site.portals.facebookUrl} external variant="tertiary">Facebook</Button>
-        ) : null}
+      <div class="cta cta--mobile" aria-label="Primary actions">
+        {watchLive && (
+          <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
+            {watchLive.label}
+          </Button>
+        )}
+        {give && (
+          <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
+            {give.label}
+          </Button>
+        )}
       </div>
-    </section>
 
-    <section class="card stack" aria-labelledby="contact-form">
-      <h2 id="contact-form">Message us</h2>
-      {hasContactForm ? (
-        <>
-          <p class="muted">
-            Use our contact form and we’ll follow up as soon as possible.
-          </p>
-          <Button href={site.portals.contactFormUrl} external variant="secondary">Open contact form</Button>
-          <p class="small muted">
-            Please avoid including sensitive information.
-          </p>
-        </>
-      ) : (
-        <p class="muted">
-          A contact form is coming soon. For now, please call or email us.
-        </p>
-      )}
-    </section>
+      <details class="menu" aria-label="Mobile menu">
+        <summary class="menu__summary" aria-label="Open menu">
+          <span class="menu__icon" aria-hidden="true">☰</span>
+          <span class="menu__label">Menu</span>
+        </summary>
+
+        <div class="menu__panel">
+          <div class="menu__section" aria-label="Primary navigation" role="navigation">
+            {site.nav.map((item) => (
+              <a
+                class="menu__link"
+                href={item.href}
+                aria-current={isActive(item.href) ? "page" : undefined}
+                {...linkAttrs(item)}
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+
+          <div class="menu__divider" role="separator" aria-hidden="true"></div>
+
+          <div class="menu__section" aria-label="Quick actions">
+            <div class="menu__actions">
+              {watchLive && (
+                <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
+                  {watchLive.label}
+                </Button>
+              )}
+              {give && (
+                <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
+                  {give.label}
+                </Button>
+              )}
+            </div>
+
+            {otherQuick.length > 0 && (
+              <div class="menu__quicklinks" aria-label="More quick links">
+                {otherQuick.map((item) => (
+                  <a class="menu__sublink" href={item.href} {...linkAttrs(item)}>
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </details>
+    </div>
   </div>
-</BaseLayout>
+
+  {utilityNav.length > 0 && (
+    <nav class="utility-bar" aria-label="Utility navigation">
+      {utilityNav.map((item) => (
+        <a href={item.href} {...linkAttrs(item)}>
+          {item.label}
+        </a>
+      ))}
+    </nav>
+  )}
+</header>
+
+<script>
+  // Close the mobile menu when a link is clicked.
+  document.addEventListener("click", (e) => {
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+
+    const link = target.closest("a");
+    const details = target.closest("details.menu");
+    if (link && details) details.removeAttribute("open");
+  });
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--color-white);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .inner {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: var(--space-3) var(--container-pad);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .utility-bar {
+    width: 100%;
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-pad) var(--space-1);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-gray-50);
+    font-size: var(--font-size-0);
+  }
+
+  .utility-bar a {
+    color: var(--color-text);
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--target-min);
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-2);
+  }
+
+  .utility-bar a:hover,
+  .utility-bar a:focus-visible {
+    text-decoration: underline;
+  }
+
+  .brand {
+    text-decoration: none;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: max-content;
+  }
+
+  .brand__logo {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-3);
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .brand__title {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-size: var(--font-size-2);
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.35rem, 0.9vw, 0.8rem);
+    justify-content: center;
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
+
+  .nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--target-min);
+    text-decoration: none;
+    color: inherit;
+    font-weight: 700;
+    opacity: 0.9;
+    padding: 0.55rem 0.7rem;
+    min-width: auto;
+    justify-content: center;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .nav a:hover {
+    background: var(--color-gray-50);
+    opacity: 1;
+  }
+
+  .nav a[aria-current="page"] {
+    background: var(--color-gray-100);
+    opacity: 1;
+  }
+
+  .cta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    justify-content: flex-end;
+    min-width: max-content;
+  }
+
+  .right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    min-width: max-content;
+  }
+
+  .cta--mobile {
+    display: none;
+  }
+
+  /* Mobile menu */
+  .menu {
+    display: none;
+    position: relative;
+  }
+
+  .menu__summary {
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+    padding: 0.65rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: var(--color-white);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 700;
+    min-height: var(--target-min);
+    min-width: var(--target-min);
+  }
+
+  .menu__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .menu[open] .menu__summary {
+    background: var(--color-gray-50);
+  }
+
+  .menu__panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.6rem);
+    width: min(92vw, 22rem);
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-3);
+    box-shadow: var(--shadow-2);
+    padding: var(--space-3);
+    z-index: 60;
+  }
+
+  .menu__section {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .menu__link {
+    display: flex;
+    align-items: center;
+    min-height: var(--target-min);
+    text-decoration: none;
+    color: inherit;
+    font-weight: 700;
+    padding: 0.6rem 0.7rem;
+    border-radius: var(--radius-2);
+  }
+
+  .menu__link:hover {
+    background: var(--color-gray-50);
+  }
+
+  .menu__link[aria-current="page"] {
+    background: var(--color-gray-100);
+  }
+
+  .menu__divider {
+    height: 1px;
+    background: var(--color-border);
+    margin: var(--space-3) 0;
+  }
+
+  .menu__actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  .menu__quicklinks {
+    margin-top: var(--space-3);
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .menu__sublink {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--target-min);
+    text-decoration: none;
+    color: inherit;
+    opacity: 0.9;
+    padding: 0.4rem 0.2rem;
+    font-weight: 700;
+  }
+
+  .menu__sublink:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+
+  @media (max-width: 1100px) {
+    .cta--desktop {
+      display: none;
+    }
+
+    .cta--mobile {
+      display: flex;
+    }
+
+    .menu {
+      display: block;
+    }
+
+    .nav--desktop {
+      display: none;
+    }
+
+    .inner {
+      grid-template-columns: auto 1fr auto;
+      gap: var(--space-2);
+    }
+  }
+
+  @media (max-width: 860px) {
+    .cta--desktop {
+      display: none;
+    }
+
+    .cta--mobile {
+      display: flex;
+    }
+
+    .inner {
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto auto;
+      gap: var(--space-2);
+    }
+
+    .nav {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      justify-content: flex-start;
+      overflow-x: auto;
+      padding: 0 var(--space-3);
+    }
+
+    .nav a {
+      flex: 0 0 auto;
+    }
+
+    .right {
+      grid-column: 2;
+    }
+
+    .menu {
+      display: block;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .menu__label {
+      display: none;
+    }
+
+    .menu__summary {
+      padding: 0.55rem 0.6rem;
+    }
+  }
+</style>
 </file>
 
 <file path="web/src/components/sections/HeroBanner.astro">
@@ -13086,9 +12284,11 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
 <style>
   .heroBanner {
     position: relative;
-    min-height: clamp(62vh, 70vh, 80vh);
+    min-height: clamp(70vh, 78vh, 95vh);
     border-bottom: 1px solid var(--color-border);
     overflow: hidden;
+    --hero-border-radius: var(--radius-4);
+    border-radius: var(--hero-border-radius);
     --hero-content-offset-x: clamp(var(--space-4), 3vw, var(--space-7));
     --hero-content-offset-y: clamp(var(--space-5), 5vw, var(--space-7));
   }
@@ -13096,6 +12296,8 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
   .heroBanner__media {
     position: absolute;
     inset: 0;
+    border-radius: inherit;
+    overflow: hidden;
   }
 
   .heroBanner__img {
@@ -13104,11 +12306,13 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
     object-fit: cover;
     object-position: var(--hero-object-position);
     transform: scale(1.02);
+    border-radius: inherit;
   }
 
   .heroBanner__scrim {
     position: absolute;
     inset: 0;
+    border-radius: inherit;
     background: linear-gradient(
       180deg,
       rgba(8, 11, 18, 0.75) 0%,
@@ -13124,9 +12328,10 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
     z-index: 1;
     display: flex;
     justify-content: flex-start;
-    align-items: flex-start;
+    align-items: center;
     width: 100%;
-    padding: var(--hero-content-offset-y) 0 0 var(--hero-content-offset-x);
+    min-height: 100%;
+    padding: var(--hero-content-offset-y) var(--hero-content-offset-x);
   }
 
   /* Keep the existing “card” look, but make it sit nicely on the photo */
@@ -13143,10 +12348,14 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
 
   @media (max-width: 720px) {
     .heroBanner {
-      min-height: 55vh;
+      min-height: clamp(18rem, 42vh, 26rem);
       --hero-content-offset-x: var(--space-4);
       --hero-content-offset-y: var(--space-4);
       --hero-object-position: 50% 50%;
+    }
+
+    :global(.heroBanner .hero.card) {
+      padding: var(--space-4);
     }
   }
 
@@ -13224,12 +12433,15 @@ a:hover {
 }
 
 .container {
-  width: min(var(--container-max), calc(100% - var(--container-pad) * 2));
+  width: 100%;
+  max-width: var(--container-max);
   margin: 0 auto;
+  padding: 0 var(--container-pad);
+  display: block;
 }
 
 .main {
-  padding: var(--space-8) var(--container-pad);
+  padding: var(--space-8) 0;
 }
 
 h1,
@@ -13590,7 +12802,37 @@ hr {
 .skip-link:focus { transform: translateY(0); }
 
 @media (max-width: 860px) {
-  .main { padding: var(--space-6) 0; }
+  :root {
+    --container-pad: 1rem;
+  }
+
+  .main {
+    padding: var(--space-6) 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .card {
+    padding: var(--space-4);
+  }
+
+  .stack {
+    gap: var(--space-4);
+  }
+
+  .stack--loose {
+    gap: var(--space-6);
+  }
+
+  .grid--cards {
+    gap: var(--space-3);
+  }
+}
+
+@media (max-width: 420px) {
+  :root {
+    --container-pad: 0.875rem;
+  }
 }
 </file>
 
@@ -13994,8 +13236,6 @@ const nav: NavItem[] = [
   { label: "About Us", href: "/connect/about" },
   { label: "Our Team", href: "/connect/team" },
   { label: "Ministries", href: "/ministries" },
-  { label: "Events", href: "/events" },
-  { label: "Privacy", href: "/privacy" },
 ];
 
 // “Always available” actions (show as buttons in the header)
@@ -14109,7 +13349,6 @@ import { Image } from "astro:assets";
 import { site } from "../data/site";
 import heroBg from "../assets/photos/first-springfield-exterior.png";
 import bridgeDusk from "../assets/photos/bridge-dusk.jpg";
-import churchLogo from "../assets/photos/church-logo-primary.jpg";
 import { prayerMeetingDetails } from "../data/activities";
 import Button from "../components/ui/Button.astro";
 const ministryCards = [
@@ -14147,18 +13386,6 @@ const ministryCards = [
 ---
 
 <BaseLayout title={site.name} description={site.description}>
-  <section class="home-logo" aria-label="First Springfield Church logo">
-    <Image
-      src={churchLogo}
-      alt="First Springfield Seventh-day Adventist Church logo"
-      widths={[180, 280, 360]}
-      sizes="(max-width: 720px) 60vw, 18vw"
-      loading="eager"
-      decoding="async"
-      class="home-logo__img"
-    />
-  </section>
-
   <HeroBanner
     background={heroBg}
     objectPosition="50% 35%"
@@ -14191,7 +13418,7 @@ const ministryCards = [
       title="Ministries"
       subtitle="Find a place to serve, grow, and celebrate with your church family."
       cards={ministryCards}
-      columnsMin={320}
+      columnsMin={240}
       class="home-grid__section home-grid__cards home-grid__cards--ministries"
     />
 
@@ -14201,7 +13428,7 @@ const ministryCards = [
         subtitle="Support First Springfield’s ministries through faithful giving—every gift helps us worship, serve, and reach our neighbors."
       />
 
-      <BudgetProgress />
+      <BudgetProgress embedded />
 
       <p class="home-grid__giving-copy">
         Your generosity keeps the lights on, feeds neighbors, and helps young disciples grow in faith. Thank you for partnering with us.
@@ -14280,7 +13507,7 @@ const ministryCards = [
           href: "/connect/prayer"
         }
       ]}
-      columnsMin={280}
+      columnsMin={220}
       class="home-grid__section home-grid__cards home-grid__cards--connected"
     />
 
@@ -14299,18 +13526,6 @@ const ministryCards = [
 </BaseLayout>
 
 <style>
-  .home-logo {
-    margin: var(--space-8) auto 0;
-    display: flex;
-    justify-content: center;
-  }
-
-  .home-logo__img {
-    width: min(220px, 80vw);
-    height: auto;
-    display: block;
-  }
-
   .home-grid {
     width: 100%;
     margin: var(--space-10) 0 0;
@@ -14407,6 +13622,30 @@ const ministryCards = [
   @media (max-width: 720px) {
     .photo-card__img {
       height: 200px;
+    }
+
+    .home-grid {
+      margin-top: var(--space-6);
+      gap: var(--space-6);
+    }
+
+    .photo-montage {
+      gap: var(--space-3);
+    }
+
+    .photo-montage__grid {
+      gap: var(--space-3);
+    }
+
+    .home-grid__giving-cta {
+      gap: var(--space-2);
+    }
+  }
+
+  @media (max-width: 420px) {
+    .home-grid {
+      margin-top: var(--space-5);
+      gap: var(--space-5);
     }
   }
 

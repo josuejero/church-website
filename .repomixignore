@@ -3,3 +3,4 @@
 web/.lighthouseci
 web/.wrangler
 package/
+web/scripts/vendor/yargs-parser/build/lib/yargs-parser.js

@@ -13,7 +13,6 @@ import { Image } from "astro:assets";
 import { site } from "../data/site";
 import heroBg from "../assets/photos/first-springfield-exterior.png";
 import bridgeDusk from "../assets/photos/bridge-dusk.jpg";
-import churchLogo from "../assets/photos/church-logo-primary.jpg";
 import { prayerMeetingDetails } from "../data/activities";
 import Button from "../components/ui/Button.astro";
 const ministryCards = [
@@ -51,18 +50,6 @@ const ministryCards = [
 ---
 
 <BaseLayout title={site.name} description={site.description}>
-  <section class="home-logo" aria-label="First Springfield Church logo">
-    <Image
-      src={churchLogo}
-      alt="First Springfield Seventh-day Adventist Church logo"
-      widths={[180, 280, 360]}
-      sizes="(max-width: 720px) 60vw, 18vw"
-      loading="eager"
-      decoding="async"
-      class="home-logo__img"
-    />
-  </section>
-
   <HeroBanner
     background={heroBg}
     objectPosition="50% 35%"
@@ -95,7 +82,7 @@ const ministryCards = [
       title="Ministries"
       subtitle="Find a place to serve, grow, and celebrate with your church family."
       cards={ministryCards}
-      columnsMin={320}
+      columnsMin={240}
       class="home-grid__section home-grid__cards home-grid__cards--ministries"
     />
 
@@ -184,7 +171,7 @@ const ministryCards = [
           href: "/connect/prayer"
         }
       ]}
-      columnsMin={280}
+      columnsMin={220}
       class="home-grid__section home-grid__cards home-grid__cards--connected"
     />
 
@@ -203,18 +190,6 @@ const ministryCards = [
 </BaseLayout>
 
 <style>
-  .home-logo {
-    margin: var(--space-8) auto 0;
-    display: flex;
-    justify-content: center;
-  }
-
-  .home-logo__img {
-    width: min(220px, 80vw);
-    height: auto;
-    display: block;
-  }
-
   .home-grid {
     width: 100%;
     margin: var(--space-10) 0 0;
@@ -311,6 +286,30 @@ const ministryCards = [
   @media (max-width: 720px) {
     .photo-card__img {
       height: 200px;
+    }
+
+    .home-grid {
+      margin-top: var(--space-6);
+      gap: var(--space-6);
+    }
+
+    .photo-montage {
+      gap: var(--space-3);
+    }
+
+    .photo-montage__grid {
+      gap: var(--space-3);
+    }
+
+    .home-grid__giving-cta {
+      gap: var(--space-2);
+    }
+  }
+
+  @media (max-width: 420px) {
+    .home-grid {
+      margin-top: var(--space-5);
+      gap: var(--space-5);
     }
   }
 

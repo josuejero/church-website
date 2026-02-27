@@ -2,19 +2,36 @@
 type Props = {
   /** Fixed number of columns (e.g. 3). */
   columns?: number;
-  /** Responsive min column width in px (auto-fit). */
-  columnsMin?: number;
+  /** Responsive min column width (auto-fit). */
+  columnsMin?: number | string;
+  class?: string;
 };
 
-const { columns, columnsMin = 240 } = Astro.props;
+const {
+  columns,
+  columnsMin = 220,
+  class: className = "",
+} = Astro.props as Props;
+
+const minTrack =
+  typeof columnsMin === "number" ? `${columnsMin}px` : columnsMin;
 
 const template =
   typeof columns === "number"
     ? `repeat(${columns}, minmax(0, 1fr))`
-    : `repeat(auto-fit, minmax(${columnsMin}px, 1fr))`;
+    : undefined;
+
+const classList = ["grid", className].filter(Boolean).join(" ");
+
+const style = [
+  `--grid-min: ${minTrack}`,
+  template ? `--grid-template: ${template}` : null,
+]
+  .filter(Boolean)
+  .join("; ");
 ---
 
-<div class="grid" style={`grid-template-columns: ${template};`}>
+<div class={classList} style={style}>
   <slot />
 </div>
 
@@ -22,5 +39,10 @@ const template =
   .grid {
     display: grid;
     gap: var(--space-4);
+    grid-template-columns: var(
+      --grid-template,
+      repeat(auto-fit, minmax(var(--grid-min, 220px), 1fr))
+    );
+    align-items: stretch;
   }
 </style>

@@ -20,6 +20,7 @@ const {
   secondaryCtaHref,
   className = ""
 } = Astro.props as Props;
+
 const hasMeta = Boolean(Astro.slots?.meta);
 const rootClass = ["hero", "card", className].filter(Boolean).join(" ");
 ---
@@ -117,11 +118,15 @@ const rootClass = ["hero", "card", className].filter(Boolean).join(" ");
     }
   }
 
+  /* Key fix:
+     - remove the 560px max-width cap
+     - let the hero card use the full page width like the rest of the content
+  */
   .hero {
-    max-width: min(560px, 100%);
+    width: 100%;
+    max-width: none;
     margin: 0;
     padding: clamp(1.25rem, 1rem + 0.5vw, 1.75rem);
-    align-self: flex-start;
   }
 
   @media (max-width: 720px) {

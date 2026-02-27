@@ -230,8 +230,6 @@ const nav: NavItem[] = [
   { label: "About Us", href: "/connect/about" },
   { label: "Our Team", href: "/connect/team" },
   { label: "Ministries", href: "/ministries" },
-  { label: "Events", href: "/events" },
-  { label: "Privacy", href: "/privacy" },
 ];
 
 // “Always available” actions (show as buttons in the header)

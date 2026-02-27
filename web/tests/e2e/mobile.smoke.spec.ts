@@ -24,4 +24,20 @@ test.describe("Smoke - mobile device", () => {
     );
     await expect(page.getByRole("link", { name: /give/i })).toBeVisible();
   });
+
+  test("mobile gutters tighten on narrow viewports", async ({ page }) => {
+    const projectName = test.info().project.name;
+    test.skip(projectName !== "mobile-smoke", "mobile project only");
+
+    await page.goto("/");
+
+    const containerPad = await page.evaluate(() =>
+      getComputedStyle(document.documentElement)
+        .getPropertyValue("--container-pad")
+        .trim(),
+    );
+    expect(["0.875rem", ".875rem"]).toContain(containerPad);
+
+    await expect(page.locator(".home-grid")).toHaveCSS("gap", "20px");
+  });
 });
