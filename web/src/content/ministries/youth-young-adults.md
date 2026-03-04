@@ -25,6 +25,6 @@ AY Assistant Director: Yolann Guirand
 
 ### Resources
 
-- Instagram Page: @firstspringfieldday
+ - Instagram Page: [@firstspringfieldday](https://www.instagram.com/firstspringfielday/)
 - https://nadyouthyoungadults.org/young-adult-ministry/
 - https://growingyoungadventists.com/
