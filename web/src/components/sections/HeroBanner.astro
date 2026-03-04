@@ -107,7 +107,7 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
     padding: var(--hero-content-offset-y) var(--hero-content-offset-x);
   }
 
-  /* Keep the existing “card” look, but make it sit nicely on the photo */
+  /* Keep the existing “card” look, but keep it a compact width on large screens */
   :global(.heroBanner .hero.card) {
     background: linear-gradient(
       170deg,
@@ -123,8 +123,8 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
     );
     border-radius: var(--radius-4);
     box-shadow: var(--shadow-2);
-    width: 100%;
-    max-width: none;
+    width: min(40rem, 100%);
+    max-width: 40rem;
     padding: var(--space-6);
   }
 
