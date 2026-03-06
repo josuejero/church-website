@@ -6,5 +6,5 @@ const { heroConfig } = Astro.props as { heroConfig: HeroConfig };
 ---
 
 <HeroBanner {...heroConfig}>
-  <slot name="meta" />
+  <slot name="meta" slot="meta" />
 </HeroBanner>

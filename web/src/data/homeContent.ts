@@ -62,7 +62,7 @@ export const homeHeroConfig: HeroConfig = {
 
 export const homeHeroMeta = {
   copy:
-    "Looking for a way to introduce yourself or let us know you’re interested in joining a ministry? Fill out a Connect Card and our team will follow up.",
+    "Looking for a way to introduce yourself or let us know you’re interested in joining a ministry? Use the Connect Card below to share your visit details and our team will follow up.",
   cta: {
     label: "Submit a Connect Card",
     href: "/connect/connect-card",

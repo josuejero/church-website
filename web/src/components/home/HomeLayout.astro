@@ -37,10 +37,12 @@ const {
 
 <HomeHeroSection heroConfig={heroConfig}>
   <div slot="meta" class="home-hero__meta">
-    <p class="muted home-hero__meta-copy">{heroMeta.copy}</p>
-    <Button href={heroMeta.cta.href} variant="secondary">
-      {heroMeta.cta.label}
-    </Button>
+    <div class="home-hero__meta-copy-group">
+      <p class="muted home-hero__meta-copy">{heroMeta.copy}</p>
+      <Button href={heroMeta.cta.href} variant="secondary">
+        {heroMeta.cta.label}
+      </Button>
+    </div>
   </div>
 </HomeHeroSection>
 
@@ -138,10 +140,15 @@ const {
     max-width: 60ch;
   }
 
+  .home-hero__meta-copy-group {
+    display: grid;
+    gap: var(--space-3);
+  }
+
   .home-hero__meta {
     margin-top: var(--space-4);
     display: grid;
-    gap: var(--space-3);
+    gap: var(--space-4);
   }
 
   @media (max-width: 1100px) {

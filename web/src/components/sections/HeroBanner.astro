@@ -26,6 +26,7 @@ const {
   ...heroProps
 } = Astro.props as Props;
 const hasMetaSlot = Boolean(Astro.slots?.meta);
+const hasWelcomeSlot = Boolean(Astro.slots?.welcome);
 ---
 
 <section
@@ -47,9 +48,22 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
   </div>
 
   <div class="heroBanner__content">
-    <HeroUI {...heroProps} className="hero-card">
-      {hasMetaSlot ? <slot name="meta" slot="meta" /> : null}
-    </HeroUI>
+    {hasWelcomeSlot ? (
+      <div class="heroBanner__content-grid heroBanner__content-grid--with-welcome">
+        <div class="heroBanner__welcome-card">
+          <slot name="welcome" />
+        </div>
+        <div class="heroBanner__hero-card">
+          <HeroUI {...heroProps} className="hero-card">
+            {hasMetaSlot ? <slot name="meta" slot="meta" /> : null}
+          </HeroUI>
+        </div>
+      </div>
+    ) : (
+      <HeroUI {...heroProps} className="hero-card">
+        {hasMetaSlot ? <slot name="meta" slot="meta" /> : null}
+      </HeroUI>
+    )}
   </div>
 </section>
 
@@ -100,11 +114,39 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
     position: relative;
     z-index: 1;
     display: flex;
-    justify-content: flex-end;
-    align-items: flex-end;
+    justify-content: flex-start;
+    align-items: flex-start;
     width: 100%;
     min-height: 100%;
     padding: var(--hero-content-offset-y) var(--hero-content-offset-x);
+  }
+
+  .heroBanner__content-grid--with-welcome {
+    width: min(1200px, 100%);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) minmax(360px, 1fr);
+    gap: clamp(var(--space-5), 3vw, var(--space-7));
+    align-items: stretch;
+    justify-content: center;
+  }
+
+  .heroBanner__welcome-card,
+  .heroBanner__hero-card {
+    width: 100%;
+  }
+
+  .heroBanner__content-grid--with-welcome :global(.hero.card) {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .heroBanner__welcome-card {
+    align-self: stretch;
+  }
+
+  .heroBanner__hero-card {
+    align-self: stretch;
   }
 
   /* Keep the existing “card” look, but keep it a compact width on large screens */
@@ -123,9 +165,15 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
     );
     border-radius: var(--radius-4);
     box-shadow: var(--shadow-2);
-    width: calc(100% - 2 * var(--hero-content-offset-x));
-    max-width: calc(100% - 2 * var(--hero-content-offset-x));
+    width: min(460px, calc(100% - 2 * var(--hero-content-offset-x)));
+    max-width: min(460px, calc(100% - 2 * var(--hero-content-offset-x)));
     padding: var(--space-6);
+  }
+
+  /* When there is no welcome card, let the lone hero card match the hero content width. */
+  .heroBanner__content > :global(.hero.card) {
+    width: 100%;
+    max-width: 100%;
   }
 
   @media (max-width: 720px) {
@@ -138,6 +186,22 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
 
     :global(.heroBanner .hero.card) {
       padding: var(--space-4);
+    }
+  }
+
+  @media (max-width: 960px) {
+    .heroBanner__content-grid--with-welcome {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+    }
+
+    .heroBanner__hero-card {
+      order: 1;
+    }
+
+    .heroBanner__welcome-card {
+      order: 2;
     }
   }
 

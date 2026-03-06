@@ -1,0 +1,540 @@
+---
+import { buildThankYouUrl, formAction, turnstileSiteKey } from "../../lib/connectCard";
+
+type Variant = "standard" | "hero";
+type Props = {
+  variant?: Variant;
+  class?: string;
+};
+
+const { variant = "standard", class: className = "" } = Astro.props as Props;
+const formClasses = ["connect-card__form", variant === "hero" ? "connect-card__form--hero" : "", className]
+  .filter(Boolean)
+  .join(" ");
+const thankYouUrl = buildThankYouUrl(Astro.url?.origin);
+
+const interestOptions = [
+  { value: "prayer", label: "Prayer" },
+  { value: "bible-study", label: "Bible study" },
+  { value: "visitation", label: "Visitation" },
+  { value: "conversion", label: "Conversion" },
+  { value: "baptism", label: "Baptism" },
+  { value: "transfer", label: "Transfer" },
+  { value: "facility-use", label: "Facility use" },
+];
+
+const connectionReasons = [
+  { value: "first-time-visit", label: "I am planning my first visit" },
+  { value: "moving-to-town", label: "We just moved to the area" },
+  { value: "prayer", label: "I’d like prayer or encouragement" },
+  { value: "questions", label: "I have a question about the church" },
+  { value: "other", label: "Other" },
+];
+
+const preferredContactOptions = [
+  { value: "email", label: "Email (fastest)" },
+  { value: "phone", label: "Phone call or text" },
+];
+
+const interestsId = (value: string) => `interest-${value}`;
+---
+
+<script slot="head" is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<form
+  class={formClasses}
+  action={formAction || "#"}
+  method="POST"
+  accept-charset="UTF-8"
+  aria-describedby="connect-card-summary"
+>
+  <div class="connect-card__grid">
+    <div class="form-field">
+      <label for="full-name">
+        Full name <span class="required" aria-hidden="true">*</span>
+      </label>
+      <input id="full-name" name="fullName" type="text" required autocomplete="name" placeholder="Jamie Rivera" />
+    </div>
+
+    <div class="form-field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" placeholder="name@example.com" />
+    </div>
+
+    <div class="form-field">
+      <label for="phone">
+        Phone <span class="required" aria-hidden="true">*</span>
+        <span class="form-helper">Calls/texts help us respond if email bounces.</span>
+      </label>
+      <input id="phone" name="phone" type="tel" required autocomplete="tel" placeholder="(123) 456‑7890" />
+    </div>
+
+    <div class="form-field">
+      <label for="visit-date">
+        Preferred visit date <span class="required" aria-hidden="true">*</span>
+        <span class="form-helper">Let us know when you hope to visit so we can plan hospitality.</span>
+      </label>
+      <input id="visit-date" name="visitDate" type="date" required />
+    </div>
+  </div>
+
+  <div class="form-section connect-card__visited">
+    <fieldset>
+      <legend>Have you visited First Springfield before?</legend>
+      <p class="form-helper">Knowing your familiarity helps us tailor your welcome.</p>
+      <div class="radio-group">
+        <label class="radio" for="visited-before-yes">
+          <input id="visited-before-yes" name="visitedBefore" type="radio" value="yes" required />
+          <span>Yes</span>
+        </label>
+        <label class="radio" for="visited-before-no">
+          <input id="visited-before-no" name="visitedBefore" type="radio" value="no" required />
+          <span>No</span>
+        </label>
+      </div>
+    </fieldset>
+  </div>
+
+  <div class="form-section connect-card__address">
+    <div class="connect-card__section-heading">
+      <p class="form-label">
+        Address <span class="required" aria-hidden="true">*</span>
+      </p>
+      <span class="form-helper">Needed for arrival info, mailings, or hospitality follow-up.</span>
+    </div>
+    <div class="address-grid">
+      <div class="form-field">
+        <label for="address-street">Street address <span class="required" aria-hidden="true">*</span></label>
+        <input
+          id="address-street"
+          data-address-part
+          name="addressStreet"
+          type="text"
+          required
+          placeholder="123 Main St"
+          autocomplete="address-line1"
+        />
+      </div>
+      <div class="form-field form-field--wide">
+        <label for="address-line2">Line 2 (apt, suite, etc.)</label>
+        <input
+          id="address-line2"
+          data-address-part
+          name="addressLine2"
+          type="text"
+          placeholder="Suite 4"
+          autocomplete="address-line2"
+        />
+      </div>
+      <div class="form-field">
+        <label for="address-city">City <span class="required" aria-hidden="true">*</span></label>
+        <input
+          id="address-city"
+          data-address-part
+          name="addressCity"
+          type="text"
+          required
+          placeholder="Springfield"
+          autocomplete="address-level2"
+        />
+      </div>
+      <div class="form-field">
+        <label for="address-state">State <span class="required" aria-hidden="true">*</span></label>
+        <input
+          id="address-state"
+          data-address-part
+          name="addressState"
+          type="text"
+          required
+          placeholder="MA"
+          autocomplete="address-level1"
+        />
+      </div>
+      <div class="form-field">
+        <label for="address-zip">ZIP code <span class="required" aria-hidden="true">*</span></label>
+        <input
+          id="address-zip"
+          data-address-part
+          name="addressZip"
+          type="text"
+          required
+          placeholder="01118"
+          autocomplete="postal-code"
+        />
+      </div>
+      <div class="form-field">
+        <label for="address-country">Country</label>
+        <span class="form-helper">Optional unless you are visiting from outside the U.S.</span>
+        <input
+          id="address-country"
+          data-address-part
+          name="addressCountry"
+          type="text"
+          placeholder="United States"
+          autocomplete="country"
+        />
+      </div>
+    </div>
+    <input type="hidden" id="address-summary" name="address" required />
+  </div>
+
+  <div class="form-section">
+    <label for="connection-reason">What best describes your reason for connecting?</label>
+    <select id="connection-reason" name="connectionReason" required>
+      <option value="">Choose one</option>
+      {connectionReasons.map((item) => (
+        <option value={item.value}>{item.label}</option>
+      ))}
+    </select>
+  </div>
+
+  <div class="form-section connect-card__interests">
+    <p id="interests-label" class="form-label">
+      I’d like the team to follow up about:
+      <span class="required" aria-hidden="true">*</span>
+    </p>
+    <p class="form-helper">Choose all that apply so we can match you with the right team.</p>
+    <div
+      class="checkbox-grid"
+      role="group"
+      aria-labelledby="interests-label"
+      aria-describedby="interests-error"
+    >
+      {interestOptions.map((item) => (
+        <label class="checkbox" for={interestsId(item.value)}>
+          <input id={interestsId(item.value)} name="interests[]" value={item.value} type="checkbox" />
+          <span>{item.label}</span>
+        </label>
+      ))}
+    </div>
+    <p id="interests-error" class="form-error" role="alert" aria-live="assertive" hidden></p>
+  </div>
+
+  <div class="form-section">
+    <label for="preferred-contact">Preferred follow-up method <span class="required" aria-hidden="true">*</span></label>
+    <select id="preferred-contact" name="preferredContact" required>
+      <option value="">Select</option>
+      {preferredContactOptions.map((item) => (
+        <option value={item.value}>{item.label}</option>
+      ))}
+    </select>
+  </div>
+
+  <div class="form-section">
+    <label for="notes">Anything else we should know?</label>
+    <textarea
+      id="notes"
+      name="notes"
+      rows="4"
+      placeholder="Share a prayer request, questions about ministry, or a time to connect."
+    ></textarea>
+  </div>
+
+  <input type="hidden" name="redirectUrl" value={thankYouUrl} />
+  <input type="hidden" name="formSource" value="connect-card-web" />
+
+  <div class="form-section turnstile">
+    {turnstileSiteKey ? (
+      <div class="cf-turnstile" data-sitekey={turnstileSiteKey}></div>
+    ) : (
+      <p class="muted small">
+        For spam protection, set <code>PUBLIC_TURNSTILE_SITE_KEY</code> and <code>PRIVATE_TURNSTILE_SECRET_KEY</code> (used
+        server-side) so we can verify the widget before writing to the sheet.
+      </p>
+    )}
+  </div>
+
+  <p class="privacy-note small muted">
+    Privacy note: We ask for phone, visit details, and address so the pastor, hospitality, or children’s team can respond
+    with arrival information, ministry invitations, or resources you request. We will not share personal data outside the house
+    of worship without permission.
+  </p>
+
+  <div class="form-actions">
+    <button type="submit" class="primary-action">
+      Submit a Connect Card
+    </button>
+    <a class="ghost-action" href="/connect/contact">Need help now?</a>
+  </div>
+</form>
+
+<script is:inline>
+(() => {
+  const focusFirstInvalidField = (form) => {
+    const firstInvalid = form.querySelector(":invalid");
+    if (firstInvalid instanceof HTMLElement && document.activeElement !== firstInvalid) {
+      firstInvalid.focus();
+    }
+  };
+
+  const initForm = (form) => {
+    if (form.dataset.connectCardInitialized === "true") {
+      return;
+    }
+
+    const addressInputs = Array.from(form.querySelectorAll("[data-address-part]"));
+    const addressSummary = form.querySelector("#address-summary");
+
+    const updateAddressSummary = () => {
+      if (!addressSummary) return;
+      const parts = addressInputs
+        .map((input) => (input instanceof HTMLInputElement ? input.value.trim() : ""))
+        .filter(Boolean);
+      addressSummary.value = parts.join(", ");
+    };
+
+    addressInputs.forEach((input) => input.addEventListener("input", updateAddressSummary));
+    updateAddressSummary();
+
+    const interestInputs = Array.from(form.querySelectorAll('input[name="interests[]"]'));
+    const interestErrorElement = form.querySelector("#interests-error");
+    const interestErrorMessage = "Select at least one interest so we can best support you.";
+
+    const showInterestError = (message) => {
+      if (!interestErrorElement) return;
+      interestErrorElement.textContent = message;
+      interestErrorElement.hidden = false;
+    };
+
+    const hideInterestError = () => {
+      if (!interestErrorElement) return;
+      interestErrorElement.textContent = "";
+      interestErrorElement.hidden = true;
+    };
+
+    const resetInterestValidation = () => {
+      interestInputs.forEach((input) => {
+        if (input instanceof HTMLInputElement) {
+          input.setCustomValidity("");
+        }
+      });
+      hideInterestError();
+    };
+
+    interestInputs.forEach((input) => {
+      if (input instanceof HTMLElement) {
+        input.setAttribute("aria-describedby", "interests-error");
+      }
+      input.addEventListener("change", resetInterestValidation);
+    });
+
+    form.addEventListener("submit", (event) => {
+      const hasAny = interestInputs.some((input) => input instanceof HTMLInputElement && input.checked);
+      if (!hasAny) {
+        const firstInput = interestInputs[0];
+        if (firstInput instanceof HTMLInputElement) {
+          firstInput.setCustomValidity(interestErrorMessage);
+          firstInput.focus();
+        }
+        showInterestError(interestErrorMessage);
+        if (typeof form.reportValidity === "function") {
+          form.reportValidity();
+        }
+        event.preventDefault();
+        return;
+      }
+    });
+
+    form.addEventListener("submit", () => {
+      setTimeout(() => focusFirstInvalidField(form), 0);
+    });
+
+    form.dataset.connectCardInitialized = "true";
+  };
+
+  const init = () => {
+    const forms = Array.from(document.querySelectorAll(".connect-card__form"));
+    forms.forEach(initForm);
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+<style>
+  .connect-card__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .connect-card__form label {
+    font-weight: 700;
+  }
+
+  .connect-card__form input,
+  .connect-card__form select,
+  .connect-card__form textarea {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    padding: var(--space-3);
+    font: inherit;
+    background: var(--color-white);
+  }
+
+  .connect-card__form textarea {
+    resize: vertical;
+    min-height: 3rem;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .form-field--wide {
+    grid-column: span 2;
+  }
+
+  .required {
+    margin-left: 0.25rem;
+    color: var(--color-secondary);
+  }
+
+  .form-helper {
+    display: block;
+    font-size: var(--font-size-0);
+    color: var(--color-text-muted);
+    font-weight: 400;
+  }
+
+  .form-error {
+    margin: 0;
+    font-size: var(--font-size-0);
+    color: #b00020;
+  }
+
+  .form-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .connect-card__grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .connect-card__visited fieldset {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    padding: var(--space-3);
+    margin: 0;
+  }
+
+  .connect-card__visited legend {
+    font-weight: 700;
+  }
+
+  .radio-group {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .radio {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .radio input {
+    margin: 0;
+    accent-color: var(--color-primary);
+  }
+
+  .connect-card__address {
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-3);
+    padding: var(--space-4);
+    background: var(--color-surface);
+  }
+
+  .connect-card__section-heading {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .address-grid {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+
+  .connect-card__interests .checkbox-grid {
+    display: grid;
+    gap: var(--space-2);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  .checkbox input {
+    margin: 0;
+    accent-color: var(--color-primary);
+  }
+
+  .turnstile {
+    padding: var(--space-3);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-2);
+    background: var(--color-surface-2);
+  }
+
+  .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-items: center;
+  }
+
+  .primary-action {
+    background: var(--color-primary);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-3);
+    padding: var(--space-3) var(--space-5);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .ghost-action {
+    color: var(--color-primary);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  .privacy-note {
+    margin: 0;
+  }
+
+  .connect-card__form--hero .form-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  @media (min-width: 720px) {
+    .connect-card__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .form-field:nth-child(odd) {
+      min-width: 0;
+    }
+  }
+</style>
