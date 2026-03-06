@@ -69,12 +69,12 @@ const contactEmail = site.contact.email;
         </div>
       </div>
 
-      <div class="chips" role="list">
+      <div class="chips" role="list" data-announcement-chips>
         <a
           class={`chip ${!rawTag ? "chip--active" : ""}`}
           href={tagQuery()}
           aria-pressed={!rawTag}
-          role="listitem"
+          data-tag=""
         >
           All
         </a>
@@ -83,7 +83,7 @@ const contactEmail = site.contact.email;
             class={`chip ${rawTag === tag.value ? "chip--active" : ""}`}
             href={tagQuery(tag.value)}
             aria-pressed={rawTag === tag.value}
-            role="listitem"
+            data-tag={tag.value}
           >
             {tag.label}
           </a>
@@ -173,16 +173,34 @@ const contactEmail = site.contact.email;
       <p class="muted">
         Deadline: {submitDeadline}. Destination: {clerkDestination}. Email {contactEmail} or use the Connect page below.
       </p>
-      <div class="cluster">
-        <Button href={contactHref} variant="secondary">Contact Church Clerk</Button>
-        <Button href={updatesUrl} variant="tertiary">See updates page</Button>
-      </div>
-      <p class="small muted">
-        Phase 6 will create the Connect Card; you can add a dedicated announcement submission form later if needed.
-      </p>
-    </section>
+  <div class="cluster">
+    <Button href={contactHref} variant="secondary">Contact Church Clerk</Button>
+    <Button href={updatesUrl} variant="tertiary">See updates page</Button>
   </div>
+  <p class="small muted">
+    Phase 6 will create the Connect Card; you can add a dedicated announcement submission form later if needed.
+  </p>
+</section>
+</div>
 </BaseLayout>
+
+<script is:inline>
+  (() => {
+    const chipContainer = document.querySelector("[data-announcement-chips]");
+    if (!chipContainer) return;
+
+    const params = new URLSearchParams(window.location.search ?? "");
+    const activeTag = params.get("tag") ?? "";
+
+    const chips = chipContainer.querySelectorAll(".chip");
+    chips.forEach((chip) => {
+      const chipTag = chip.getAttribute("data-tag") ?? "";
+      const isActive = chipTag === activeTag;
+      chip.setAttribute("aria-pressed", String(isActive));
+      chip.classList.toggle("chip--active", isActive);
+    });
+  })();
+</script>
 
 <style>
   .chips {

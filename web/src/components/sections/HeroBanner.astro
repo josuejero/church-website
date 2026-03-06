@@ -100,7 +100,7 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
     position: relative;
     z-index: 1;
     display: flex;
-    justify-content: flex-start;
+    justify-content: flex-end;
     align-items: flex-end;
     width: 100%;
     min-height: 100%;
@@ -123,8 +123,8 @@ const hasMetaSlot = Boolean(Astro.slots?.meta);
     );
     border-radius: var(--radius-4);
     box-shadow: var(--shadow-2);
-    width: min(40rem, 100%);
-    max-width: 40rem;
+    width: calc(100% - 2 * var(--hero-content-offset-x));
+    max-width: calc(100% - 2 * var(--hero-content-offset-x));
     padding: var(--space-6);
   }
 

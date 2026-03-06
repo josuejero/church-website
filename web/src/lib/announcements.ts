@@ -2,7 +2,7 @@ import { getCollection } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 import { site } from "../data/site";
 
-export const announcementsPerPage = 6;
+export const announcementsPerPage = 20;
 
 export type AnnouncementEntry = CollectionEntry<"announcements">;
 

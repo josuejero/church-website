@@ -58,25 +58,30 @@ const contactEmail = site.contact.email;
       </p>
     </section>
 
-    <section class="stack">
+    <section
+      class="stack"
+      data-updates-alert-section
+      data-show-alert={showAlert ? "1" : "0"}
+    >
       <h2>Current alert</h2>
-      {showAlert ? (
-        <SiteAlert
-          title={alertConfig.title ?? ""}
-          message={alertConfig.message ?? ""}
-          href={alertConfig.href}
-          variant={alertConfig.variant}
-          updatedAt={alertConfig.updatedAt}
-          announce={false}
-          hideCta
-        />
-      ) : (
-        <p class="muted">
-          No emergency alerts right now. Contact the {clerkDestination} at
-          <a href={`mailto:${contactEmail}`}>{contactEmail}</a> or call
-          <a href={`tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`}>{site.contact.phone}</a> for assistance.
-        </p>
-      )}
+      <div data-updates-alert>
+        {showAlert ? (
+          <SiteAlert
+            title={alertConfig.title ?? ""}
+            message={alertConfig.message ?? ""}
+            href={alertConfig.href}
+            variant={alertConfig.variant}
+            updatedAt={alertConfig.updatedAt}
+            announce={false}
+            hideCta
+          />
+        ) : null}
+      </div>
+      <p class="muted" data-updates-fallback hidden={showAlert}>
+        <span>No emergency alerts right now.</span> Contact the {clerkDestination} at
+        <a href={`mailto:${contactEmail}`}>{contactEmail}</a> or call
+        <a href={`tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`}>{site.contact.phone}</a> for assistance.
+      </p>
     </section>
 
     <section class="stack">
@@ -139,6 +144,34 @@ const contactEmail = site.contact.email;
     </section>
   </div>
 </BaseLayout>
+
+<script is:inline>
+  (() => {
+    const params = new URLSearchParams(window.location.search ?? "");
+    const hideAlert = params.get("hideAlert") === "1";
+    const section = document.querySelector("[data-updates-alert-section]");
+    if (!section) return;
+
+    const showAlertEnabled = section.dataset.showAlert === "1";
+    const alertNode = section.querySelector("[data-updates-alert]");
+    const fallback = section.querySelector("[data-updates-fallback]");
+    if (!fallback) return;
+
+    if (hideAlert) {
+      alertNode?.setAttribute("hidden", "");
+      fallback.removeAttribute("hidden");
+      return;
+    }
+
+    if (showAlertEnabled) {
+      fallback.setAttribute("hidden", "");
+      alertNode?.removeAttribute("hidden");
+      return;
+    }
+
+    fallback.removeAttribute("hidden");
+  })();
+</script>
 
 <style>
 .chip-list {

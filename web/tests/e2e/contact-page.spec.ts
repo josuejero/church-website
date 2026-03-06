@@ -9,5 +9,8 @@ test("contact page displays core sections and CTAs", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Message us" })).toBeVisible();
 
   await expect(page.getByRole("link", { name: "Plan a Visit" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Watch Live" })).toBeVisible();
+  const watchGiveSection = page.locator('section[aria-labelledby="contact-watch-give-title"]');
+  await expect(
+    watchGiveSection.getByRole("link", { name: "Watch Live" }),
+  ).toBeVisible();
 });
