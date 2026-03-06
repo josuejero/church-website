@@ -1,0 +1,265 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Hero from "../../../components/ui/Hero.astro";
+import AnnualCalendarSection from "../../../components/sections/AnnualCalendarSection.astro";
+import annualCalendar from "../../../data/annual-calendar.json";
+
+type ProposedStatus = "proposed" | "confirmed";
+
+type ProposedEntry = {
+  label: string;
+  detail: string;
+  status: ProposedStatus;
+};
+
+type ProposedMonth = {
+  month: string;
+  entries: ProposedEntry[];
+};
+
+const adventurerUniformNote =
+  "Adventurers wear dress uniforms for service. Field uniforms for club. Do not change until after inspection.";
+const pathfinderUniformNote =
+  "Pathfinders wear dress uniforms for service. Field uniforms for club. Do not change until after inspection.";
+const staffMeetingNote = "Staff meeting for Adventurer leadership (schedule pending).";
+const adventurerClubNote =
+  "3:00–5:00 p.m. club meeting in the fellowship hall; exact Sabbaths will be confirmed on the calendar.";
+const pathfinderClubNote =
+  "3:00–5:00 p.m. Pathfinder club meeting; check the calendar for the approved Sabbath.";
+const familyNetworkNote = "Family Network meeting – 5:30 p.m.; date will be set by ministry leaders.";
+
+const baseMonthEntries = (): ProposedEntry[] => [
+  { label: "Adventurer uniform guidance", detail: adventurerUniformNote, status: "proposed" },
+  { label: "Adventurer staff meeting", detail: staffMeetingNote, status: "proposed" },
+  { label: "Adventurer club meeting", detail: adventurerClubNote, status: "proposed" },
+  { label: "Pathfinder uniform guidance", detail: pathfinderUniformNote, status: "proposed" },
+  { label: "Pathfinder club meeting", detail: pathfinderClubNote, status: "proposed" },
+];
+
+const proposedCalendar: ProposedMonth[] = [
+  {
+    month: "January 2026",
+    entries: [
+      ...baseMonthEntries(),
+      { label: "Family Network meeting", detail: familyNetworkNote, status: "proposed" },
+    ],
+  },
+  {
+    month: "February 2026",
+    entries: [
+      ...baseMonthEntries(),
+      { label: "Family Network meeting", detail: familyNetworkNote, status: "proposed" },
+      {
+        label: "Induction Service during divined hour",
+        detail: "Induction Service is scheduled this month; the exact Sabbath and time will be published once approved.",
+        status: "proposed",
+      },
+      {
+        label: "Club meeting pause",
+        detail: "No club meeting is planned while the induction preparation and service take place.",
+        status: "proposed",
+      },
+    ],
+  },
+  {
+    month: "April 2026",
+    entries: [
+      ...baseMonthEntries(),
+      { label: "Family Network meeting", detail: familyNetworkNote, status: "proposed" },
+    ],
+  },
+  {
+    month: "May 2026",
+    entries: [
+      ...baseMonthEntries(),
+      {
+        label: "Mother’s Day Outreach",
+        detail: "Community outreach on May 10, 2026; times and roles are still being finalized.",
+        status: "confirmed",
+      },
+      {
+        label: "World Adventurer Day",
+        detail: "Celebration on May 16, 2026; watch for the calendar update to confirm the schedule.",
+        status: "confirmed",
+      },
+    ],
+  },
+  {
+    month: "June 2026",
+    entries: [
+      ...baseMonthEntries(),
+      { label: "Family Network meeting", detail: familyNetworkNote, status: "proposed" },
+    ],
+  },
+  {
+    month: "July 2026",
+    entries: [...baseMonthEntries()],
+  },
+  {
+    month: "August 2026",
+    entries: [...baseMonthEntries()],
+  },
+  {
+    month: "September 2026",
+    entries: [
+      ...baseMonthEntries(),
+      { label: "Family Network meeting", detail: familyNetworkNote, status: "proposed" },
+      {
+        label: "Family Blessing",
+        detail: "Family Blessing is anticipated this month; the date and time will be confirmed in the calendar.",
+        status: "proposed",
+      },
+    ],
+  },
+  {
+    month: "October 2026",
+    entries: [
+      ...baseMonthEntries(),
+      {
+        label: "Investiture",
+        detail: "Investiture ceremony expected this month; the exact Sabbath is pending approval.",
+        status: "proposed",
+      },
+    ],
+  },
+];
+
+const statusLabels: Record<ProposedStatus, string> = {
+  proposed: "Proposed · date pending",
+  confirmed: "Confirmed date noted",
+};
+---
+
+<BaseLayout
+  title="Adventurer events"
+  description="Adventurer events, proposed calendar notes, and the shared dynamic calendar feed."
+>
+  <div class="stack">
+    <Hero
+      title="Adventurer events"
+      subtitle="See the dynamic calendar below and learn more about the Springfield Junior Pioneers’ 2026 plans."
+      primaryCtaLabel="View campus calendar"
+      primaryCtaHref="/calendar"
+    />
+
+    <section class="stack">
+      <div>
+        <h2>Upcoming Adventurer gatherings</h2>
+        <p class="muted">
+          The shared calendar below syncs with the campus annual calendar so families can follow worship, outreach, and youth gatherings in one place.
+        </p>
+        <p class="muted small">
+          Update <code>src/data/annual-calendar.json</code> to refresh the dynamic calendar; the highlighted dates, featured entries, and the “last updated” badge will all reflect the new data once saved.
+        </p>
+      </div>
+    </section>
+
+    <section class="stack adventurer-events__calendar">
+      <div class="card adventurer-events__calendar-hero">
+        <h3>Dynamic calendar area</h3>
+        <p>
+          This is the live Adventurer/Adventist Youth feed. Any changes to the shared campus calendar file appear here automatically.
+        </p>
+        <p class="muted small">
+          Manifest placeholder: the highlight card and featured date list above come straight from the campus calendar data.
+        </p>
+      </div>
+
+      <AnnualCalendarSection calendarData={annualCalendar} />
+    </section>
+
+    <section class="stack adventurer-events__fallback">
+      <div>
+        <h2>Springfield Junior Pioneers Adventurer Club 2026 Proposed Calendar</h2>
+        <p class="muted">
+          The notes below were provided as draft guidance. Unless an entry is labeled “Confirmed date,” treat the day/time as proposed and confirm it through worship updates or club leadership.
+        </p>
+      </div>
+
+      <div class="adventurer-events__fallback-grid">
+        {proposedCalendar.map((month) => (
+          <article class="card adventurer-events__month">
+            <h3>{month.month}</h3>
+            <ul>
+              {month.entries.map((entry) => (
+                <li>
+                  <p class="adventurer-events__entry-label">
+                    <strong>{entry.label}</strong>
+                    <span class={`status-badge status-badge--${entry.status}`}>
+                      {statusLabels[entry.status]}
+                    </span>
+                  </p>
+                  <p class="muted small">{entry.detail}</p>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .adventurer-events__calendar-hero {
+    gap: var(--space-3);
+    background: var(--color-surface-muted);
+  }
+
+  .adventurer-events__calendar-hero h3 {
+    margin-bottom: 0.5rem;
+  }
+
+  .adventurer-events__fallback-grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .adventurer-events__month ul {
+    list-style: none;
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .adventurer-events__entry-label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-bottom: var(--space-1);
+  }
+
+  .status-badge {
+    border-radius: 999px;
+    padding: 0.15rem 0.75rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .status-badge--proposed {
+    background: color-mix(in oklab, var(--color-border) 80%, var(--color-primary) 20%);
+    color: var(--color-primary);
+  }
+
+  .status-badge--confirmed {
+    background: color-mix(in oklab, var(--color-border) 70%, var(--color-surface-muted) 30%);
+    color: var(--color-text);
+  }
+
+  code {
+    font-size: 0.9rem;
+    background: color-mix(in oklab, var(--color-surface-muted) 80%, transparent 20%);
+    padding: 0.15rem 0.3rem;
+    border-radius: 4px;
+  }
+
+  @media (min-width: 960px) {
+    .adventurer-events__fallback-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>
