@@ -78,18 +78,34 @@ The Springfield Junior Pioneers Adventurer Club is a Seventh-day Adventist Churc
   </article>
 </section>
 
+<section class="card" aria-label="Adventurer registration overview">
+  <div class="prose">
+    <h3>Adventurer registration</h3>
+    <p>
+      The Springfield Junior Pioneers Adventurer Club Registration &amp; Health Form is mandatory for every Adventurer joining the 2026 year.
+      It gathers child and parent/guardian information, contact preferences, and consent so families can stay connected and leaders can support each child safely.
+    </p>
+    <p>
+      Parents and guardians should complete the form in full, then submit it so the club knows who will be participating, how to reach you, and how to care for your child during events.
+    </p>
+    <p class="muted small">
+      <strong>What you’ll need before you register:</strong> basic child information, parent/guardian contact details, emergency contact, and general consent/communication preferences.
+    </p>
+  </div>
+</section>
+
 ### 2026 Club Info
 
 <section class="grid--cards adventurer-cta" aria-label="Adventurer action cards">
   <article class="card card--link adventurer-cta__card">
     <div class="card__body stack--tight">
       <div>
-        <h3>Register Now!</h3>
-        <p>Join the Springfield Junior Pioneers by completing our registration form so we can share the latest roster, badge plans, and volunteer info.</p>
+        <h3>Register for the Springfield Junior Pioneers Adventurer Club Registration &amp; Health Form</h3>
+        <p>The secure external form gathers the information noted above so we can confirm enrollment, share updates, and coordinate volunteers.</p>
       </div>
       <div class="adventurer-cta__action">
         <a class="btn btn--primary" href="https://example.com/adventurer-registration" target="_blank" rel="noopener noreferrer" aria-label="Open the Adventurer registration form in a new tab">Register Now</a>
-        <p class="muted small adventurer-cta__note">Opens a secure registration form in a new tab.</p>
+        <p class="muted small adventurer-cta__note">Opens a secure registration form in a new tab. Placeholder link; replace with final form URL once it is available.</p>
       </div>
     </div>
   </article>
