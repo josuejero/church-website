@@ -47,3 +47,19 @@ At each meeting, Adventurers will complete most of their class requirements, wit
 We look forward to a successful year as we work together to prepare the Adventurers for the heavenly kingdom. Your support and prayers are deeply appreciated as we lead this club.
 
 Please note that the Atlantic Union will hold a joint Adventurer and Pathfinder camporee in May. Adventurers may only attend this event with a parent or guardian, and children may sleep in tents only with their own parent or guardian. Let club leaders know if you plan to attend with your child.
+
+<div class="memo-actions" aria-label="Adventurer memo next steps">
+  <a class="btn btn--secondary" href="/events" aria-label="View upcoming Adventurer events">View events</a>
+  <a
+    class="btn btn--primary"
+    href="https://example.com/adventurer-registration"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Complete Adventurer registration"
+    aria-describedby="memo-register-note"
+  >
+    Register now
+  </a>
+  <a class="btn btn--ghost" href="/ministries/adventurers" aria-label="Return to Adventurer landing section">Back to Adventurer page</a>
+</div>
+<p class="memo-actions__note" id="memo-register-note">Opens a secure registration form in a new tab. Placeholder link—please update with the final form URL once available.</p>

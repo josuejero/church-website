@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Button from "../../../components/ui/Button.astro";
 import Hero from "../../../components/ui/Hero.astro";
 import AnnualCalendarSection from "../../../components/sections/AnnualCalendarSection.astro";
 import annualCalendar from "../../../data/annual-calendar.json";
@@ -156,17 +157,42 @@ const statusLabels: Record<ProposedStatus, string> = {
     </section>
 
     <section class="stack adventurer-events__calendar">
-      <div class="card adventurer-events__calendar-hero">
-        <h3>Dynamic calendar area</h3>
-        <p>
-          This is the live Adventurer/Adventist Youth feed. Any changes to the shared campus calendar file appear here automatically.
-        </p>
-        <p class="muted small">
-          Manifest placeholder: the highlight card and featured date list remain in sync with the campus calendar data.
-        </p>
+      <div class="adventurer-events__calendar-grid">
+        <div class="card adventurer-events__calendar-hero">
+          <h3>Dynamic calendar area</h3>
+          <p>
+            This is the live Adventurer/Adventist Youth feed. Any changes to the shared campus calendar file appear here automatically.
+          </p>
+          <p class="muted small">
+            Manifest placeholder: the highlight card and featured date list remain in sync with the campus calendar data.
+          </p>
+        </div>
+
+        <AnnualCalendarSection calendarData={annualCalendar} />
       </div>
 
-      <AnnualCalendarSection calendarData={annualCalendar} />
+      <section class="card adventurer-events__cta-card stack--tight">
+        <div>
+          <h3>Next steps for Adventurers</h3>
+          <p class="muted small">Read the memo, confirm upcoming gatherings, then finish at registration so families stay on track.</p>
+        </div>
+        <div class="adventurer-events__cta-actions cluster cluster--loose">
+          <Button variant="secondary" href="/resources/2026/03/adventurer-club-memo">
+            Read the memo
+          </Button>
+          <Button
+            variant="primary"
+            href="https://example.com/adventurer-registration"
+            external
+            aria-describedby="adventurer-events-cta-note"
+          >
+            Register now
+          </Button>
+        </div>
+        <p class="muted small adventurer-events__cta-note" id="adventurer-events-cta-note">
+          Registration opens a secure form in a new tab. Placeholder link—please update with the final form URL once available.
+        </p>
+      </section>
     </section>
 
     <section class="stack adventurer-events__fallback">
@@ -209,6 +235,29 @@ const statusLabels: Record<ProposedStatus, string> = {
 
   .adventurer-events__calendar-hero h3 {
     margin-bottom: 0.5rem;
+  }
+
+  .adventurer-events__calendar-grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .adventurer-events__calendar-grid > * {
+    min-height: 100%;
+  }
+
+  .adventurer-events__cta-card {
+    gap: var(--space-3);
+  }
+
+  .adventurer-events__cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .adventurer-events__cta-note {
+    margin: 0;
   }
 
   .adventurer-events__fallback-grid {
@@ -260,6 +309,10 @@ const statusLabels: Record<ProposedStatus, string> = {
 
   @media (min-width: 960px) {
     .adventurer-events__fallback-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .adventurer-events__calendar-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
