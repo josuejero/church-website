@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { site } from "../../data/site";
+import { buildSummary, formatSummaryText } from "../../lib/connect-card";
 
 const THANK_YOU_PATH = "/connect/connect-card/thank-you";
 const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
@@ -20,32 +21,6 @@ const verifyTurnstile = async (token: string, secret: string) => {
   }
 };
 
-const buildSummary = (entries: [string, FormDataEntryValue][]) => {
-  const summary: Record<string, string> = {};
-
-  for (const [key, value] of entries) {
-    if (key === "cf-turnstile-response" || value instanceof File) {
-      continue;
-    }
-
-    const normalizedKey = key.replace(/\[\]$/, "");
-    const textValue = String(value).trim();
-    if (!textValue) {
-      continue;
-    }
-
-    summary[normalizedKey] = summary[normalizedKey]
-      ? `${summary[normalizedKey]}, ${textValue}`
-      : textValue;
-  }
-
-  return summary;
-};
-
-const formatSummaryText = (summary: Record<string, string>) =>
-  Object.entries(summary)
-    .map(([key, value]) => `${key}: ${value}`)
-    .join("\n");
 
 const sendNotificationEmail = async (
   recipients: string[],

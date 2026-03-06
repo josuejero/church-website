@@ -12,13 +12,14 @@
     "build": "npm run astro -- build && npm run generate:pagefind-index",
     "preview": "npm run astro -- preview",
     "check": "npm run astro -- check",
+    "test:unit": "vitest run",
     "test:e2e": "npm run build && playwright test",
     "test:e2e:ci": "playwright test",
     "test:links": "npm run build && linkinator ./dist --config ./linkinator.config.json",
     "test:links:ci": "linkinator ./dist --config=./linkinator.config.json",
     "lighthouse": "npm run build && lhci autorun --config=./lighthouserc.cjs",
     "lighthouse:ci": "lhci autorun --config=./lighthouserc.cjs",
-    "qa": "npm run check && npm run test:e2e && npm run test:links && npm run lighthouse",
+    "qa": "npm run check && npm run test:unit && npm run test:e2e && npm run test:links && npm run lighthouse",
     "format": "prettier --write .",
     "postinstall": "node scripts/patch-yargs-parser.js"
   },
@@ -46,11 +47,13 @@
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.51.1",
     "@types/node": "^22.13.9",
+    "@vitest/ui": "^3.2.4",
     "linkinator": "^7.5.0",
     "node-gyp": "^9.4.1",
     "prettier": "^3.5.3",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-svelte": "^3.3.3",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "^3.2.4"
   }
 }

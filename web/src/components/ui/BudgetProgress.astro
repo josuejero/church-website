@@ -1,32 +1,9 @@
 ---
 import budget from "../../data/budget.json";
+import { getBudgetMetrics } from "../../lib/budget";
 
 const { embedded = false } = Astro.props;
-
-const { goal = 0, received = 0, updatedAt } = budget;
-const normalizedGoal = Math.max(0, goal);
-const normalizedReceived = Math.max(0, received);
-const percentRaised = normalizedGoal
-  ? Math.min(100, Math.round((normalizedReceived / normalizedGoal) * 100))
-  : 0;
-
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
-
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "long",
-  day: "numeric",
-  year: "numeric",
-});
-
-const formattedGoal = currencyFormatter.format(normalizedGoal);
-const formattedReceived = currencyFormatter.format(normalizedReceived);
-const formattedUpdatedAt = updatedAt
-  ? dateFormatter.format(new Date(updatedAt))
-  : null;
+const metrics = getBudgetMetrics(budget, { locale: "en-US", timeZone: "UTC" });
 ---
 
 <section
@@ -41,11 +18,11 @@ const formattedUpdatedAt = updatedAt
   <div class="budget-progress__totals">
     <div>
       <p class="muted">Goal</p>
-      <p class="budget-progress__amount">{formattedGoal}</p>
+      <p class="budget-progress__amount">{metrics.formattedGoal}</p>
     </div>
     <div>
       <p class="muted">Received</p>
-      <p class="budget-progress__amount">{formattedReceived}</p>
+      <p class="budget-progress__amount">{metrics.formattedReceived}</p>
     </div>
   </div>
 
@@ -54,18 +31,18 @@ const formattedUpdatedAt = updatedAt
     role="progressbar"
     aria-valuemin="0"
     aria-valuemax="100"
-    aria-valuenow={percentRaised}
-    aria-label={`${percentRaised}% of goal met`}
+    aria-valuenow={metrics.percentRaised}
+    aria-label={`${metrics.percentRaised}% of goal met`}
   >
-    <span class="budget-progress__bar-fill" style={`width: ${percentRaised}%`}
+    <span class="budget-progress__bar-fill" style={`width: ${metrics.percentRaised}%`}
     ></span>
   </div>
 
-  <p class="budget-progress__percent">{percentRaised}% of the goal met</p>
+  <p class="budget-progress__percent">{metrics.percentRaised}% of the goal met</p>
   {
-    formattedUpdatedAt && (
+    metrics.formattedUpdatedAt && (
       <p class="budget-progress__updated small muted">
-        Updated {formattedUpdatedAt}
+        Updated {metrics.formattedUpdatedAt}
       </p>
     )
   }

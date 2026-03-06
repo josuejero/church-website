@@ -29,7 +29,8 @@ const alertConfig = siteAlert as {
   variant?: "info" | "warn";
   updatedAt?: string;
 };
-const showAlert = Boolean(alertConfig.enabled && alertConfig.title && alertConfig.message);
+const hideAlertOverride = Astro.url.searchParams.get("hideAlert") === "1";
+const showAlert = !hideAlertOverride && Boolean(alertConfig.enabled && alertConfig.title && alertConfig.message);
 
 const categoryLabels: Record<UpdateEntry["data"]["category"], string> = {
   weather: "Weather notice",
@@ -70,7 +71,11 @@ const contactEmail = site.contact.email;
           hideCta
         />
       ) : (
-        <p class="muted">No emergency alerts right now.</p>
+        <p class="muted">
+          No emergency alerts right now. Contact the {clerkDestination} at
+          <a href={`mailto:${contactEmail}`}>{contactEmail}</a> or call
+          <a href={`tel:${site.contact.phone.replace(/[^0-9+]/g, "")}`}>{site.contact.phone}</a> for assistance.
+        </p>
       )}
     </section>
 
