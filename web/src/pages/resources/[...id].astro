@@ -1,6 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Hero from '../../components/ui/Hero.astro';
+import AdventurerActionCards from '../../components/sections/AdventurerActionCards.astro';
+import AdventurerPaymentInstructions from '../../components/sections/AdventurerPaymentInstructions.astro';
 import { getCollection, render } from 'astro:content';
 import { site } from '../../data/site';
 
@@ -22,6 +24,7 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
   dateStyle: 'full',
   timeZone: site.timeZone,
 });
+const isAdventurerMemo = resource.id.includes('adventurer-club-memo');
 ---
 
 <BaseLayout title={resource.data.title} description={resource.data.summary}>
@@ -52,6 +55,9 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
         <Content />
       </div>
     </article>
+
+    {isAdventurerMemo && <AdventurerActionCards showMemoCard={false} />}
+    {isAdventurerMemo && <AdventurerPaymentInstructions />}
 
     <p><a class="link" href="/resources">← Back to Resources</a></p>
   </section>

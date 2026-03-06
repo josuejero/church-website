@@ -82,7 +82,7 @@ The Springfield Junior Pioneers Adventurer Club is a Seventh-day Adventist Churc
   <div class="prose">
     <h3>Adventurer registration</h3>
     <p>
-      The Springfield Junior Pioneers Adventurer Club Registration &amp; Health Form is mandatory for every Adventurer joining the 2026 year and collects child and parent/guardian information, contact preferences, and consent so families stay connected and leaders can support each child safely.
+  The Springfield Junior Pioneers Adventurer Club Registration &amp; Health Form is mandatory for every Adventurer joining the current Adventurer year and collects child and parent/guardian information, contact preferences, and consent so families stay connected and leaders can support each child safely.
     </p>
     <p>
       Parents and guardians should complete the form in full and submit it so the club knows who will participate, how to reach you, and how to care for your child during events.
@@ -91,48 +91,4 @@ The Springfield Junior Pioneers Adventurer Club is a Seventh-day Adventist Churc
       <strong>What you’ll need before you register:</strong> basic child information, parent/guardian contact details, emergency contact, and general consent/communication preferences.
     </p>
   </div>
-</section>
-
-### 2026 Club Info
-
-<section class="grid--cards adventurer-cta" aria-label="Adventurer action cards">
-  <p class="muted small adventurer-cta__guide" aria-hidden="true">
-    Start with the memo, review the live events list, then finish at the registration form so the whole flow feels connected.
-  </p>
-  <article class="card card--link adventurer-cta__card">
-    <div class="card__body stack--tight">
-      <div>
-        <h3>Register for the Springfield Junior Pioneers Adventurer Club Registration &amp; Health Form</h3>
-        <p>The secure external form gathers the information noted above so we can confirm enrollment, share updates, and coordinate volunteers.</p>
-      </div>
-      <div class="adventurer-cta__action">
-        <a class="btn btn--primary" href="https://example.com/adventurer-registration" target="_blank" rel="noopener noreferrer" aria-label="Open the Adventurer registration form in a new tab" aria-describedby="adventurer-register-note">Register Now</a>
-        <p class="muted small adventurer-cta__note" id="adventurer-register-note">Opens a secure registration form in a new tab. Placeholder link—please update with the final form URL once available.</p>
-      </div>
-    </div>
-  </article>
-  <article class="card card--link adventurer-cta__card">
-    <div class="card__body stack--tight">
-      <div>
-        <h3>Adventurer Memo</h3>
-        <p>Read the latest memo for reminders, badge focuses, and volunteer needs so you can support the next Adventurer gathering.</p>
-      </div>
-      <div class="adventurer-cta__action">
-        <a class="btn btn--secondary" href="/resources/2026/03/adventurer-club-memo" aria-label="Open the Adventurer memo" aria-describedby="adventurer-memo-note">View Memo</a>
-        <p class="muted small adventurer-cta__note" id="adventurer-memo-note">This page hosts the current Adventurer memo.</p>
-      </div>
-    </div>
-  </article>
-  <article class="card card--link adventurer-cta__card">
-    <div class="card__body stack--tight">
-      <div>
-        <h3>Upcoming Events</h3>
-        <p>Explore outings, service projects, and Adventurer-friendly church moments so your family can plan ahead.</p>
-      </div>
-      <div class="adventurer-cta__action">
-        <a class="btn btn--ghost" href="/events" aria-label="View upcoming Adventurer events" aria-describedby="adventurer-events-note">See Events</a>
-        <p class="muted small adventurer-cta__note" id="adventurer-events-note">Opens the campus events calendar with Adventurer gatherings.</p>
-      </div>
-    </div>
-  </article>
 </section>

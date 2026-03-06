@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import HeroSection from "../../components/sections/Hero.astro";
 import { getCollection, getEntry, render } from "astro:content";
 import EventList from "../../components/sections/EventList.astro";
+import AdventurerActionCards from "../../components/sections/AdventurerActionCards.astro";
 import { mailto } from "../../lib/links";
 
 export async function getStaticPaths() {
@@ -39,6 +40,7 @@ const title =
 const description =
   data.description ?? data.summary ?? `Learn more about ${title}.`;
 const heroSubtitle = data.summary ?? description;
+const showAdventurerActionCards = id === "adventurers";
 ---
 
 <BaseLayout title={title} description={description}>
@@ -79,6 +81,8 @@ const heroSubtitle = data.summary ?? description;
         <Content />
       </div>
     </section>
+
+    {showAdventurerActionCards ? <AdventurerActionCards /> : null}
 
     {data.showUpcomingEvents ? (
       <EventList

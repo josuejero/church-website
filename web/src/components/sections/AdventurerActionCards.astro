@@ -1,0 +1,65 @@
+---
+import adventurerConfig from "../../data/adventurer";
+import Button from "../ui/Button.astro";
+
+const props = Astro.props as {
+  showMemoCard?: boolean;
+  showEventsCard?: boolean;
+};
+const showMemoCard = props.showMemoCard !== false;
+const showEventsCard = props.showEventsCard !== false;
+const { registration, memo, events, guideText } = adventurerConfig;
+---
+
+<section class="grid--cards adventurer-cta" aria-label="Adventurer action cards">
+  <p class="muted small adventurer-cta__guide" aria-hidden="true">{guideText}</p>
+
+  <article class="card card--link adventurer-cta__card">
+    <div class="card__body stack--tight">
+      <div>
+        <h3>Register for the Springfield Junior Pioneers Adventurer Club Registration &amp; Health Form</h3>
+        <p>The secure external form gathers the information noted above so we can confirm enrollment, share updates, and coordinate volunteers.</p>
+      </div>
+      <div class="adventurer-cta__action">
+        <Button variant="primary" href={registration.url} external aria-describedby="adventurer-register-note">
+          {registration.ctaLabel}
+        </Button>
+        <p class="muted small adventurer-cta__note" id="adventurer-register-note">{registration.note}</p>
+      </div>
+    </div>
+  </article>
+
+  {showMemoCard ? (
+    <article class="card card--link adventurer-cta__card">
+      <div class="card__body stack--tight">
+        <div>
+          <h3>Adventurer Memo</h3>
+          <p>Read the latest memo for reminders, badge focuses, and volunteer needs so you can support the next Adventurer gathering.</p>
+        </div>
+        <div class="adventurer-cta__action">
+          <Button variant="secondary" href={memo.path} aria-describedby="adventurer-memo-note">
+            {memo.ctaLabel}
+          </Button>
+          <p class="muted small adventurer-cta__note" id="adventurer-memo-note">{memo.note}</p>
+        </div>
+      </div>
+    </article>
+  ) : null}
+
+  {showEventsCard ? (
+    <article class="card card--link adventurer-cta__card">
+      <div class="card__body stack--tight">
+        <div>
+          <h3>Upcoming Events</h3>
+          <p>Explore outings, service projects, and Adventurer-friendly church moments so your family can plan ahead.</p>
+        </div>
+        <div class="adventurer-cta__action">
+          <Button variant="ghost" href={events.ctaHref} aria-describedby="adventurer-events-note">
+            {events.ctaLabel}
+          </Button>
+          <p class="muted small adventurer-cta__note" id="adventurer-events-note">{events.note}</p>
+        </div>
+      </div>
+    </article>
+  ) : null}
+</section>

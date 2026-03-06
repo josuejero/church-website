@@ -1,0 +1,30 @@
+---
+import adventurerConfig from "../../data/adventurer";
+
+const { payment } = adventurerConfig;
+---
+
+<section class="card" aria-label="Adventurer dues and payment methods">
+  <div class="prose">
+    <h3>Payment &amp; dues</h3>
+    <p>{payment.intro}</p>
+    <ul class="adventurer-payment__methods">
+      {payment.methods.map((method) => (
+        <li>
+          <strong>{method.label}:</strong> {method.detail}
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .adventurer-payment__methods {
+    margin: var(--space-2) 0 0;
+    padding-left: var(--space-4);
+  }
+
+  .adventurer-payment__methods li {
+    margin-bottom: var(--space-1);
+  }
+</style>
