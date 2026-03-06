@@ -100,8 +100,8 @@ The Springfield Junior Pioneers Adventurer Club is a Seventh-day Adventist Churc
         <p>Read the latest memo for reminders, badge focuses, and volunteer needs so you can support the next Adventurer gathering.</p>
       </div>
       <div class="adventurer-cta__action">
-        <a class="btn btn--secondary" href="/resources/announcements" aria-label="View the latest Adventurer memo">View Memo</a>
-        <p class="muted small adventurer-cta__note">Memo updates are published in the announcements feed.</p>
+        <a class="btn btn--secondary" href="/resources/2026/03/adventurer-club-memo" aria-label="Open the Adventurer memo">View Memo</a>
+        <p class="muted small adventurer-cta__note">This page hosts the current Adventurer memo.</p>
       </div>
     </div>
   </article>
