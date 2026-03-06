@@ -1,0 +1,90 @@
+---
+import Button from "../ui/Button.astro";
+import type { ContactCtaGroupDefinition } from "../../lib/contact-sections";
+
+const props = Astro.props as ContactCtaGroupDefinition;
+const { watchLiveAction, giveAction, extras = [], socialLinks = [] } = props;
+---
+
+<div class="contact-cta-group">
+  <div class="contact-cta-group__main">
+    {watchLiveAction && (
+      <Button
+        href={watchLiveAction.href}
+        variant={watchLiveAction.variant ?? "secondary"}
+        external={watchLiveAction.external}
+      >
+        {watchLiveAction.label}
+      </Button>
+    )}
+
+    {giveAction && (
+      <Button
+        href={giveAction.href}
+        variant={giveAction.variant ?? "primary"}
+        external={giveAction.external}
+      >
+        {giveAction.label}
+      </Button>
+    )}
+  </div>
+
+  {extras.length > 0 && (
+    <div class="contact-cta-group__extras">
+      {extras.map((action) => (
+        <Button
+          href={action.href}
+          variant={action.variant ?? "tertiary"}
+          external={action.external}
+        >
+          {action.label}
+        </Button>
+      ))}
+    </div>
+  )}
+
+  {socialLinks.length > 0 && (
+    <div class="contact-cta-group__social">
+      {socialLinks.map((link) => (
+        <a
+          class="contact-cta-group__social-link"
+          href={link.href}
+          target={link.external ? "_blank" : undefined}
+          rel={link.external ? "noopener noreferrer" : undefined}
+        >
+          {link.label}
+        </a>
+      ))}
+    </div>
+  )}
+</div>
+
+<style>
+  .contact-cta-group {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .contact-cta-group__main,
+  .contact-cta-group__extras {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .contact-cta-group__social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .contact-cta-group__social-link {
+    text-decoration: none;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  .contact-cta-group__social-link:hover {
+    text-decoration: underline;
+  }
+</style>

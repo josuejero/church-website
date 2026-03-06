@@ -1,0 +1,407 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - status [ref=e3]:
+    - generic [ref=e4]: ⚠️
+    - generic [ref=e5]:
+      - paragraph [ref=e6]: Annex access paused for safety review
+      - paragraph [ref=e7]: The annex is temporarily closed while engineers finish a safety inspection and repairs; check the update for details.
+    - generic [ref=e8]:
+      - paragraph [ref=e9]: Updated Feb 12, 2026
+      - link "See updates" [ref=e10] [cursor=pointer]:
+        - /url: /updates/annex-access-paused-for-safety
+  - banner [ref=e11]:
+    - generic [ref=e12]:
+      - link "First Springfield Seventh-day Adventist Church" [ref=e13] [cursor=pointer]:
+        - /url: /
+        - img "First Springfield Seventh-day Adventist Church logo" [ref=e14]
+        - generic [ref=e15]: First Springfield SDA
+      - navigation "Primary navigation" [ref=e16]:
+        - link "Visit" [ref=e17] [cursor=pointer]:
+          - /url: /connect/plan-a-visit
+        - link "Contact" [ref=e18] [cursor=pointer]:
+          - /url: /connect/contact
+        - link "Connect Card" [ref=e19] [cursor=pointer]:
+          - /url: /connect/connect-card
+        - link "About Us" [ref=e20] [cursor=pointer]:
+          - /url: /connect/about
+        - link "Our Team" [ref=e21] [cursor=pointer]:
+          - /url: /connect/team
+        - link "Ministries" [ref=e22] [cursor=pointer]:
+          - /url: /ministries
+      - generic "Primary actions" [ref=e24]:
+        - link "Watch Live" [ref=e25] [cursor=pointer]:
+          - /url: /media/live
+        - link "Give" [ref=e26] [cursor=pointer]:
+          - /url: /give
+  - main [ref=e27]:
+    - generic [ref=e28]:
+      - generic [ref=e35]:
+        - heading "Welcome" [level=1] [ref=e36]
+        - paragraph [ref=e37]: A vibrant, multicultural Seventh-day Adventist church in the heart of Springfield, MA.
+      - generic [ref=e38]:
+        - region "Prayer meeting callout" [ref=e40]:
+          - generic [ref=e41]:
+            - paragraph [ref=e42]: Midweek Prayer Meeting
+            - heading "Wednesday · 7:00 PM" [level=2] [ref=e43]
+            - paragraph [ref=e44]:
+              - text: In person at
+              - strong [ref=e45]: Church annex
+          - link "Join via Zoom" [ref=e47] [cursor=pointer]:
+            - /url: https://us02web.zoom.us/j/87430121210?pwd=QVNCRUlXcDdtU2dUSUdrbFdVdDlMUT09
+          - group [ref=e48]:
+            - generic "Dial-in & meeting info ▾" [ref=e49] [cursor=pointer]
+        - region "Weekly highlights carousel" [ref=e51]:
+          - generic [ref=e52]:
+            - generic [ref=e53]:
+              - paragraph [ref=e54]: This week
+              - heading "Church highlights" [level=2] [ref=e55]
+            - generic "Highlight slide controls" [ref=e56]:
+              - button "Previous highlight" [ref=e57] [cursor=pointer]: ←
+              - button "Next highlight" [ref=e58] [cursor=pointer]: →
+          - list [ref=e60]:
+            - listitem [ref=e61]:
+              - generic [ref=e62]:
+                - generic [ref=e64]: This week
+                - paragraph [ref=e65]:
+                  - link "Prayer Meeting · Wednesdays at 7:00 PM · Church annex + Zoom" [ref=e66] [cursor=pointer]:
+                    - /url: /connect/prayer
+            - listitem [ref=e67]:
+              - generic [ref=e68]:
+                - generic [ref=e70]: Support
+                - paragraph [ref=e71]: Nar-Anon · Thursdays at 7:00 PM – 8:30 PM in the Mother’s room
+            - listitem [ref=e72]:
+              - generic [ref=e73]:
+                - generic [ref=e75]: Table Talk
+                - paragraph [ref=e76]:
+                  - link "Table Talk · Second Sabbath of every month · Youth conversations after worship" [ref=e77] [cursor=pointer]:
+                    - /url: /ministries/youth-young-adults
+            - listitem [ref=e78]:
+              - generic [ref=e79]:
+                - generic [ref=e81]: Pathfinders & Adventurers
+                - paragraph [ref=e82]:
+                  - link "Pathfinders & Adventurers · 1st & 3rd Sabbaths · 3:00 p.m. – 5:00 p.m." [ref=e83] [cursor=pointer]:
+                    - /url: /ministries/pathfinders
+            - listitem [ref=e84]:
+              - generic [ref=e85]:
+                - generic [ref=e87]: Men's Fellowship
+                - paragraph [ref=e88]: Men's Fellowship · Fridays at 7:00 PM in the church annex for Bible study, prayer, and brotherhood
+            - listitem [ref=e89]:
+              - paragraph [ref=e91]:
+                - link "Bible Study · Fourth Sabbath deeper dive for all ages" [ref=e92] [cursor=pointer]:
+                  - /url: /ministries/bible-study
+          - tablist "Highlight slide navigation" [ref=e93]:
+            - tab "Show highlight 1" [selected] [ref=e94] [cursor=pointer]
+            - tab "Show highlight 2" [ref=e95] [cursor=pointer]
+            - tab "Show highlight 3" [ref=e96] [cursor=pointer]
+            - tab "Show highlight 4" [ref=e97] [cursor=pointer]
+            - tab "Show highlight 5" [ref=e98] [cursor=pointer]
+            - tab "Show highlight 6" [ref=e99] [cursor=pointer]
+        - generic [ref=e101]:
+          - generic [ref=e103]:
+            - heading "Ministries" [level=2] [ref=e104]
+            - paragraph [ref=e105]: Find a place to serve, grow, and celebrate with your church family.
+          - generic [ref=e106]:
+            - link "Children’s Ministry" [ref=e107] [cursor=pointer]:
+              - /url: /ministries/children
+              - generic [ref=e108]:
+                - generic [ref=e109]:
+                  - generic [ref=e110]: Children’s Ministry
+                  - paragraph [ref=e111]: Storytelling, worship, choir, and family-focused programs that welcome every child and invite them to grow in Jesus.
+                - generic [ref=e112]: Learn more →
+            - link "Pathfinders & Adventurers" [ref=e113] [cursor=pointer]:
+              - /url: /ministries/pathfinders
+              - generic [ref=e114]:
+                - generic [ref=e115]:
+                  - generic [ref=e116]: Pathfinders & Adventurers
+                  - paragraph [ref=e117]: Two vibrant clubs filled with faith, service, and outdoor adventures for children and youth ready to discover purpose together.
+                - generic [ref=e118]: Learn more →
+            - link "Adventist Community Services (ACS)" [ref=e119] [cursor=pointer]:
+              - /url: /ministries/adventist-community-services
+              - generic [ref=e120]:
+                - generic [ref=e121]:
+                  - generic [ref=e122]: Adventist Community Services (ACS)
+                  - paragraph [ref=e123]: Compassionate care, monthly meals, and community outreach that meet the whole person in Springfield and beyond.
+                - generic [ref=e124]: Learn more →
+            - link "Women’s Ministry" [ref=e125] [cursor=pointer]:
+              - /url: /ministries/womens-ministry
+              - generic [ref=e126]:
+                - generic [ref=e127]:
+                  - generic [ref=e128]: Women’s Ministry
+                  - paragraph [ref=e129]: Prayer circles, retreats, and service projects that help women grow spiritually and encourage one another in Jesus.
+                - generic [ref=e130]: Learn more →
+            - link "Social Ministry" [ref=e131] [cursor=pointer]:
+              - /url: /ministries/social-ministry
+              - generic [ref=e132]:
+                - generic [ref=e133]:
+                  - generic [ref=e134]: Social Ministry
+                  - paragraph [ref=e135]: Hospitality, fellowship meals, and celebration events that help members and neighbors build deeper relationships.
+                - generic [ref=e136]: Learn more →
+        - generic [ref=e138]:
+          - generic [ref=e140]:
+            - heading "Get Connected" [level=2] [ref=e141]
+            - paragraph [ref=e142]: Take your next step in community, worship, and prayer.
+          - generic [ref=e143]:
+            - link "About Us" [ref=e144] [cursor=pointer]:
+              - /url: /connect/about
+              - generic [ref=e145]:
+                - generic [ref=e146]:
+                  - generic [ref=e147]: About Us
+                  - paragraph [ref=e148]: Learn our mission and what we believe.
+                - generic [ref=e149]: Learn more →
+            - link "Adult Sabbath School" [ref=e150] [cursor=pointer]:
+              - /url: /ministries/adult-sabbath-school
+              - generic [ref=e151]:
+                - generic [ref=e152]:
+                  - generic [ref=e153]: Adult Sabbath School
+                  - paragraph [ref=e154]: Discover the mission, goals, and study focus of Adult Sabbath School.
+                - generic [ref=e155]: Learn more →
+            - link "Worship With Us" [ref=e156] [cursor=pointer]:
+              - /url: /connect/worship-with-us
+              - generic [ref=e157]:
+                - generic [ref=e158]:
+                  - generic [ref=e159]: Worship With Us
+                  - paragraph [ref=e160]: See when we meet and what to expect.
+                - generic [ref=e161]: Learn more →
+            - link "Prayer Request" [ref=e162] [cursor=pointer]:
+              - /url: /connect/prayer
+              - generic [ref=e163]:
+                - generic [ref=e164]:
+                  - generic [ref=e165]: Prayer Request
+                  - paragraph [ref=e166]: Share a prayer request with our prayer team.
+                - generic [ref=e167]: Learn more →
+        - region "Giving" [ref=e169]:
+          - generic [ref=e171]:
+            - heading "Giving" [level=2] [ref=e172]
+            - paragraph [ref=e173]: Support First Springfield’s ministries through faithful giving—every gift helps us worship, serve, and reach our neighbors.
+          - region "Budget progress widget" [ref=e174]:
+            - generic [ref=e175]:
+              - paragraph [ref=e176]: Annual operating budget
+              - heading "Budget progress" [level=2] [ref=e177]
+            - generic [ref=e178]:
+              - generic [ref=e179]:
+                - paragraph [ref=e180]: Goal
+                - paragraph [ref=e181]: $320,000
+              - generic [ref=e182]:
+                - paragraph [ref=e183]: Received
+                - paragraph [ref=e184]: $198,450
+            - progressbar "62% of goal met" [ref=e185]
+            - paragraph [ref=e187]: 62% of the goal met
+            - paragraph [ref=e188]: Updated February 4, 2026
+          - paragraph [ref=e189]: Your generosity keeps the lights on, feeds neighbors, and helps young disciples grow in faith. Thank you for partnering with us.
+          - generic [ref=e190]:
+            - link "Give online" [ref=e191] [cursor=pointer]:
+              - /url: /give
+            - link "Connect with stewardship" [ref=e192] [cursor=pointer]:
+              - /url: /connect/contact
+        - region "Life at First Springfield" [ref=e194]:
+          - generic [ref=e195]:
+            - generic [ref=e197]:
+              - heading "Life at First Springfield" [level=2] [ref=e198]
+              - paragraph [ref=e199]: A bright welcome in daylight and a reflective pause at dusk, both part of our worship rhythm.
+            - paragraph [ref=e200]: We gather beneath the morning glow of the new entryway and cherish the calm of the familiar bridge-dusk view. Both scenes are part of First Springfield’s story; one bright and ready, the other still and reflective.
+          - generic [ref=e201]:
+            - article [ref=e202]:
+              - img "First Springfield Church exterior bathed in daylight" [ref=e203]
+              - generic [ref=e204]:
+                - heading "Sunlit welcome" [level=3] [ref=e205]
+                - paragraph [ref=e206]: The new front exterior invites you with bright, clear light every day.
+            - article [ref=e207]:
+              - img "The church and bridge illuminated at dusk" [ref=e208]
+              - generic [ref=e209]:
+                - heading "Evening stillness" [level=3] [ref=e210]
+                - paragraph [ref=e211]: The bridge-dusk view keeps watch over Springfield as Sabbath approaches.
+        - generic [ref=e213]:
+          - generic [ref=e214]:
+            - heading "Upcoming Events" [level=2] [ref=e216]
+            - link "View all" [ref=e218] [cursor=pointer]:
+              - /url: /events
+          - generic [ref=e219]:
+            - generic [ref=e222]:
+              - heading "Nothing on the calendar yet" [level=3] [ref=e223]
+              - paragraph [ref=e224]: No upcoming events are published yet. We're keeping the schedule updated, so check back soon.
+            - generic [ref=e225]:
+              - link "View calendar" [ref=e226] [cursor=pointer]:
+                - /url: /events
+              - link "Contact us" [ref=e227] [cursor=pointer]:
+                - /url: /connect/contact
+        - generic [ref=e229]:
+          - heading "Latest Sermon" [level=2] [ref=e232]
+          - generic [ref=e233]:
+            - generic [ref=e234]:
+              - paragraph [ref=e235]: Dec 12, 2025
+              - heading "Sabbath Worship Service" [level=3] [ref=e236]
+              - paragraph [ref=e237]: Weekly worship service.
+            - paragraph [ref=e238]: New sermon video coming soon. Check back soon or browse the video archive.
+            - generic [ref=e239]:
+              - link "Open YouTube" [ref=e240] [cursor=pointer]:
+                - /url: https://www.youtube.com/@1stspringfieldsdama74
+              - link "More videos" [ref=e241] [cursor=pointer]:
+                - /url: /media/videos
+        - generic [ref=e243]:
+          - heading "Activities" [level=2] [ref=e246]
+          - generic [ref=e247]:
+            - heading "Recurring activities" [level=3] [ref=e248]
+            - generic [ref=e249]:
+              - heading "Worship & service" [level=4] [ref=e250]
+              - list [ref=e251]:
+                - listitem [ref=e252]:
+                  - paragraph [ref=e253]: Saturday · 10:00 AM
+                  - link "Sabbath School" [ref=e255] [cursor=pointer]:
+                    - /url: /ministries/adult-sabbath-school
+                  - paragraph [ref=e256]: Weekly study groups for every age
+                  - paragraph [ref=e257]: Classes for children, youth, and adults in-person
+                - listitem [ref=e258]:
+                  - paragraph [ref=e259]: Saturday · 11:15 AM
+                  - link "Worship service" [ref=e261] [cursor=pointer]:
+                    - /url: /connect/worship-with-us
+                  - paragraph [ref=e262]: Celebration via music and preaching
+                  - paragraph [ref=e263]: Livestream + in-person fellowship
+                - listitem [ref=e264]:
+                  - paragraph [ref=e265]: Wednesday · 7:00 PM
+                  - link "Prayer meeting" [ref=e267] [cursor=pointer]:
+                    - /url: /connect/prayer
+                  - paragraph [ref=e268]: Midweek prayer, praise, and study
+                  - paragraph [ref=e269]: Hybrid gathering with scripture focus
+                - listitem [ref=e270]:
+                  - paragraph [ref=e271]: Friday · 7:00 PM
+                  - generic [ref=e273]: Men's fellowship
+                  - paragraph [ref=e274]: Fridays · 7:00 PM
+                  - paragraph [ref=e275]: Bible study, prayer, and brotherhood
+            - generic [ref=e276]:
+              - heading "Study & discipleship" [level=4] [ref=e277]
+              - list [ref=e278]:
+                - listitem [ref=e279]:
+                  - paragraph [ref=e280]: 3:00 p.m. – 5:00 p.m.
+                  - link "Pathfinders and Adventurers" [ref=e282] [cursor=pointer]:
+                    - /url: /ministries/pathfinders
+                  - paragraph [ref=e283]: First and third Sabbath of each month
+                  - paragraph [ref=e284]: Includes Adventurers (ages 4–9) and Pathfinders (ages 10–15); public gathering
+                - listitem [ref=e285]:
+                  - paragraph [ref=e286]: Saturday
+                  - link "Table Talk" [ref=e288] [cursor=pointer]:
+                    - /url: /ministries/youth-young-adults
+                  - paragraph [ref=e289]: Second Sabbath of every month
+                  - paragraph [ref=e290]: Youth and young adult conversations around faith
+                - listitem [ref=e291]:
+                  - paragraph [ref=e292]: First Tuesday of every month
+                  - link "Women's ministry" [ref=e294] [cursor=pointer]:
+                    - /url: /ministries/womens-ministry
+                  - paragraph [ref=e295]: Public
+                - listitem [ref=e296]:
+                  - paragraph [ref=e297]: Fourth Sabbath
+                  - link "Bible study" [ref=e299] [cursor=pointer]:
+                    - /url: /ministries/bible-study
+                  - paragraph [ref=e300]: Public
+            - generic [ref=e301]:
+              - heading "Community & outreach" [level=4] [ref=e302]
+              - list [ref=e303]:
+                - listitem [ref=e304]:
+                  - paragraph [ref=e305]: Thursday · 7:00 PM – 8:30 PM
+                  - generic [ref=e307]: Nar-Anon
+                  - paragraph [ref=e308]: Thursdays · 7:00 PM – 8:30 PM in the Mother’s room
+                  - paragraph [ref=e309]: Support for families and friends affected by addiction
+                - listitem [ref=e310]:
+                  - paragraph [ref=e311]: Fourth Wednesday each month
+                  - link "Free spaghetti dinner" [ref=e313] [cursor=pointer]:
+                    - /url: /ministries/community-meal-spaghetti
+                  - paragraph [ref=e314]: Public outreach meal
+            - generic [ref=e315]:
+              - heading "Special events" [level=4] [ref=e316]
+              - list [ref=e317]:
+                - listitem [ref=e318]:
+                  - paragraph [ref=e319]: Second Tuesday of every month
+                  - link "Board meeting" [ref=e321] [cursor=pointer]:
+                    - /url: /ministries/board-meeting
+                  - paragraph [ref=e322]: Members only
+  - contentinfo [ref=e323]:
+    - generic [ref=e324]:
+      - generic [ref=e325]:
+        - generic [ref=e326]:
+          - img "First Springfield Seventh-day Adventist Church logo" [ref=e327]
+          - generic [ref=e328]:
+            - strong [ref=e329]: First Springfield Seventh-day Adventist Church
+            - link "1118 Sumner Ave, Springfield, MA 01118-2154" [ref=e331] [cursor=pointer]:
+              - /url: https://www.google.com/maps/dir/?api=1&destination=1118%20Sumner%20Ave%2C%20Springfield%2C%20MA%2001118-2154
+        - generic [ref=e332]:
+          - generic [ref=e333]:
+            - text: "Pastor Abankwa Amoakohene (call/text):"
+            - link "240-850-9452" [ref=e334] [cursor=pointer]:
+              - /url: tel:2408509452
+          - generic [ref=e335]:
+            - text: "Church:"
+            - link "413-782-6260" [ref=e336] [cursor=pointer]:
+              - /url: tel:4137826260
+          - link "firstspringfieldsda@gmail.com" [ref=e338] [cursor=pointer]:
+            - /url: mailto:firstspringfieldsda@gmail.com
+        - generic [ref=e339]: © 2026
+      - navigation "Footer links" [ref=e340]:
+        - generic [ref=e341]:
+          - generic [ref=e342]: Start here
+          - generic [ref=e343]:
+            - link "Visit" [ref=e344] [cursor=pointer]:
+              - /url: /connect/plan-a-visit
+            - link "Contact" [ref=e345] [cursor=pointer]:
+              - /url: /connect/contact
+        - generic [ref=e346]:
+          - generic [ref=e347]: Explore
+          - generic [ref=e348]:
+            - link "Connect Card" [ref=e349] [cursor=pointer]:
+              - /url: /connect/connect-card
+            - link "About Us" [ref=e350] [cursor=pointer]:
+              - /url: /connect/about
+            - link "Our Team" [ref=e351] [cursor=pointer]:
+              - /url: /connect/team
+            - link "Ministries" [ref=e352] [cursor=pointer]:
+              - /url: /ministries
+          - generic [ref=e353]:
+            - link "Privacy" [ref=e354] [cursor=pointer]:
+              - /url: /privacy
+            - link "Accessibility" [ref=e355] [cursor=pointer]:
+              - /url: /accessibility
+        - generic [ref=e356]:
+          - generic [ref=e357]: Quick actions
+          - generic [ref=e358]:
+            - link "Prayer Request" [ref=e359] [cursor=pointer]:
+              - /url: /connect/prayer
+            - link "Bulletins" [ref=e360] [cursor=pointer]:
+              - /url: /resources/bulletins
+            - link "Announcements" [ref=e361] [cursor=pointer]:
+              - /url: /resources/announcements
+            - link "Volunteer" [ref=e362] [cursor=pointer]:
+              - /url: /serve
+            - link "YouTube" [ref=e363] [cursor=pointer]:
+              - /url: https://www.youtube.com/@1stspringfieldsdama74
+            - link "Facebook" [ref=e364] [cursor=pointer]:
+              - /url: https://www.facebook.com/firstspringfieldsda/
+        - generic [ref=e365]:
+          - generic [ref=e366]: Service times
+          - generic [ref=e367]:
+            - generic [ref=e368]:
+              - generic [ref=e369]: Saturday
+              - generic [ref=e370]: ·
+              - generic [ref=e371]: 10:00 AM
+              - generic [ref=e372]: —
+              - generic [ref=e373]: Sabbath School
+            - generic [ref=e374]:
+              - generic [ref=e375]: Saturday
+              - generic [ref=e376]: ·
+              - generic [ref=e377]: 11:15 AM
+              - generic [ref=e378]: —
+              - generic [ref=e379]: Worship service
+            - generic [ref=e380]:
+              - generic [ref=e381]: Wednesday
+              - generic [ref=e382]: ·
+              - generic [ref=e383]: 7:00 PM
+              - generic [ref=e384]: —
+              - generic [ref=e385]: Prayer meeting
+            - generic [ref=e386]:
+              - generic [ref=e387]: Friday
+              - generic [ref=e388]: ·
+              - generic [ref=e389]: 7:00 PM
+              - generic [ref=e390]: —
+              - generic [ref=e391]: Men's fellowship
+```

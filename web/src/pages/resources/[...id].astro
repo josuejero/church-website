@@ -1,15 +1,14 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Hero from '../../components/ui/Hero.astro';
-import AdventurerActionCards from '../../components/sections/AdventurerActionCards.astro';
-import AdventurerPaymentInstructions from '../../components/sections/AdventurerPaymentInstructions.astro';
-import { getCollection, render } from 'astro:content';
-import { site } from '../../data/site';
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getCollection, render } from "astro:content";
+import ResourceHero from "../../components/resources/ResourceHero.astro";
+import ResourceActionList from "../../components/resources/ResourceActionList.astro";
+import AdventurerDetailExtras from "../../components/resources/AdventurerDetailExtras.astro";
 
 export async function getStaticPaths() {
-  const resources = await getCollection('resources', ({ data }) => {
-    return import.meta.env.PROD ? data.draft !== true : true;
-  });
+  const resources = await getCollection("resources", ({ data }) =>
+    import.meta.env.PROD ? data.draft !== true : true
+  );
 
   return resources.map((resource) => ({
     params: { id: resource.id },
@@ -19,36 +18,18 @@ export async function getStaticPaths() {
 
 const { resource } = Astro.props;
 const { Content } = await render(resource);
-
-const fmt = new Intl.DateTimeFormat(site.locale, {
-  dateStyle: 'full',
-  timeZone: site.timeZone,
-});
-const isAdventurerMemo = resource.id.includes('adventurer-club-memo');
+const pageTitle = resource.data.title;
+const pageDescription = resource.data.summary;
 ---
 
-<BaseLayout title={resource.data.title} description={resource.data.summary}>
-  <Hero title={resource.data.title} subtitle={resource.data.summary} />
-
-  <section class="stack">
-    <div class="card stack--tight">
-      <p class="muted"><strong>Published:</strong> {fmt.format(resource.data.published)}</p>
-      {resource.data.category && (
-        <p class="muted"><strong>Category:</strong> {resource.data.category}</p>
-      )}
-
-      {resource.data.attachmentUrl && (
-        <p>
-          <a class="link" href={resource.data.attachmentUrl}>Download / Open attachment</a>
-        </p>
-      )}
-
-      {resource.data.externalUrl && (
-        <p>
-          <a class="link" href={resource.data.externalUrl} rel="noopener noreferrer">Open external link</a>
-        </p>
-      )}
-    </div>
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <div class="stack">
+    <ResourceHero
+      title={pageTitle}
+      subtitle={pageDescription}
+      published={resource.data.published}
+      category={resource.data.category}
+    />
 
     <article class="card">
       <div class="prose">
@@ -56,9 +37,11 @@ const isAdventurerMemo = resource.id.includes('adventurer-club-memo');
       </div>
     </article>
 
-    {isAdventurerMemo && <AdventurerActionCards showMemoCard={false} />}
-    {isAdventurerMemo && <AdventurerPaymentInstructions />}
+    <ResourceActionList
+      attachmentUrl={resource.data.attachmentUrl}
+      externalUrl={resource.data.externalUrl}
+    />
 
-    <p><a class="link" href="/resources">← Back to Resources</a></p>
-  </section>
+    <AdventurerDetailExtras resourceId={resource.id} />
+  </div>
 </BaseLayout>

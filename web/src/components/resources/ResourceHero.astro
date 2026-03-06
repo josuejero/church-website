@@ -1,0 +1,46 @@
+---
+import Hero from "../ui/Hero.astro";
+import { site } from "../../data/site";
+
+const { title, subtitle, published, category } = Astro.props as {
+  title: string;
+  subtitle?: string;
+  published?: string | Date;
+  category?: string;
+};
+
+const publishedDate = published ? new Date(published) : null;
+const dateFormatter = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "full",
+  timeZone: site.timeZone,
+});
+---
+
+<section class="stack resource-hero">
+  <Hero title={title} subtitle={subtitle} className="resource-hero__banner" />
+
+  {(publishedDate || category) ? (
+    <div class="card resource-hero__meta stack--tight">
+      {publishedDate ? (
+        <p class="muted small">
+          <strong>Published:</strong> {dateFormatter.format(publishedDate)}
+        </p>
+      ) : null}
+      {category ? (
+        <p class="muted small">
+          <strong>Category:</strong> {category}
+        </p>
+      ) : null}
+    </div>
+  ) : null}
+</section>
+
+<style>
+  .resource-hero__banner {
+    width: 100%;
+  }
+
+  .resource-hero__meta {
+    padding: var(--space-4);
+  }
+</style>

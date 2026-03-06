@@ -1,0 +1,106 @@
+---
+import SectionHeading from "../ui/SectionHeading.astro";
+import { Image } from "astro:assets";
+import type { PhotoMontage } from "../../data/homeContent";
+
+const { montage } = Astro.props as { montage: PhotoMontage };
+---
+
+<section class="photo-montage stack" aria-label="Life at First Springfield">
+  <div class="photo-montage__intro stack--tight">
+    <SectionHeading title={montage.title} subtitle={montage.subtitle} />
+    <p>{montage.intro}</p>
+  </div>
+
+  <div class="photo-montage__grid">
+    {montage.cards.map((card) => (
+      <article class="card photo-card">
+        <Image
+          src={card.image}
+          alt={card.alt}
+          widths={[440, 660, 880, 1100]}
+          sizes="(min-width: 960px) 40vw, 80vw"
+          loading="lazy"
+          decoding="async"
+          class="photo-card__img"
+        />
+        <div class="photo-card__caption">
+          <h3>{card.heading}</h3>
+          <p>{card.text}</p>
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .photo-montage {
+    gap: var(--space-4);
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-4);
+    padding: clamp(var(--space-4), 3vw, var(--space-6));
+    background: linear-gradient(
+      160deg,
+      color-mix(in oklab, var(--color-surface-muted) 92%, var(--color-primary) 8%) 0%,
+      var(--color-surface) 100%
+    );
+    box-shadow: var(--shadow-1);
+  }
+
+  .photo-montage__intro :global(.section-heading__subtitle) {
+    max-width: 52ch;
+  }
+
+  .photo-montage__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-4);
+    width: 100%;
+  }
+
+  .photo-card {
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface);
+  }
+
+  .photo-card__img {
+    height: 225px;
+    width: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .photo-card__caption {
+    padding: var(--space-3);
+  }
+
+  .photo-card__caption h3 {
+    margin: 0 0 0.35rem;
+    font-size: var(--type-scale-h3-size);
+    line-height: var(--type-scale-h3-line-height);
+  }
+
+  .photo-card__caption p {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 720px) {
+    .photo-card__img {
+      height: 200px;
+    }
+
+    .photo-montage {
+      gap: var(--space-4);
+      padding: var(--space-4);
+    }
+
+    .photo-montage__grid {
+      gap: var(--space-3);
+    }
+  }
+</style>

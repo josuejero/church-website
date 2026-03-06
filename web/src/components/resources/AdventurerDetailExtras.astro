@@ -1,0 +1,20 @@
+---
+import AdventurerActionCards from "../sections/AdventurerActionCards.astro";
+import AdventurerPaymentInstructions from "../sections/AdventurerPaymentInstructions.astro";
+
+const { resourceId } = Astro.props as { resourceId?: string };
+const showExtras = Boolean(resourceId && resourceId.includes("adventurer-club-memo"));
+---
+
+{showExtras ? (
+  <section class="stack adventurer-extras" aria-label="Adventurer extras">
+    <AdventurerActionCards showMemoCard={false} />
+    <AdventurerPaymentInstructions />
+  </section>
+) : null}
+
+<style>
+  .adventurer-extras {
+    gap: var(--space-4);
+  }
+</style>

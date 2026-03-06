@@ -1,0 +1,52 @@
+---
+import BudgetProgress from "../ui/BudgetProgress.astro";
+import Button from "../ui/Button.astro";
+import SectionHeading from "../ui/SectionHeading.astro";
+import type { GivingContent } from "../../data/homeContent";
+
+const { content } = Astro.props as { content: GivingContent };
+---
+
+<section class="home-giving block stack" aria-label="Giving">
+  <SectionHeading title={content.title} subtitle={content.subtitle} />
+  <BudgetProgress embedded />
+  <p class="home-giving__copy">{content.copy}</p>
+  <div class="home-giving__cta">
+    <Button href={content.primaryCta.href}>{content.primaryCta.label}</Button>
+    <Button variant="secondary" href={content.secondaryCta.href}>
+      {content.secondaryCta.label}
+    </Button>
+  </div>
+</section>
+
+<style>
+  .home-giving.block {
+    padding: clamp(var(--space-4), 2.3vw, var(--space-6));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-4);
+    background:
+      radial-gradient(
+        130% 120% at 100% 0%,
+        color-mix(in oklab, var(--color-primary) 10%, var(--color-surface) 90%) 0%,
+        transparent 60%
+      ),
+      var(--color-surface);
+    box-shadow: var(--shadow-1);
+  }
+
+  .home-giving__copy {
+    margin: 0;
+    color: var(--color-text-muted);
+    max-width: 60ch;
+  }
+
+  .home-giving__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .home-giving__cta .btn {
+    min-width: 180px;
+  }
+</style>

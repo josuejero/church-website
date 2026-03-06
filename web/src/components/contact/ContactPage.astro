@@ -1,0 +1,18 @@
+---
+import ContactSection from "./ContactSection.astro";
+import { buildContactSections } from "../../lib/contact-sections";
+
+const { hasContactForm, contactFormUrl } = Astro.props as {
+  hasContactForm: boolean;
+  contactFormUrl?: string;
+};
+
+const sections = buildContactSections({ hasContactForm, contactFormUrl });
+---
+
+<div class="stack">
+  <h1>Contact</h1>
+  {sections.map((section) => (
+    <ContactSection section={section} key={section.id} />
+  ))}
+</div>

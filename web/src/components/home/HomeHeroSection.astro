@@ -1,0 +1,10 @@
+---
+import HeroBanner from "../sections/HeroBanner.astro";
+import type { HeroConfig } from "../../data/homeContent";
+
+const { heroConfig } = Astro.props as { heroConfig: HeroConfig };
+---
+
+<HeroBanner {...heroConfig}>
+  <slot name="meta" />
+</HeroBanner>

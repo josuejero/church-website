@@ -1,119 +1,15 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
-import Button from "../../../components/ui/Button.astro";
-import Schedule from "../../../components/ui/Schedule.astro";
-import MapEmbed from "../../../components/ui/MapEmbed.astro";
+import ContactPage from "../../../components/contact/ContactPage.astro";
 import { site } from "../../../data/site";
-import { tel } from "../../../lib/links";
 
-const phoneHref = tel(site.contact.phone);
-const pastorCellHref = tel(site.contact.pastorCell);
-const pastorCellLabel = site.contact.pastorCellLabel ?? "Pastor (call/text)";
-const pastorDisplayName = site.contact.pastorName ?? "the pastor";
-const hasPastorCell = Boolean(site.contact.pastorCell && site.contact.pastorCell.trim());
-const hasContactForm = site.portals.contactFormUrl && site.portals.contactFormUrl !== "TBD";
-const hasFacebook = site.portals.facebookUrl && site.portals.facebookUrl !== "TBD";
-const hasYouTube = site.portals.youtubeChannelUrl && site.portals.youtubeChannelUrl !== "TBD";
-const hasMailing = Boolean(site.contact.mailingAddress && site.contact.mailingAddress.trim().length);
+const hasContactForm = Boolean(site.portals.contactFormUrl && site.portals.contactFormUrl !== "TBD");
+const contactFormUrl = hasContactForm ? site.portals.contactFormUrl : undefined;
 ---
 
 <BaseLayout
   title="Contact"
   description={`Contact ${site.name}: address, service times, phone, and email.`}
 >
-  <div class="stack">
-    <h1>Contact</h1>
-
-    <section class="card stack" aria-labelledby="contact-address">
-      <h2 id="contact-address">Address</h2>
-      <p class="muted">
-        <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">{site.contact.address}</a>
-      </p>
-
-      {hasMailing ? (
-        <p class="small muted">
-          Mail: {site.contact.mailingAddress}
-        </p>
-      ) : null}
-
-      <div class="cluster">
-        <Button href={site.contact.mapsUrl} external variant="secondary">Open in Maps</Button>
-        <Button href="/connect/plan-a-visit" variant="tertiary">Plan a Visit</Button>
-      </div>
-      </section>
-
-      <section class="card stack" aria-labelledby="contact-map">
-        <h2 id="contact-map">Map</h2>
-        <p class="muted">
-          Prefer Google Maps? <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">Open directions</a>.
-        </p>
-        <MapEmbed src={site.map.embedSrc} title={`${site.name} location map`} />
-      </section>
-
-    <Schedule title="Service Times" items={site.schedule} />
-
-    {hasPastorCell ? (
-      <section class="card stack" aria-labelledby="contact-pastor">
-        <h2 id="contact-pastor">{pastorCellLabel}</h2>
-        <p class="muted">
-          The church phone may not be answered 24/7. For a faster response, call or text {pastorDisplayName}:
-          <a href={pastorCellHref}>{site.contact.pastorCell}</a>
-        </p>
-      </section>
-    ) : null}
-
-    <section class="card stack" aria-labelledby="contact-phone">
-      <h2 id="contact-phone">Phone</h2>
-      <p class="muted">
-        <a href={phoneHref}>{site.contact.phone}</a>
-      </p>
-      <p class="small muted">
-        If nobody answers, please leave a message and include a callback number.
-      </p>
-    </section>
-
-    <section class="card stack--tight" aria-labelledby="contact-email">
-      <h2 id="contact-email">Email</h2>
-      <p class="muted">
-        <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
-      </p>
-    </section>
-
-    <section class="card stack" aria-labelledby="contact-watch-give">
-      <h2 id="contact-watch-give">Watch &amp; Give</h2>
-      <p class="muted">
-        Watch live (when available) or give online.
-      </p>
-
-      <div class="cluster">
-        <Button href="/media/live" variant="secondary">Watch Live</Button>
-        <Button href="/give" variant="tertiary">Give</Button>
-        {hasYouTube ? (
-          <Button href={site.portals.youtubeChannelUrl} external variant="tertiary">YouTube</Button>
-        ) : null}
-        {hasFacebook ? (
-          <Button href={site.portals.facebookUrl} external variant="tertiary">Facebook</Button>
-        ) : null}
-      </div>
-    </section>
-
-    <section class="card stack" aria-labelledby="contact-form">
-      <h2 id="contact-form">Message us</h2>
-      {hasContactForm ? (
-        <>
-          <p class="muted">
-            Use our contact form and we’ll follow up as soon as possible.
-          </p>
-          <Button href={site.portals.contactFormUrl} external variant="secondary">Open contact form</Button>
-          <p class="small muted">
-            Please avoid including sensitive information.
-          </p>
-        </>
-      ) : (
-        <p class="muted">
-          A contact form is coming soon. For now, please call or email us.
-        </p>
-      )}
-    </section>
-  </div>
+  <ContactPage hasContactForm={hasContactForm} contactFormUrl={contactFormUrl} />
 </BaseLayout>

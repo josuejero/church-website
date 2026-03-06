@@ -1,0 +1,98 @@
+---
+import Button from "../ui/Button.astro";
+import MapEmbed from "../ui/MapEmbed.astro";
+import Schedule from "../ui/Schedule.astro";
+import ContactCTAGroup from "./ContactCTAGroup.astro";
+import type { ContactSectionDefinition } from "../../lib/contact-sections";
+
+const { section } = Astro.props as { section: ContactSectionDefinition };
+---
+
+<section class="card stack contact-section" aria-labelledby={`contact-${section.id}-title`}>
+  <h2 id={`contact-${section.id}-title`}>{section.title}</h2>
+  {section.description && <p class="muted">{section.description}</p>}
+
+  {section.details?.map((detail) => {
+    if (detail.type === "text") {
+      return <p>{detail.content}</p>;
+    }
+
+    if (detail.type === "list") {
+      return (
+        <ul class="contact-section__list">
+          {detail.items.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      );
+    }
+
+    return (
+      <p>
+        <a href={detail.href} target={detail.href.startsWith("http") ? "_blank" : undefined} rel={detail.href.startsWith("http") ? "noopener noreferrer" : undefined}>
+          {detail.label}
+        </a>
+        {detail.description ? <span class="muted small"> — {detail.description}</span> : null}
+      </p>
+    );
+  })}
+
+  {section.actions && (
+    <div class="contact-section__actions">
+      {section.actions.map((action) => (
+        <Button
+          key={action.label}
+          href={action.href}
+          variant={action.variant ?? "secondary"}
+          external={action.external}
+        >
+          {action.label}
+        </Button>
+      ))}
+    </div>
+  )}
+
+  {section.ctaGroup ? <ContactCTAGroup {...section.ctaGroup} /> : null}
+
+  {section.showMap && section.mapSrc ? (
+    <MapEmbed src={section.mapSrc} title={section.mapTitle} />
+  ) : null}
+
+  {section.showSchedule && section.scheduleItems ? (
+    <Schedule title={section.scheduleTitle} items={section.scheduleItems} />
+  ) : null}
+
+  {section.contactForm ? (
+    section.contactForm.available && section.contactForm.href ? (
+      <div class="contact-section__form">
+        <Button href={section.contactForm.href} external={section.contactForm.external}>
+          {section.contactForm.label}
+        </Button>
+        {section.contactForm.note ? (
+          <p class="muted small">{section.contactForm.note}</p>
+        ) : null}
+      </div>
+    ) : (
+      <p class="muted small">{section.contactForm.label}</p>
+    )
+  ) : null}
+</section>
+
+<style>
+  .contact-section__list {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+
+  .contact-section__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .contact-section__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+</style>

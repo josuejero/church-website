@@ -1,0 +1,40 @@
+---
+const { attachmentUrl, externalUrl } = Astro.props as {
+  attachmentUrl?: string;
+  externalUrl?: string;
+};
+---
+
+<section class="card resource-actions stack--tight" aria-label="Resource actions">
+  <h3>Resource actions</h3>
+  <ul class="resource-actions__list">
+    {attachmentUrl ? (
+      <li>
+        <a class="link" href={attachmentUrl} target="_blank" rel="noopener noreferrer">
+          Download / Open attachment
+        </a>
+      </li>
+    ) : null}
+    {externalUrl ? (
+      <li>
+        <a class="link" href={externalUrl} target="_blank" rel="noopener noreferrer">
+          Open external link
+        </a>
+      </li>
+    ) : null}
+  </ul>
+  <p class="muted small">
+    <a class="link" href="/resources">← Back to Resources</a>
+  </p>
+</section>
+
+<style>
+  .resource-actions__list {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+
+  .resource-actions__list li {
+    margin-bottom: var(--space-2);
+  }
+</style>
