@@ -18,14 +18,14 @@ type ProposedMonth = {
 };
 
 const adventurerUniformNote =
-  "Adventurers wear dress uniforms for service. Field uniforms for club. Do not change until after inspection.";
+  "Adventurers wear dress uniforms for service and field uniforms for club; do not change until after inspection.";
 const pathfinderUniformNote =
-  "Pathfinders wear dress uniforms for service. Field uniforms for club. Do not change until after inspection.";
+  "Pathfinders wear dress uniforms for service and field uniforms for club; do not change until after inspection.";
 const staffMeetingNote = "Staff meeting for Adventurer leadership (schedule pending).";
 const adventurerClubNote =
-  "3:00–5:00 p.m. club meeting in the fellowship hall; exact Sabbaths will be confirmed on the calendar.";
+  "Club meetings run from 3:00 p.m. to 5:00 p.m. in the fellowship hall; exact Sabbaths will be confirmed on the calendar.";
 const pathfinderClubNote =
-  "3:00–5:00 p.m. Pathfinder club meeting; check the calendar for the approved Sabbath.";
+  "Pathfinder club meetings take place from 3:00 p.m. to 5:00 p.m.; check the calendar for the approved Sabbath.";
 const familyNetworkNote = "Family Network meeting – 5:30 p.m.; date will be set by ministry leaders.";
 
 const baseMonthEntries = (): ProposedEntry[] => [
@@ -50,6 +50,7 @@ const proposedCalendar: ProposedMonth[] = [
       ...baseMonthEntries(),
       { label: "Family Network meeting", detail: familyNetworkNote, status: "proposed" },
       {
+        // TODO: confirm if “divined hour” wording is intentional
         label: "Induction Service during divined hour",
         detail: "Induction Service is scheduled this month; the exact Sabbath and time will be published once approved.",
         status: "proposed",
@@ -137,7 +138,7 @@ const statusLabels: Record<ProposedStatus, string> = {
   <div class="stack">
     <Hero
       title="Adventurer events"
-      subtitle="See the dynamic calendar below and learn more about the Springfield Junior Pioneers’ 2026 plans."
+      subtitle="See the live Adventurer/Adventist Youth feed and learn more about the Springfield Junior Pioneers’ 2026 plans."
       primaryCtaLabel="View campus calendar"
       primaryCtaHref="/calendar"
     />
@@ -146,7 +147,7 @@ const statusLabels: Record<ProposedStatus, string> = {
       <div>
         <h2>Upcoming Adventurer gatherings</h2>
         <p class="muted">
-          The shared calendar below syncs with the campus annual calendar so families can follow worship, outreach, and youth gatherings in one place.
+          The shared calendar below syncs with the campus annual calendar so families can follow worship, outreach, and youth gatherings from one live feed.
         </p>
         <p class="muted small">
           Update <code>src/data/annual-calendar.json</code> to refresh the dynamic calendar; the highlighted dates, featured entries, and the “last updated” badge will all reflect the new data once saved.
@@ -161,7 +162,7 @@ const statusLabels: Record<ProposedStatus, string> = {
           This is the live Adventurer/Adventist Youth feed. Any changes to the shared campus calendar file appear here automatically.
         </p>
         <p class="muted small">
-          Manifest placeholder: the highlight card and featured date list above come straight from the campus calendar data.
+          Manifest placeholder: the highlight card and featured date list remain in sync with the campus calendar data.
         </p>
       </div>
 

@@ -38,7 +38,7 @@ AY Assistant Director: Yolann Guirand
       <div>
         <div class="card__title">Adventurers (ages 4–9)</div>
         <p class="card__desc">
-          Hands-on learning, Bible stories, and playful service opportunities that invite young children into worship. Visit the dedicated Adventurer Club page for the latest schedule, memos, and registration details.
+          Hands-on learning, Bible stories, and playful service opportunities invite young children into worship as families stay connected to the Youth/AY community.
         </p>
       </div>
       <a class="card__cta link" href="/ministries/adventurers" aria-label="Learn more about Adventurers">Learn more &rarr;</a>
@@ -48,11 +48,11 @@ AY Assistant Director: Yolann Guirand
 
 ### Programs & Events
 
-- “Table Talk: youth-focused program taking place the second Sabbath of the month. Each month, a new presenter will share practical guidance on life skills, workplace expectations, career insights, and personal development to help equip our youth for success. All youth are encouraged to attend and bring a friend, take part in these meaningful discussions in a relaxed, supportive setting. Come ready to learn, ask questions, and grow together!”
-- “GYC: December 30 to January 3, 2027- location and details will be shared soon.”
+- “Table Talk: youth-focused program taking place the second Sabbath of the month. Each month, a new presenter shares practical guidance on life skills, workplace expectations, career insights, and personal development to help equip our youth for success. All youth are encouraged to attend and bring a friend, take part in these meaningful discussions in a relaxed, supportive setting, and come ready to learn, ask questions, and grow together.”
+- “GYC: December 30 to January 3, 2027; location and details will be shared soon.”
 
 ### Resources
 
- - Instagram Page: [@firstspringfieldday](https://www.instagram.com/firstspringfielday/)
-- https://nadyouthyoungadults.org/young-adult-ministry/
-- https://growingyoungadventists.com/
+- Instagram Page: [@firstspringfieldday](https://www.instagram.com/firstspringfieldday/)
+- NAD Youth & Young Adults: [https://nadyouthyoungadults.org/young-adult-ministry/](https://nadyouthyoungadults.org/young-adult-ministry/)
+- Growing Young Adventists: [https://growingyoungadventists.com/](https://growingyoungadventists.com/)

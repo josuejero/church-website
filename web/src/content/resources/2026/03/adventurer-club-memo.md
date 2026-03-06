@@ -22,12 +22,12 @@ Our club partners with parents and guardians to shepherd children toward a deepe
 ## Meeting & Communications
 We meet the first and third Saturday of each month from 3:00 p.m. to 5:00 p.m., except when the calendar notes a different arrangement. Some Sundays also offer extended gatherings from 10:00 a.m. to 2:00 p.m. as published on the calendar. Meetings are held at the First Springfield Seventh-day Adventist Church unless otherwise noted.
 
-If there are any changes to this schedule, we will inform you via text messages, WhatsApp, or on our website Insert link to our site here.
+If there are any changes to this schedule, we will inform you via text messages, WhatsApp, or post updates on the First Springfield SDA Church website. <!-- TODO: confirm the exact URL where the club schedule will be posted -->
 
 ## Fees & Payments
 The registration fee for the 2026 Adventurer year is $100 for new Adventurers and $80 for returning Adventurers. These fees cover uniform accessories, award patches, the activity workbook, the class “B” uniform shirt, and classroom materials and supplies.
 
-You may pay the registration fee as a lump sum ($100/$80) or in four monthly installments:
+You may pay the registration fee as a lump sum ($100/$80) or in four monthly installments.
 
 - December: $25/$20
 - January: $25/$20

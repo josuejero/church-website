@@ -3,7 +3,7 @@ title: "Pathfinders & Adventurers"
 summary: "The Seventh-day Adventist Church’s Adventurers and Pathfinders Clubs are Christ-centered programs designed to nurture children and youth in their spiritual, mental, physical, and social development."
 leaderName: "Daunette Lemard-Reid"
 leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "First and Third Sabbath of each month, from 3:00 PM – 5:00 PM."
+meetingTime: "First and Third Sabbath of each month, from 3:00 p.m. – 5:00 p.m."
 category: "Children & Youth"
 tags: ["children", "teens", "family", "discipleship", "adventure"]
 ---
@@ -14,7 +14,7 @@ tags: ["children", "teens", "family", "discipleship", "adventure"]
 
 Pathfinders & Adventurers Club Director: Daunette Lemard-Reid
 
-Meeting Time: First and Third Sabbath of each month, from 3:00 PM – 5:00 PM.
+Meeting Time: First and Third Sabbath of each month, from 3:00 p.m. – 5:00 p.m.
 
 ### Club logos
 
@@ -34,7 +34,7 @@ We proudly display both club insignias so families can recognize the young peopl
 
 "The Adventurer Club is a fun, Christ-centered program for children ages 4–9 that helps them grow spiritually, socially, mentally, and physically. Through hands-on activities, Bible learning, games, and service projects, children build faith, character, confidence, friendships, and life skills in a supportive, family-focused environment while preparing for the Pathfinder journey ahead."
 
-Keep an eye on the dedicated [Adventurer Club page](/ministries/adventurers) for the Springfield Junior Pioneers (linked from Youth/AY) to see the latest schedules, memos, and registration prompts while remaining connected to the broader Pathfinders & Adventurers story.
+Stay connected to the broader Pathfinders & Adventurers story by visiting the dedicated [Adventurer Club page](/ministries/adventurers) for the Springfield Junior Pioneers (linked from Youth/AY). That page hosts the latest schedules, memos, and registration prompts for this part of the ministry.
 
 ### Adventurer journey
 
@@ -53,7 +53,7 @@ From Bible stories acted out with props to art stations, every Adventurer experi
     <div class="card__body">
       <div>
         <div class="card__title">Weekly rhythm</div>
-        <p class="card__desc">Crafts, songs, and service glimpses happen every 1st & 3rd Sabbath, 3:00 PM – 5:00 PM.</p>
+        <p class="card__desc">Crafts, songs, and service glimpses happen every 1st & 3rd Sabbath, 3:00 p.m. – 5:00 p.m.</p>
       </div>
     </div>
   </article>

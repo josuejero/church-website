@@ -62,7 +62,7 @@ export const recurringActivities: RecurringActivity[] = [
     id: "pathfinders",
     title: "Pathfinders and Adventurers",
     cadence: "First and third Sabbath of each month",
-    time: "3:00 PM – 5:00 PM",
+    time: "3:00 p.m. – 5:00 p.m.",
     link: "/ministries/pathfinders",
     note: "Includes Adventurers (ages 4–9) and Pathfinders (ages 10–15); public gathering",
     category: "ministry",
