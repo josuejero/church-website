@@ -33,6 +33,7 @@ const ministries = defineCollection({
     category: z.string().optional(),
     ctaLabel: z.string().optional(),
     ctaHref: z.string().optional(),
+    showUpcomingEvents: z.boolean().optional(),
   }),
 });
 

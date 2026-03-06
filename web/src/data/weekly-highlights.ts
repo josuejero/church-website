@@ -33,6 +33,8 @@ const weeklyHighlights: WeeklyHighlight[] = [
     activityId: "pathfinders",
     text: "Pathfinders & Adventurers · 1st & 3rd Sabbaths · 3:00 PM – 5:00 PM",
     href: "/ministries/pathfinders",
+    badge: "Pathfinders & Adventurers",
+    description: "Service projects, hands-on badges, and nature skills for ages 4–15.",
   },
   {
     activityId: "mens-fellowship",

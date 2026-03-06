@@ -32,13 +32,63 @@ We proudly display both club insignias so families can recognize the young peopl
 
 ## Adventurers
 
-“The Adventurer Club is a fun, Christ-centered program for children ages 4–9 that helps them grow spiritually, socially, mentally, and physically. Through hands-on activities, Bible learning, games, and service projects, children build faith, character, confidence, friendships, and life skills in a supportive, family-focused environment while preparing for the Pathfinder journey ahead.”
+"The Adventurer Club is a fun, Christ-centered program for children ages 4–9 that helps them grow spiritually, socially, mentally, and physically. Through hands-on activities, Bible learning, games, and service projects, children build faith, character, confidence, friendships, and life skills in a supportive, family-focused environment while preparing for the Pathfinder journey ahead."
+
+Keep an eye on the dedicated [Adventurer Club page](/ministries/adventurers) for the Springfield Junior Pioneers (linked from Youth/AY) to see the latest schedules, memos, and registration prompts while remaining connected to the broader Pathfinders & Adventurers story.
+
+### Adventurer journey
+
+From Bible stories acted out with props to art stations, every Adventurer experience is designed to be playful yet purposeful. Adults partner with families so kids can celebrate their gifts, learn caring habits, and explore nature through guided hikes, bug safaris, and garden care.
+
+<section class="grid--cards" aria-label="Adventurer journey highlights">
+  <article class="card">
+    <div class="card__body">
+      <div>
+        <div class="card__title">Hands-on learning</div>
+        <p class="card__desc">Stations rotate between Bible memory, sensory play, and simple science so kids stay engaged.</p>
+      </div>
+    </div>
+  </article>
+  <article class="card">
+    <div class="card__body">
+      <div>
+        <div class="card__title">Weekly rhythm</div>
+        <p class="card__desc">Crafts, songs, and service glimpses happen every 1st & 3rd Sabbath, 3:00 PM – 5:00 PM.</p>
+      </div>
+    </div>
+  </article>
+  <article class="card">
+    <div class="card__body">
+      <div>
+        <div class="card__title">Family service</div>
+        <p class="card__desc">Parents and caregivers join outreach projects, fostering shared worship experiences.</p>
+      </div>
+    </div>
+  </article>
+</section>
 
 ## Pathfinders
 
 “Pathfinders are a worldwide organization of young people sponsored by the Seventh-day Adventist Church, with nearly 2 million members around the globe. Young people of any religious persuasion, or none at all, are welcome and encouraged to join the organization.”
 
-• Pathfinders (ages 10–15) provides opportunities for youth to grow in leadership, teamwork, and personal responsibility through outdoor activities, community service, spiritual growth, and practical life skills.
+### Pathfinder adventures
+
+- Pathfinders (ages 10–15) provides opportunities for youth to grow in leadership, teamwork, and personal responsibility through outdoor activities, community service, spiritual growth, and practical life skills.
+- Kids explore wilderness survival, orienteering, and service badges, then share those stories around the campfire during monthly fellowship nights.
+
+### Family participation
+
+Parents bring snacks, help with craft stations, and stay nearby so teens learn modeling, mentorship, and hospitality skills from leaders.
+
+### What to expect
+
+- Welcome circle, scripture, and prayer to center every meeting in worship.
+- Split stations (Adventurer and Pathfinder focus) that rotate between faith-building games, art, and service planning.
+- End-of-meeting reflections with snack time and reminders about upcoming campouts, community events, or service days.
+
+### Get involved
+
+Ready to join the fun? Submit a [Connect Card](/connect/connect-card) or email [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) to receive registration details, volunteer opportunities, or Adventurer badge schedules.
 
 ## Contact
 
