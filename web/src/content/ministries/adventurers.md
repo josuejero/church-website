@@ -80,32 +80,41 @@ The Springfield Junior Pioneers Adventurer Club is a Seventh-day Adventist Churc
 
 ### 2026 Club Info
 
-<section class="grid--cards" aria-label="Adventurer club info">
-  <article class="card stack--tight">
+<section class="grid--cards adventurer-cta" aria-label="Adventurer action cards">
+  <article class="card card--link adventurer-cta__card">
     <div class="card__body stack--tight">
       <div>
-        <h3>Register Now</h3>
-        <p>Ready for your child to join the Springfield Junior Pioneers? Submit a connect card so we can share the latest roster and welcome information.</p>
+        <h3>Register Now!</h3>
+        <p>Join the Springfield Junior Pioneers by completing our registration form so we can share the latest roster, badge plans, and volunteer info.</p>
       </div>
-      <a class="btn btn--primary" href="/connect/connect-card">Register Now</a>
+      <div class="adventurer-cta__action">
+        <a class="btn btn--primary" href="https://example.com/adventurer-registration" target="_blank" rel="noopener noreferrer" aria-label="Open the Adventurer registration form in a new tab">Register Now</a>
+        <p class="muted small adventurer-cta__note">Opens a secure registration form in a new tab.</p>
+      </div>
     </div>
   </article>
-  <article class="card stack--tight">
+  <article class="card card--link adventurer-cta__card">
     <div class="card__body stack--tight">
       <div>
         <h3>Adventurer Memo</h3>
-        <p>Expect a memo with reminders, badge focuses, and volunteer needs—check the announcements feed for the most recent update.</p>
+        <p>Read the latest memo for reminders, badge focuses, and volunteer needs so you can support the next Adventurer gathering.</p>
       </div>
-      <a class="btn btn--secondary" href="/resources/announcements">View Memo</a>
+      <div class="adventurer-cta__action">
+        <a class="btn btn--secondary" href="/resources/announcements" aria-label="View the latest Adventurer memo">View Memo</a>
+        <p class="muted small adventurer-cta__note">Memo updates are published in the announcements feed.</p>
+      </div>
     </div>
   </article>
-  <article class="card stack--tight">
+  <article class="card card--link adventurer-cta__card">
     <div class="card__body stack--tight">
       <div>
         <h3>Upcoming Events</h3>
-        <p>Keep an eye on our events pages to see outings, service projects, and Adventurer-friendly church moments.</p>
+        <p>Explore outings, service projects, and Adventurer-friendly church moments so your family can plan ahead.</p>
       </div>
-      <a class="btn btn--ghost" href="/events">See Events</a>
+      <div class="adventurer-cta__action">
+        <a class="btn btn--ghost" href="/events" aria-label="View upcoming Adventurer events">See Events</a>
+        <p class="muted small adventurer-cta__note">Opens the campus events calendar with Adventurer gatherings.</p>
+      </div>
     </div>
   </article>
 </section>
