@@ -4,20 +4,21 @@ import {
   getArchiveMonths,
   paginateAnnouncements,
 } from "../../src/lib/announcements";
+import type { AnnouncementEntry } from "../../src/lib/announcements";
 
 vi.mock("astro:content", () => ({
   getCollection: () => [] as any,
 }));
 
-const makeEntry = (id: string, date: string) => ({
+const makeEntry = (id: string, date: string): AnnouncementEntry => ({
   id,
   data: {
     title: `Title ${id}`,
     summary: "Summary",
     date: new Date(date),
     draft: false,
-    tags: [],
   },
+  collection: "announcements",
 });
 
 test("pagination returns expected metadata", () => {
