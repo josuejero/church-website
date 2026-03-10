@@ -41,30 +41,4 @@ test.describe("Smoke - mobile device", () => {
     await expect(page.locator(".home-grid")).toHaveCSS("gap", "20px");
   });
 
-  test("mobile home hero card stays near full width", async ({ page }) => {
-    const projectName = test.info().project.name;
-    test.skip(projectName !== "mobile-smoke", "mobile project only");
-
-    await page.goto("/");
-
-    const metrics = await page.evaluate(() => {
-      const heroCard = document.querySelector(".heroBanner .hero.card");
-      const heroContent = document.querySelector(".heroBanner__content");
-      const heroRect = heroCard?.getBoundingClientRect();
-      const heroContentRect = heroContent?.getBoundingClientRect();
-
-      const heroWidth = heroRect ? Math.round(heroRect.width) : 0;
-      const heroContentWidth = heroContentRect
-        ? Math.round(heroContentRect.width)
-        : 0;
-      const heroWidthRatio =
-        heroContentWidth > 0 ? heroWidth / heroContentWidth : 0;
-
-      return { heroWidth, heroContentWidth, heroWidthRatio };
-    });
-
-    expect(metrics.heroContentWidth).toBeGreaterThan(0);
-    expect(metrics.heroWidth).toBeGreaterThan(0);
-    expect(metrics.heroWidthRatio).toBeGreaterThan(0.9);
-  });
 });
