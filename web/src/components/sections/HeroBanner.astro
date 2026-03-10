@@ -47,7 +47,12 @@ const hasWelcomeSlot = Boolean(Astro.slots?.welcome);
     <div class="heroBanner__scrim" aria-hidden="true"></div>
   </div>
 
-  <div class="heroBanner__content">
+  <div
+    class:list={[
+      "heroBanner__content",
+      !hasWelcomeSlot && "heroBanner__content--solo",
+    ]}
+  >
     {hasWelcomeSlot ? (
       <div class="heroBanner__content-grid heroBanner__content-grid--with-welcome">
         <div class="heroBanner__welcome-card">
@@ -77,6 +82,7 @@ const hasWelcomeSlot = Boolean(Astro.slots?.welcome);
     border-radius: var(--hero-border-radius);
     --hero-content-offset-x: clamp(var(--space-4), 3vw, var(--space-7));
     --hero-content-offset-y: clamp(var(--space-5), 5vw, var(--space-7));
+    --hero-content-offset-bottom: clamp(var(--space-7), 6vw, var(--space-10));
     background: linear-gradient(180deg, #202937 0%, #111827 100%);
   }
 
@@ -115,20 +121,27 @@ const hasWelcomeSlot = Boolean(Astro.slots?.welcome);
     z-index: 1;
     display: flex;
     justify-content: flex-start;
-    align-items: flex-start;
+    align-items: flex-end;
     width: 100%;
     min-height: 100%;
-    padding: var(--hero-content-offset-y) var(--hero-content-offset-x);
+    padding:
+      var(--hero-content-offset-y)
+      var(--hero-content-offset-x)
+      var(--hero-content-offset-bottom);
+  }
+
+  .heroBanner__content--solo {
+    align-items: flex-start;
   }
 
   .heroBanner__content-grid--with-welcome {
     width: min(1200px, 100%);
-    margin: 0 auto;
+    margin: 0;
     display: grid;
     grid-template-columns: minmax(280px, 1fr) minmax(360px, 1fr);
     gap: clamp(var(--space-5), 3vw, var(--space-7));
     align-items: stretch;
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .heroBanner__welcome-card,
@@ -170,17 +183,12 @@ const hasWelcomeSlot = Boolean(Astro.slots?.welcome);
     padding: var(--space-6);
   }
 
-  /* When there is no welcome card, let the lone hero card match the hero content width. */
-  .heroBanner__content > :global(.hero.card) {
-    width: 100%;
-    max-width: 100%;
-  }
-
   @media (max-width: 720px) {
     .heroBanner {
       min-height: clamp(21rem, 48vh, 30rem);
       --hero-content-offset-x: var(--space-4);
       --hero-content-offset-y: var(--space-4);
+      --hero-content-offset-bottom: var(--space-5);
       --hero-object-position: 50% 50%;
     }
 
@@ -202,6 +210,15 @@ const hasWelcomeSlot = Boolean(Astro.slots?.welcome);
 
     .heroBanner__welcome-card {
       order: 2;
+    }
+
+    .heroBanner__content {
+      align-items: center;
+    }
+
+    .heroBanner__content > :global(.hero.card) {
+      width: 100%;
+      max-width: 100%;
     }
   }
 
