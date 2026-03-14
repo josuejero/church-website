@@ -8,6 +8,7 @@ const PAGES = [
   "/connect/team",
   "/events",
   "/resources",
+  "/calendar",
   "/media",
   "/search",
 ];

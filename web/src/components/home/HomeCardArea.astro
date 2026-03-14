@@ -18,11 +18,7 @@ const {
   columnsMin = 220,
 } = Astro.props as Props;
 
-const sectionClasses = ["home-grid__section", "home-grid__cards", modifier]
-  .filter(Boolean)
-  .join(" ");
+const gridClasses = ["home-card-area", modifier, "surface-section"].filter(Boolean).join(" ");
 ---
 
-<div class={sectionClasses}>
-  <CardGrid title={title} subtitle={subtitle} cards={cards} columnsMin={columnsMin} />
-</div>
+<CardGrid title={title} subtitle={subtitle} cards={cards} columnsMin={columnsMin} class={gridClasses} />

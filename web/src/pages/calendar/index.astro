@@ -1,18 +1,38 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import AnnualCalendarSection from "../../components/sections/AnnualCalendarSection.astro";
+import LiveCalendarPreview from "../../components/sections/LiveCalendarPreview.astro";
 import annualCalendar from "../../data/annual-calendar.json";
 ---
 
 <BaseLayout title="Annual calendar" description="Seasonal events, highlights, and the Camp Meeting schedule for the year.">
-  <div class="stack">
+  <div class="stack calendar-page">
     <section class="stack">
       <h1>Annual calendar</h1>
       <p class="muted">
-        A quick glance at milestone dates, planning notes, and the times the campus shifts gears across the season.
+        Use the live calendar to see what&apos;s happening now, while this curated highlight list helps you plan around the big milestones and seasonal gatherings.
+      </p>
+      <p class="muted small">
+        Everything on this page pulls from the structured annual timeline, but the embed below is the single source of truth for the current campus schedule.
       </p>
     </section>
 
-    <AnnualCalendarSection calendarData={annualCalendar} />
+    <div class="calendar-page__grid">
+      <LiveCalendarPreview
+        title="Live event calendar"
+        description="This public, shared calendar is the place to find the most current services, outreach, and ministry gatherings."
+        note="Placeholder embed; swap in the public Google Calendar URL once it is ready."
+      />
+
+      <AnnualCalendarSection calendarData={annualCalendar} />
+    </div>
   </div>
 </BaseLayout>
+
+<style>
+  .calendar-page__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--space-6);
+  }
+</style>

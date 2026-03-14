@@ -1,0 +1,163 @@
+---
+import Button from "../ui/Button.astro";
+import SectionHeading from "../ui/SectionHeading.astro";
+import type { ScheduleItem } from "../../data/site";
+
+type Props = {
+  schedule: ScheduleItem[];
+  address: string;
+  mapsUrl: string;
+  primaryCtaLabel: string;
+  primaryCtaHref: string;
+  secondaryCtaLabel: string;
+  secondaryCtaHref: string;
+};
+
+const {
+  schedule,
+  address,
+  mapsUrl,
+  primaryCtaLabel,
+  primaryCtaHref,
+  secondaryCtaLabel,
+  secondaryCtaHref,
+} = Astro.props as Props;
+
+const scheduleRows = schedule.map((item) => {
+  const detail = [item.day, item.time].filter(Boolean).join(" · ");
+  return {
+    label: item.label,
+    detail,
+  };
+});
+---
+
+<section class="home-visit stack surface-section" aria-label="Plan your visit">
+  <SectionHeading
+    title="Plan your visit"
+    subtitle="Join us each Sabbath for worship, study, and community."
+  />
+
+  <div class="home-visit__grid">
+    <div class="home-visit__schedule stack--tight">
+      <p class="muted small">Weekly service rhythm</p>
+      <ul class="home-visit__list">
+        {scheduleRows.map((row) => (
+          <li>
+            <span class="home-visit__label">{row.label}</span>
+            {row.detail && <span class="home-visit__detail">{row.detail}</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="home-visit__info">
+      <p class="home-visit__address">{address}</p>
+      <Button
+        variant="tertiary"
+        href={mapsUrl}
+        external
+        class="home-visit__maps-link"
+      >
+        View on Google Maps
+      </Button>
+    </div>
+  </div>
+
+  <div class="home-visit__actions cluster">
+    <Button href={primaryCtaHref}>{primaryCtaLabel}</Button>
+    <Button variant="secondary" href={secondaryCtaHref}>
+      {secondaryCtaLabel}
+    </Button>
+  </div>
+</section>
+
+<style>
+  .home-visit__grid {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) minmax(240px, 320px);
+    gap: clamp(var(--space-5), 3vw, var(--space-7));
+    align-items: stretch;
+  }
+
+  .home-visit__schedule ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .home-visit__schedule li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .home-visit__label {
+    font-weight: 700;
+  }
+
+  .home-visit__detail {
+    font-size: var(--font-size-0);
+    color: var(--color-text-muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .home-visit__info {
+    min-width: 200px;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    justify-self: end;
+  }
+
+  .home-visit__address {
+    margin: 0;
+    font-size: var(--font-size-1);
+    font-weight: 600;
+    display: block;
+    margin-bottom: var(--space-4);
+  }
+
+  .home-visit__maps-link {
+    margin-top: auto;
+    align-self: flex-start;
+  }
+
+  .home-visit__actions {
+    margin-top: var(--space-4);
+  }
+
+  .home-visit__actions .btn {
+    min-width: 180px;
+  }
+
+  @media (max-width: 900px) {
+    .home-visit__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .home-visit__info {
+      justify-self: stretch;
+      max-width: none;
+    }
+
+    .home-visit__maps-link {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .home-visit__actions {
+      flex-direction: column;
+    }
+
+    .home-visit__actions .btn {
+      width: 100%;
+    }
+  }
+</style>

@@ -16,6 +16,16 @@ test("contact sections include core sections and quick action CTAs", () => {
   const watchGive = sections.find((section) => section.id === "watch-give");
   expect(watchGive?.ctaGroup?.watchLiveAction?.label).toBe(hasWatchLive?.label);
   expect(watchGive?.ctaGroup?.giveAction?.label).toBe(hasGive?.label);
+
+  const connectCard = sections.find((section) => section.id === "connect-card");
+  expect(connectCard).toBeDefined();
+  expect(
+    connectCard?.actions?.some((action) => action.label.includes("Connect Card")),
+  ).toBe(true);
+
+  const serve = sections.find((section) => section.id === "serve");
+  expect(serve).toBeDefined();
+  expect(serve?.actions?.some((action) => action.label === "Volunteer")).toBe(true);
 });
 
 test("contact form availability flips when hasContactForm is false", () => {

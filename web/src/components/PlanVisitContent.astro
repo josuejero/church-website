@@ -1,5 +1,6 @@
 ---
 import Schedule from "./ui/Schedule.astro";
+import Button from "./ui/Button.astro";
 import { site } from "../data/site";
 ---
 
@@ -29,5 +30,17 @@ import { site } from "../data/site";
     <p class="muted">{site.visit.languageNote}</p>
     <p class="muted">{site.visit.parkingNote}</p>
     <p class="muted">{site.visit.accessibilityNote}</p>
+  </section>
+
+  <section class="card stack">
+    <h2>Submit a Connect Card</h2>
+    <p class="muted">
+      Share a few details before your visit so our hospitality team can welcome you, pray with you,
+      and help you get settled.
+    </p>
+    <div class="cluster">
+      <Button href="/connect/connect-card" variant="primary">Submit a Connect Card</Button>
+      <Button href="/connect/contact" variant="secondary">Contact hospitality</Button>
+    </div>
   </section>
 </div>

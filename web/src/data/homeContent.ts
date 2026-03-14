@@ -10,8 +10,8 @@ export type Cta = {
 export type HeroConfig = {
   title: string;
   subtitle: string;
-  primaryCta: Cta;
-  secondaryCta: Cta;
+  primaryCtaLabel: string;
+  primaryCtaHref: string;
   background: ImageMetadata;
   objectPosition?: string;
 };
@@ -46,92 +46,45 @@ export type PhotoMontage = {
 
 export const homeHeroConfig: HeroConfig = {
   title: "Welcome",
-  subtitle:
-    "A vibrant, multicultural Seventh-day Adventist church in the heart of Springfield, MA.",
-  primaryCta: {
-    label: "Plan a Visit",
-    href: "/connect/plan-a-visit",
-  },
-  secondaryCta: {
-    label: "Watch online",
-    href: "/media/live",
-  },
+  subtitle: "A welcoming Seventh-day Adventist church in Springfield, MA.",
+  primaryCtaLabel: "Plan a Visit",
+  primaryCtaHref: "/connect/plan-a-visit",
   background: heroBg,
   objectPosition: "50% 35%",
 };
 
 export const homeHeroMeta = {
   copy:
-    "Looking for a way to introduce yourself or let us know you’re interested in joining a ministry? Use the Connect Card below to share your visit details and our team will follow up.",
+    "First Springfield Seventh-day Adventist Church gathers for Sabbath worship at 11 AM each Saturday at 1118 Sumner Ave, Springfield, MA. Submit a Connect Card and our hospitality team will follow up before your visit.",
   cta: {
     label: "Submit a Connect Card",
     href: "/connect/connect-card",
   },
 };
 
-export const ministryCards: HomeCardItem[] = [
+export const nextStepCards: HomeCardItem[] = [
   {
-    title: "Children’s Ministry",
-    description:
-      "Storytelling, worship, choir, and family-focused programs that welcome every child and invite them to grow in Jesus.",
-    href: "/ministries/children",
+    title: "I’m visiting",
+    description: "Plan your arrival, worship rhythm, and children’s ministry welcome.",
+    href: "/connect/plan-a-visit",
   },
   {
-    title: "Pathfinders & Adventurers",
-    description:
-      "Two vibrant clubs filled with faith, service, and outdoor adventures for children and youth ready to discover purpose together.",
-    href: "/ministries/pathfinders",
+    title: "Watch online",
+    description: "Stream the latest worship service or replay a sermon from home.",
+    href: "/media/live",
   },
   {
-    title: "Adventist Community Services (ACS)",
-    description:
-      "Compassionate care, monthly meals, and community outreach that meet the whole person in Springfield and beyond.",
-    href: "/ministries/adventist-community-services",
-  },
-  {
-    title: "Women’s Ministry",
-    description:
-      "Prayer circles, retreats, and service projects that help women grow spiritually and encourage one another in Jesus.",
-    href: "/ministries/womens-ministry",
-  },
-  {
-    title: "Social Ministry",
-    description:
-      "Hospitality, fellowship meals, and celebration events that help members and neighbors build deeper relationships.",
-    href: "/ministries/social-ministry",
-  },
-];
-
-export const connectedCards: HomeCardItem[] = [
-  {
-    title: "About Us",
-    description: "Learn our mission and what we believe.",
-    href: "/connect/about",
-  },
-  {
-    title: "Adult Sabbath School",
-    description:
-      "Discover the mission, goals, and study focus of Adult Sabbath School.",
-    href: "/ministries/adult-sabbath-school",
-  },
-  {
-    title: "Worship With Us",
-    description: "See when we meet and what to expect.",
-    href: "/connect/worship-with-us",
-  },
-  {
-    title: "Prayer Request",
-    description: "Share a prayer request with our prayer team.",
-    href: "/connect/prayer",
+    title: "Contact us",
+    description: "Send a message, request prayer, or ask a question before you visit.",
+    href: "/connect/contact",
   },
 ];
 
 export const givingContent: GivingContent = {
   title: "Giving",
-  subtitle:
-    "Support First Springfield’s ministries through faithful giving—every gift helps us worship, serve, and reach our neighbors.",
+  subtitle: "Support First Springfield through faithful giving.",
   copy:
-    "Your generosity keeps the lights on, feeds neighbors, and helps young disciples grow in faith. Thank you for partnering with us.",
+    "Your generosity keeps the lights on, feeds neighbors, and grows young disciples in faith.",
   primaryCta: { label: "Give online", href: "/give" },
   secondaryCta: { label: "Connect with stewardship", href: "/connect/contact" },
 };
@@ -141,7 +94,7 @@ export const photoMontage: PhotoMontage = {
   subtitle:
     "A bright welcome in daylight and a reflective pause at dusk, both part of our worship rhythm.",
   intro:
-    "We gather beneath the morning glow of the new entryway and cherish the calm of the familiar bridge-dusk view. Both scenes are part of First Springfield’s story; one bright and ready, the other still and reflective.",
+    "From the sunlit new entryway to the hush of the bridge at dusk, First Springfield gathers in bright welcome and reflective peace.",
   cards: [
     {
       image: heroBg,

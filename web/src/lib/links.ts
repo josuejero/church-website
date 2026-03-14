@@ -11,3 +11,7 @@ export function tel(phone: string) {
   const digits = p.replace(/[^0-9+]/g, "");
   return digits ? `tel:${digits}` : "";
 }
+
+export function isExternalUrl(href: string) {
+  return /^https?:\/\//.test(href);
+}

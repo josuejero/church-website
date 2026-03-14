@@ -3,12 +3,13 @@ import { test, expect } from "@playwright/test";
 test.describe("Smoke - cross browser", () => {
   test("home renders primary navigation and CTA", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("header.site-header")).toBeVisible();
+    const header = page.locator("header.site-header");
+    await expect(header).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "Watch Live", exact: true }),
+      header.getByRole("link", { name: "Watch Live", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "Give", exact: true }),
+      header.getByRole("link", { name: "Give", exact: true }),
     ).toBeVisible();
   });
 

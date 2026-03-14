@@ -21,7 +21,9 @@ const safeTags = tags ?? [];
   {safeTags.length > 0 && (
     <ul class="tags" aria-label="Tags">
       {safeTags.map((t) => (
-        <li class="tag">{t}</li>
+        <li>
+          <span class="chip chip--tag">{t}</span>
+        </li>
       ))}
     </ul>
   )}

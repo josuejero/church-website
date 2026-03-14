@@ -3,6 +3,7 @@ import Button from "../ui/Button.astro";
 import MapEmbed from "../ui/MapEmbed.astro";
 import Schedule from "../ui/Schedule.astro";
 import ContactCTAGroup from "./ContactCTAGroup.astro";
+import { mailto } from "../../lib/links";
 import type { ContactSectionDefinition } from "../../lib/contact-sections";
 
 const { section } = Astro.props as { section: ContactSectionDefinition };
@@ -11,6 +12,49 @@ const { section } = Astro.props as { section: ContactSectionDefinition };
 <section class="card stack contact-section" aria-labelledby={`contact-${section.id}-title`}>
   <h2 id={`contact-${section.id}-title`}>{section.title}</h2>
   {section.description && <p class="muted">{section.description}</p>}
+
+  {section.contactTopics && section.contactTopics.length > 0 ? (
+    <div class="contact-topics" role="table" aria-label="Contact topics">
+      <div class="contact-topics__row contact-topics__row--head" role="row">
+        <span>Topic</span>
+        <span>Contact</span>
+        <span>Best way to reach them</span>
+      </div>
+      {section.contactTopics.map((topic) => {
+        const hasHref = Boolean(topic.href && topic.href.trim());
+        const hasEmail = Boolean(topic.email && topic.email.trim());
+        const methodHref = hasHref
+          ? topic.href!
+          : hasEmail
+          ? mailto(topic.email!)
+          : "";
+        const methodLabel =
+          topic.hrefLabel ?? (hasHref ? "Open" : hasEmail ? topic.email : "Contact us");
+        const methodExternal = hasHref && topic.external;
+
+        return (
+          <div class="contact-topics__row" role="row">
+            <span>{topic.topic}</span>
+            <span>{topic.contactRole}</span>
+            <span>
+              {methodHref ? (
+                <a
+                  href={methodHref}
+                  target={methodExternal ? "_blank" : undefined}
+                  rel={methodExternal ? "noopener noreferrer" : undefined}
+                >
+                  {methodLabel}
+                </a>
+              ) : (
+                <span class="muted small">Get in touch</span>
+              )}
+              {topic.note ? <div class="contact-topics__note small muted">{topic.note}</div> : null}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  ) : null}
 
   {section.details?.map((detail) => {
     if (detail.type === "text") {
@@ -94,5 +138,37 @@ const { section } = Astro.props as { section: ContactSectionDefinition };
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+  }
+
+  .contact-topics {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    margin: var(--space-4) 0;
+    overflow: hidden;
+  }
+
+  .contact-topics__row {
+    display: grid;
+    grid-template-columns: 3fr 2fr 2fr;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .contact-topics__row--head {
+    background: var(--color-bg);
+    font-weight: 700;
+    border-top: none;
+  }
+
+  .contact-topics__note {
+    margin-top: 0.25rem;
+  }
+
+  @media (max-width: 720px) {
+    .contact-topics__row {
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+    }
   }
 </style>

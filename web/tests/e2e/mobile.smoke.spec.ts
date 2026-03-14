@@ -5,14 +5,15 @@ test.describe("Smoke - mobile device", () => {
     page,
   }) => {
     await page.goto("/");
+    const header = page.locator("header.site-header");
     await expect(
       page.locator("header.site-header nav.nav--desktop"),
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "Give", exact: true }),
+      header.getByRole("link", { name: "Give", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "Watch Live", exact: true }),
+      header.getByRole("link", { name: "Watch Live", exact: true }),
     ).toBeVisible();
   });
 
@@ -22,7 +23,8 @@ test.describe("Smoke - mobile device", () => {
     await expect(page.locator("main")).toContainText(
       /parking|directions|address/i,
     );
-    await expect(page.getByRole("link", { name: /give/i })).toBeVisible();
+    const header = page.locator("header.site-header");
+    await expect(header.getByRole("link", { name: /give/i })).toBeVisible();
   });
 
   test("mobile gutters tighten on narrow viewports", async ({ page }) => {
@@ -37,8 +39,13 @@ test.describe("Smoke - mobile device", () => {
         .trim(),
     );
     expect(["0.875rem", ".875rem"]).toContain(containerPad);
-
-    await expect(page.locator(".home-grid")).toHaveCSS("gap", "20px");
+    const hero = page.locator("section.hero").first();
+    await expect(
+      hero.getByRole("link", { name: "Plan a Visit", exact: true }),
+    ).toBeVisible();
+    await expect(
+      hero.getByRole("link", { name: "Submit a Connect Card", exact: true }),
+    ).toBeVisible();
   });
 
 });

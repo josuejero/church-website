@@ -1,5 +1,6 @@
 import siteLinks from "./site-links.json";
 import { recurringActivities } from "./activities";
+import { isExternalUrl } from "../lib/links";
 
 export type NavItem = {
   label: string;
@@ -56,15 +57,14 @@ const MAPS_URL =
 
 const VISIT_NOTES = {
   directions: [
-    "From I-91: take Exit 6 toward Springfield, then follow signs toward Sumner Ave.",
-    "From I-90: take Exit 5, follow signs toward Springfield and take Exit 5, then follow local signs to Sumner Ave.",
+    "From I-91, take Exit 6 toward Springfield and follow local signs to Sumner Ave.",
+    "From I-90, take Exit 5 and follow Springfield signs until you reach Sumner Ave.",
   ],
   languageNote:
-    "Services are primarily in English. If you need Spanish support, please contact us and we will help.",
-  parkingNote:
-    "Street parking is available near the church. Please arrive a few minutes early to find a spot.",
+    "Services are primarily in English; contact us if you need Spanish support.",
+  parkingNote: "Street parking is available nearby; arrive a few minutes early to secure a spot.",
   accessibilityNote:
-    "If you need accessibility accommodations, please contact us ahead of time so we can assist.",
+    "Need an accommodation? Contact us ahead of time and we will assist.",
 };
 
 const MISSION = {
@@ -175,8 +175,7 @@ const announcementsLink =
     ? portals.announcementsUrl
     : "/resources/announcements";
 const prayerLink = hasPrayerForm ? portals.prayerFormUrl ?? "/connect/prayer" : "/connect/prayer";
-const volunteerLink = hasVolunteerForm ? portals.volunteerFormUrl ?? "/serve" : "/serve";
-const isExternalUrl = (href: string) => /^https?:\/\//.test(href);
+export const volunteerLink = hasVolunteerForm ? portals.volunteerFormUrl ?? "/serve" : "/serve";
 
 const contactTopics: ContactTopic[] = [
   {
@@ -222,36 +221,31 @@ const contactTopics: ContactTopic[] = [
   },
 ];
 
-// Visitor-facing nav (matches real routes and keeps the header feeling “finished”)
+// Visitor-facing nav (matches real routes and keeps the header feeling "finished")
 const nav: NavItem[] = [
   { label: "Visit", href: "/connect/plan-a-visit" },
-  { label: "Contact", href: "/connect/contact" },
-  { label: "Connect Card", href: "/connect/connect-card" },
-  { label: "About Us", href: "/connect/about" },
-  { label: "Our Team", href: "/connect/team" },
+  { label: "About", href: "/connect/about" },
   { label: "Ministries", href: "/ministries" },
+  { label: "Media", href: "/media" },
+  { label: "Contact", href: "/connect/contact" },
 ];
 
 // “Always available” actions (show as buttons in the header)
 const quickActions: NavItem[] = [
   { label: "Watch Live", href: "/media/live" },
   { label: "Give", href: "/give" },
-  {
-    label: "Prayer Request",
-    href: prayerLink,
-    external: isExternalUrl(prayerLink),
-  },
+];
+
+const utilityLinks: NavItem[] = [
+  { label: "Resources", href: "/resources" },
   { label: "Bulletins", href: bulletinsLink, external: isExternalUrl(bulletinsLink) },
   {
     label: "Announcements",
     href: announcementsLink,
     external: isExternalUrl(announcementsLink),
   },
-  {
-    label: "Volunteer",
-    href: volunteerLink,
-    external: isExternalUrl(volunteerLink),
-  },
+  { label: "Updates", href: "/updates" },
+  { label: "Serve", href: volunteerLink, external: isExternalUrl(volunteerLink) },
 ];
 
 // Social links used in the legacy footer component
@@ -314,6 +308,7 @@ export const site = {
 
   nav,
   quickActions,
+  utilityLinks,
 
   // Used by the legacy footer component
   social,

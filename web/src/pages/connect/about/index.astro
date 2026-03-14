@@ -1,6 +1,9 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import { site } from "../../../data/site";
+import HomePhotoMontage from "../../../components/home/HomePhotoMontage.astro";
+import { communityGallery } from "../../../data/community-gallery";
+import { photoMontage } from "../../../data/homeContent";
 
 const { mission } = site;
 ---
@@ -107,5 +110,62 @@ const { mission } = site;
         .
       </p>
     </section>
+
+    <section class="card stack--tight community-gallery">
+      <div class="community-gallery__head">
+        <p class="muted small">This is your church family</p>
+        <h2>Community stories</h2>
+        <p class="muted">
+          Worship, service, and hospitality intersect in the people you’ll meet when you visit First Springfield.
+        </p>
+      </div>
+      <div class="community-gallery__grid">
+        {communityGallery.map((photo) => (
+          <figure class="community-gallery__photo">
+            <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
+            <figcaption>
+              <span class="community-gallery__tag">{photo.tag}</span>
+              <p>{photo.caption}</p>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+
+    <HomePhotoMontage montage={photoMontage} />
   </div>
 </BaseLayout>
+
+<style>
+  .community-gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-3);
+  }
+
+  .community-gallery__photo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .community-gallery__photo img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: var(--radius-2);
+    display: block;
+  }
+
+  .community-gallery__tag {
+    text-transform: uppercase;
+    font-size: var(--font-size-0);
+    color: var(--color-primary);
+    letter-spacing: 0.08em;
+  }
+
+  .community-gallery__photo figcaption p {
+    margin: 0;
+  }
+</style>

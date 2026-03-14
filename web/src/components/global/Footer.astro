@@ -28,10 +28,9 @@ const primaryLinks = [
   findNav("Contact")
 ].filter(isDefined);
 
-const footerNav = site.nav.filter(
-  (item) => !primaryNavLabels.includes(item.label) && item.label !== "Privacy"
-);
-const secondaryActions = site.quickActions.filter((item) => !primaryActionLabels.includes(item.label));
+const footerNav = site.nav.filter((item) => !primaryNavLabels.includes(item.label));
+const quickActionLinks = site.quickActions.filter((item) => primaryActionLabels.includes(item.label));
+const utilityLinks = site.utilityLinks ?? [];
 const privacyNavItem = site.nav.find((item) => item.label === "Privacy");
 const privacyHref = privacyNavItem?.href ?? "/privacy";
 const accessibilityHref = "/accessibility";
@@ -113,9 +112,20 @@ const accessibilityHref = "/accessibility";
       </div>
 
       <div class="col">
+        <div class="col-title">Resources</div>
+        <div class="col-body links">
+          {utilityLinks.map((item) => (
+            <a href={item.href} {...linkAttrs(item)}>
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div class="col">
         <div class="col-title">Quick actions</div>
         <div class="col-body links">
-          {secondaryActions.map((item) => (
+          {quickActionLinks.map((item) => (
             <a href={item.href} {...linkAttrs(item)}>
               {item.label}
             </a>

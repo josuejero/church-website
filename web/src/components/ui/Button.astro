@@ -18,10 +18,12 @@ const {
   size = "md",
   disabled = false,
   autoFocus = false,
+  class: classNameOverride = "",
   ...rest
 } = Astro.props as Props;
 
-const className = `btn btn--${variant} btn--${size}`;
+const baseClass = `btn btn--${variant} btn--${size}`;
+const className = [baseClass, classNameOverride].filter(Boolean).join(" ");
 ---
 
 {
@@ -84,43 +86,44 @@ const className = `btn btn--${variant} btn--${size}`;
   }
 
   .btn--primary {
-    background: var(--color-primary);
+    background: var(--color-cta-primary);
     color: var(--color-white);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 12px 28px rgba(18, 7, 14, 0.35);
+    border-color: transparent;
   }
 
   .btn--primary:hover {
-    background: var(--color-primary-hover);
+    background: var(--color-cta-primary-dark);
     transform: translateY(-1px);
   }
 
   .btn--secondary {
-    background: var(--color-gray-50);
-    border-color: var(--color-border);
-    color: var(--color-text);
+    background: var(--color-cta-secondary);
+    border-color: var(--color-section-border);
+    color: var(--color-primary);
   }
 
   .btn--secondary:hover {
-    background: var(--color-gray-100);
+    background: var(--color-section-surface);
   }
 
   .btn--tertiary {
     background: transparent;
     border-color: transparent;
-    color: var(--color-primary-link);
+    color: var(--color-link-muted);
     text-decoration: underline;
     text-underline-offset: 0.18em;
     text-decoration-thickness: 0.18em;
   }
 
   .btn--tertiary:hover {
-    color: var(--color-primary-hover);
+    color: var(--color-primary);
     text-decoration-thickness: 0.21em;
   }
 
   .btn--ghost {
     background: transparent;
-    border-color: var(--color-border);
+    border-color: var(--color-section-border);
     color: var(--color-primary);
   }
 

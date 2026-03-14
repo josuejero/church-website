@@ -13,4 +13,9 @@ test("contact page displays core sections and CTAs", async ({ page }) => {
   await expect(
     watchGiveSection.getByRole("link", { name: "Watch Live" }),
   ).toBeVisible();
+
+  await expect(page.getByRole("heading", { name: "Connect Card" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Serve" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Submit a Connect Card" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Volunteer" })).toBeVisible();
 });

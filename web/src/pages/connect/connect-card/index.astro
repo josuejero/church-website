@@ -1,53 +1,7 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
-import churchExterior from "../../../assets/photos/first-springfield-exterior.png";
-import bridgeDusk from "../../../assets/photos/bridge-dusk.jpg";
-import adventistCommunityServicesLogo from "../../../assets/photos/ministries-adventist-community-services-logo.png";
-import childrensMinistryBanner from "../../../assets/photos/ministries-childrens-ministry-banner.png";
-import youthLogo from "../../../assets/photos/ministries-youth-young-adults-ay-logo.png";
-import pathfindersLogo from "../../../assets/photos/club-pathfinders-logo.png";
 import ConnectCardForm from "../../../components/connect/ConnectCardForm.astro";
 import { usesCustomFormAction } from "../../../lib/connectCard";
-
-const galleryPhotos = [
-  {
-    src: bridgeDusk.src,
-    alt: "Evening light on the bridge that leads toward our campus.",
-    caption: "Neighborhood welcomes before you even cross the bridge.",
-    tag: "Community",
-  },
-  {
-    src: churchExterior.src,
-    alt: "First Springfield SDA Church building and welcome sign.",
-    caption: "Our sanctuary is open for worship, fellowship, and hospitality.",
-    tag: "Welcome",
-  },
-  {
-    src: childrensMinistryBanner.src,
-    alt: "A colorful banner announcing Children’s Ministry programming.",
-    caption: "Children’s Ministry storytelling, music, and hugs make every visitor feel known.",
-    tag: "Children",
-  },
-  {
-    src: pathfindersLogo.src,
-    alt: "Pathfinders & Adventurers club crest.",
-    caption: "Pathfinders & Adventurers gather for service, camping, and faith-building adventures.",
-    tag: "Pathfinders",
-  },
-  {
-    src: adventistCommunityServicesLogo.src,
-    alt: "Adventist Community Services logo.",
-    caption: "ACS outreach brings meals, care, and compassion to Springfield neighbors.",
-    tag: "Service",
-  },
-  {
-    src: youthLogo.src,
-    alt: "Youth & Young Adults ministry emblem.",
-    caption: "AY conversations, prayer, and mentorship keep young people connected.",
-    tag: "Youth",
-  },
-];
-
 ---
 
 <BaseLayout
@@ -70,27 +24,6 @@ const galleryPhotos = [
       ) : null}
     </div>
 
-    <section class="connect-card__gallery" aria-labelledby="connect-card-gallery-title">
-      <div class="connect-card__gallery-head">
-        <p class="muted small">This is your church family</p>
-        <h2 id="connect-card-gallery-title">This is your church family</h2>
-        <p class="muted">
-          Worship, fellowship, and service all intersect in the people you’ll meet when you visit First Springfield.
-        </p>
-      </div>
-      <div class="connect-card__gallery-grid">
-        {galleryPhotos.map((photo) => (
-          <figure class="connect-card__photo">
-            <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
-            <figcaption>
-              <span class="connect-card__photo-tag">{photo.tag}</span>
-              <p>{photo.caption}</p>
-            </figcaption>
-          </figure>
-        ))}
-      </div>
-    </section>
-
     <ConnectCardForm />
   </div>
 </BaseLayout>
@@ -100,54 +33,7 @@ const galleryPhotos = [
     max-width: 52rem;
   }
 
-  .connect-card__intro + .connect-card__gallery,
-  .connect-card__gallery + .connect-card__form {
+  .connect-card__intro + .connect-card__form {
     margin-top: var(--space-6);
-  }
-
-  .connect-card__gallery {
-    background: var(--color-surface-2);
-    border-radius: var(--radius-3);
-    padding: var(--space-4) var(--space-5);
-    border: 1px solid var(--color-border);
-  }
-
-  .connect-card__gallery-head {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    margin-bottom: var(--space-4);
-  }
-
-  .connect-card__gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: var(--space-3);
-  }
-
-  .connect-card__photo {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    margin: 0;
-  }
-
-  .connect-card__photo img {
-    width: 100%;
-    height: 160px;
-    object-fit: cover;
-    border-radius: var(--radius-2);
-    display: block;
-  }
-
-  .connect-card__photo-tag {
-    text-transform: uppercase;
-    font-size: var(--font-size-0);
-    color: var(--color-primary);
-    letter-spacing: 0.08em;
-  }
-
-  .connect-card__photo figcaption p {
-    margin: 0;
   }
 </style>

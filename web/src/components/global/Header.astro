@@ -15,9 +15,8 @@ function linkAttrs(item: { href: string; external?: boolean }) {
   return item.external ? { target: "_blank", rel: "noopener noreferrer" } : {};
 }
 
-const utilityNavLabels = new Set(["Events", "Privacy"]);
-const primaryNav = site.nav.filter((item) => !utilityNavLabels.has(item.label));
-const utilityNav = site.nav.filter((item) => utilityNavLabels.has(item.label));
+const primaryNav = site.nav;
+const utilityLinks = site.utilityLinks ?? [];
 
 const watchLive = site.quickActions.find((i) => i.label === "Watch Live") ?? site.quickActions[0];
 const give = site.quickActions.find((i) => i.label === "Give") ?? site.quickActions[1];
@@ -124,20 +123,26 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
               </div>
             )}
           </div>
+
+          <div class="menu__divider" role="separator" aria-hidden="true"></div>
+
+          <div class="menu__section" aria-label="More links">
+            <p class="menu__section-title">More links</p>
+            {utilityLinks.map((item) => (
+              <a
+                class="menu__link"
+                href={item.href}
+                {...linkAttrs(item)}
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
         </div>
       </details>
     </div>
   </div>
 
-  {utilityNav.length > 0 && (
-    <nav class="utility-bar" aria-label="Utility navigation">
-      {utilityNav.map((item) => (
-        <a href={item.href} {...linkAttrs(item)}>
-          {item.label}
-        </a>
-      ))}
-    </nav>
-  )}
 </header>
 
 <script>
@@ -174,34 +179,14 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     gap: var(--space-4);
   }
 
-  .utility-bar {
-    width: 100%;
-    max-width: var(--container-max);
-    margin: 0 auto;
-    padding: 0 var(--container-pad) var(--space-1);
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--space-3);
-    border-top: 1px solid var(--color-border);
-    background: var(--color-gray-50);
+
+  .menu__section-title {
+    margin: 0;
     font-size: var(--font-size-0);
-  }
-
-  .utility-bar a {
-    color: var(--color-text);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: var(--target-min);
-    padding: 0.45rem 0.85rem;
-    border-radius: var(--radius-2);
-  }
-
-  .utility-bar a:hover,
-  .utility-bar a:focus-visible {
-    text-decoration: underline;
+    color: var(--color-text-muted);
   }
 
   .brand {

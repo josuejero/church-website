@@ -1,132 +1,59 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("Home layout regression", () => {
-  test("desktop home keeps full-width card sections and a compact upper-left hero card", async ({
-    page,
-  }) => {
-    test.skip(
-      test.info().project.name !== "chromium",
-      "desktop viewport assertion runs on chromium only",
-    );
-
+  test("hero, visit section, cards, calendar, and giving block render", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
 
-    const metrics = await page.evaluate(() => {
-      const container = document.querySelector("main .container");
-      const containerRect = container?.getBoundingClientRect();
-      const containerStyle = container ? getComputedStyle(container) : null;
-      const padLeft = containerStyle
-        ? Number.parseFloat(containerStyle.paddingLeft)
-        : 0;
-      const padRight = containerStyle
-        ? Number.parseFloat(containerStyle.paddingRight)
-        : 0;
-      const containerWidth = containerRect
-        ? Math.round(containerRect.width)
-        : 0;
-      const containerContentWidth = containerRect
-        ? Math.round(containerRect.width - padLeft - padRight)
-        : 0;
+    const hero = page.locator("section.hero").first();
+    const nextStepCards = page.locator("section.home-card-area");
 
-      const cardSections = [
-        ...document.querySelectorAll(".home-grid__cards"),
-      ].map((section) => {
-        const sectionRect = section.getBoundingClientRect();
-        const grid = section.querySelector(".grid");
-        const gridRect = grid?.getBoundingClientRect();
-        const cardTops = grid
-          ? [...grid.children].map((child) =>
-              Math.round((child as HTMLElement).getBoundingClientRect().top),
-            )
-          : [];
-        const firstRowTop = cardTops[0] ?? null;
-        const firstRowCount =
-          firstRowTop === null
-            ? 0
-            : cardTops.filter((top) => top === firstRowTop).length;
+    await expect(
+      hero.getByRole("heading", { name: "Welcome", exact: true }),
+    ).toBeVisible();
+    await expect(
+      hero.getByRole("link", { name: "Plan a Visit", exact: true }),
+    ).toBeVisible();
+    await expect(
+      hero.getByRole("link", { name: "Submit a Connect Card", exact: true }),
+    ).toBeVisible();
 
-        return {
-          sectionWidth: Math.round(sectionRect.width),
-          gridWidth: gridRect ? Math.round(gridRect.width) : 0,
-          cardCount: cardTops.length,
-          firstRowCount,
-        };
-      });
+    await expect(
+      page.getByRole("heading", { name: "Plan your visit", exact: true }),
+    ).toBeVisible();
+    await expect(page.locator(".home-visit__address")).toContainText("1118 Sumner Ave");
+    await expect(page.locator(".home-visit__list")).toBeVisible();
 
-      const heroCard = document.querySelector(".heroBanner .hero.card");
-      const heroContent = document.querySelector(".heroBanner__content");
-      const heroRect = heroCard?.getBoundingClientRect();
-      const heroContentRect = heroContent?.getBoundingClientRect();
-      const heroContentStyle = heroContent
-        ? getComputedStyle(heroContent)
-        : null;
+    await expect(
+      page.getByRole("heading", { name: "Next steps", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /I[’']m visiting/, exact: false }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Watch online", exact: true }),
+    ).toBeVisible();
+    await expect(
+      nextStepCards.getByRole("link", { name: "Contact us", exact: true }),
+    ).toBeVisible();
 
-      const heroWidth = heroRect ? Math.round(heroRect.width) : 0;
-      const heroContentWidth = heroContentRect
-        ? Math.round(heroContentRect.width)
-        : 0;
-      const heroWidthRatio =
-        heroContentWidth > 0 ? heroWidth / heroContentWidth : 0;
-      const heroPadLeft = heroContentStyle
-        ? Math.round(Number.parseFloat(heroContentStyle.paddingLeft))
-        : 0;
-      const heroPadTop = heroContentStyle
-        ? Math.round(Number.parseFloat(heroContentStyle.paddingTop))
-        : 0;
-      const heroLeftGap =
-        heroRect && heroContentRect
-          ? Math.round(heroRect.left - heroContentRect.left)
-          : Number.NaN;
-      const heroTopGap =
-        heroRect && heroContentRect
-          ? Math.round(heroRect.top - heroContentRect.top)
-          : Number.NaN;
-      const heroRightGap =
-        heroRect && heroContentRect
-          ? Math.round(heroContentRect.right - heroRect.right)
-          : Number.NaN;
+    await expect(
+      page.getByRole("heading", { name: "Upcoming events", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "View all", exact: true }),
+    ).toBeVisible();
 
-      return {
-        containerWidth,
-        containerContentWidth,
-        cardSections,
-        heroWidth,
-        heroContentWidth,
-        heroWidthRatio,
-        heroPadLeft,
-        heroPadTop,
-        heroLeftGap,
-        heroTopGap,
-        heroRightGap,
-      };
-    });
+    await expect(
+      page.getByRole("heading", { name: "Live calendar preview", exact: true }),
+    ).toBeVisible();
+    await expect(page.locator(".live-calendar__embed iframe")).toBeVisible();
 
-    expect(metrics.containerWidth).toBeGreaterThan(0);
-    expect(metrics.containerContentWidth).toBeGreaterThan(0);
-    expect(metrics.cardSections).toHaveLength(2);
-
-    for (const section of metrics.cardSections) {
-      expect(section.sectionWidth).toBeGreaterThanOrEqual(
-        metrics.containerContentWidth - 4,
-      );
-      expect(section.gridWidth).toBeGreaterThanOrEqual(
-        metrics.containerContentWidth - 12,
-      );
-      if (section.cardCount > 1) {
-        expect(section.firstRowCount).toBeGreaterThan(1);
-      }
-    }
-
-    expect(metrics.heroContentWidth).toBeGreaterThan(0);
-    expect(metrics.heroWidth).toBeGreaterThan(0);
-    expect(metrics.heroWidthRatio).toBeLessThan(0.6);
-    expect(metrics.heroRightGap).toBeGreaterThan(200);
-    expect(
-      Math.abs(metrics.heroLeftGap - metrics.heroPadLeft),
-    ).toBeLessThanOrEqual(4);
-    expect(
-      Math.abs(metrics.heroTopGap - metrics.heroPadTop),
-    ).toBeLessThanOrEqual(4);
+    await expect(
+      page.getByRole("heading", { name: "Giving", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Give online", exact: true }),
+    ).toBeVisible();
   });
 });

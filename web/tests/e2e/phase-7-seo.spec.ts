@@ -6,6 +6,7 @@ const PAGES: Array<{ path: string; robots: string }> = [
   { path: "/connect/team", robots: "index,follow" },
   { path: "/events", robots: "index,follow" },
   { path: "/resources", robots: "index,follow" },
+  { path: "/calendar", robots: "index,follow" },
   { path: "/media", robots: "index,follow" },
   { path: "/search", robots: "noindex,follow" },
 ];

@@ -1,0 +1,71 @@
+---
+type Props = {
+  title?: string;
+  description?: string;
+  embedUrl?: string;
+  note?: string;
+  compact?: boolean;
+};
+
+const {
+  title = "Live campus calendar",
+  description = "The public calendar shows the most current schedule for services, ministries, and outreach.",
+  embedUrl = "https://calendar.google.com/calendar/embed?src=example%40example.com&ctz=America%2FNew_York",
+  note = "This embed is a placeholder; replace it with the public Google Calendar URL when available.",
+  compact = false,
+} = Astro.props as Props;
+
+const iframeHeight = compact ? 260 : 420;
+const iframeTitle = `${title} preview`;
+---
+<section class="live-calendar stack surface-section">
+  <div>
+    <h2>{title}</h2>
+    <p class="muted small">{description}</p>
+  </div>
+  <div class="live-calendar__embed">
+    <iframe
+      src={embedUrl}
+      title={iframeTitle}
+      loading="lazy"
+      allowfullscreen
+      referrerpolicy="no-referrer"
+      height={iframeHeight}
+    ></iframe>
+  </div>
+  <p class="muted live-calendar__note">{note}</p>
+</section>
+
+<style>
+  .live-calendar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .live-calendar__embed {
+    width: 100%;
+    background: var(--color-surface-muted);
+    border-radius: var(--radius-4);
+    overflow: hidden;
+    border: 1px solid var(--color-border-muted);
+  }
+
+  .live-calendar__embed iframe {
+    width: 100%;
+    display: block;
+  }
+
+  .live-calendar__note {
+    margin: 0;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 640px) {
+    .live-calendar__embed iframe {
+      height: 240px;
+    }
+  }
+</style>

@@ -20,7 +20,10 @@ const fmt = new Intl.DateTimeFormat(site.locale, { dateStyle: "full", timeZone: 
 <BaseLayout title="Bulletins" description="Weekly bulletins and archives.">
   <div class="stack">
     <h1>Bulletins</h1>
-    <p class="muted">Weekly PDFs and an archive.</p>
+    <p class="muted">Weekly PDFs and an easy archive.</p>
+    <p class="muted small">
+      For the most current schedule and public events, lean on the live calendar and the weekly announcements instead of the bulletin text on the homepage.
+    </p>
 
     {sorted.length === 0 ? (
       <section class="card stack--tight">
@@ -62,8 +65,6 @@ const fmt = new Intl.DateTimeFormat(site.locale, { dateStyle: "full", timeZone: 
       </>
     )}
 
-    <p class="small muted">
-      For church members: if you need a bulletin from a past week that isn’t listed, please contact the church.
-    </p>
+    <p class="small muted">Need a past bulletin that isn’t listed? Contact the church.</p>
   </div>
 </BaseLayout>

@@ -1,6 +1,6 @@
-import { site } from "../data/site";
-import { mailto, tel } from "./links";
-import type { ScheduleItem } from "../data/site";
+import { site, volunteerLink } from "../data/site";
+import { mailto, tel, isExternalUrl } from "./links";
+import type { ContactTopic, ScheduleItem } from "../data/site";
 
 export type ContactAction = {
   label: string;
@@ -44,6 +44,7 @@ export type ContactSectionDefinition = {
   scheduleItems?: ScheduleItem[];
   ctaGroup?: ContactCtaGroupDefinition;
   contactForm?: ContactFormInfo;
+  contactTopics?: ContactTopic[];
 };
 
 export type ContactSectionsOptions = {
@@ -136,7 +137,20 @@ export function buildContactSections(options: ContactSectionsOptions): ContactSe
         extras: quickExtras,
         socialLinks: site.social,
       },
-    },
+    }
+  );
+
+  const contactTopics = site.contactTopics ?? [];
+  if (contactTopics.length) {
+    sections.push({
+      id: "contact-topics",
+      title: "Contact topics",
+      description: "Need help with something specific? Reach out to the right person.",
+      contactTopics,
+    });
+  }
+
+  sections.push(
     {
       id: "contact-form",
       title: "Message us",
@@ -147,11 +161,22 @@ export function buildContactSections(options: ContactSectionsOptions): ContactSe
         available: options.hasContactForm,
         href: options.contactFormUrl,
         label: options.hasContactForm ? "Open contact form" : "Reach out via phone or email",
-        note: options.hasContactForm
-          ? "Please avoid including sensitive information."
-          : undefined,
+        note: options.hasContactForm ? "Please avoid including sensitive information." : undefined,
         external: true,
       },
+    },
+    {
+      id: "serve",
+      title: "Serve",
+      description:
+        "Find a place to volunteer, connect with ministry leaders, and make a difference in Springfield.",
+      actions: [
+        {
+          label: "Volunteer",
+          href: volunteerLink,
+          external: isExternalUrl(volunteerLink),
+        },
+      ],
     }
   );
 

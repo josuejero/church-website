@@ -6,24 +6,32 @@ import type { PhotoMontage } from "../../data/homeContent";
 const { montage } = Astro.props as { montage: PhotoMontage };
 ---
 
-<section class="photo-montage stack" aria-label="Life at First Springfield">
+<section class="photo-montage stack surface-section" aria-label="Life at First Springfield">
   <div class="photo-montage__intro stack--tight">
     <SectionHeading title={montage.title} subtitle={montage.subtitle} />
     <p>{montage.intro}</p>
   </div>
 
   <div class="photo-montage__grid">
-    {montage.cards.map((card) => (
-      <article class="card photo-card">
-        <Image
-          src={card.image}
-          alt={card.alt}
-          widths={[440, 660, 880, 1100]}
-          sizes="(min-width: 960px) 40vw, 80vw"
-          loading="lazy"
-          decoding="async"
-          class="photo-card__img"
-        />
+    {montage.cards.map((card, index) => (
+      <article
+        class:list={[
+          "photo-card",
+          index === 0 && "photo-card--primary",
+          index === 1 && "photo-card--secondary",
+        ]}
+      >
+        <div class="photo-card__img-wrapper">
+          <Image
+            src={card.image}
+            alt={card.alt}
+            widths={[660, 880, 1100, 1400]}
+            sizes="(min-width: 960px) 30vw, 80vw"
+            loading="lazy"
+            decoding="async"
+            class="photo-card__img"
+          />
+        </div>
         <div class="photo-card__caption">
           <h3>{card.heading}</h3>
           <p>{card.text}</p>
@@ -35,72 +43,103 @@ const { montage } = Astro.props as { montage: PhotoMontage };
 
 <style>
   .photo-montage {
-    gap: var(--space-4);
-    width: 100%;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-4);
-    padding: clamp(var(--space-4), 3vw, var(--space-6));
-    background: linear-gradient(
-      160deg,
-      color-mix(in oklab, var(--color-surface-muted) 92%, var(--color-primary) 8%) 0%,
-      var(--color-surface) 100%
-    );
-    box-shadow: var(--shadow-1);
+    gap: var(--space-6);
   }
 
   .photo-montage__intro :global(.section-heading__subtitle) {
-    max-width: 52ch;
+    max-width: 56ch;
   }
 
   .photo-montage__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: var(--space-4);
     width: 100%;
+    display: grid;
+    grid-template-columns: minmax(300px, 1fr) minmax(220px, 1fr);
+    grid-template-rows: repeat(2, minmax(180px, 1fr));
+    gap: var(--space-4);
+    align-items: stretch;
   }
 
   .photo-card {
-    padding: 0;
+    position: relative;
+    border-radius: var(--radius-3);
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
+    min-height: 260px;
+    box-shadow: var(--shadow-1);
     background: var(--color-surface);
   }
 
-  .photo-card__img {
-    height: 225px;
+  .photo-card__img-wrapper {
+    position: relative;
     width: 100%;
+    height: 100%;
+  }
+
+  .photo-card__img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     display: block;
+    transition: transform 320ms ease;
+  }
+
+  .photo-card:hover .photo-card__img,
+  .photo-card:focus-within .photo-card__img {
+    transform: scale(1.05);
   }
 
   .photo-card__caption {
-    padding: var(--space-3);
+    position: absolute;
+    inset: auto 0 0;
+    padding: var(--space-4);
+    background: linear-gradient(
+      180deg,
+      rgba(15, 19, 27, 0.1) 0%,
+      var(--color-photo-overlay) 100%
+    );
+    color: var(--color-white);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
   }
 
   .photo-card__caption h3 {
-    margin: 0 0 0.35rem;
-    font-size: var(--type-scale-h3-size);
-    line-height: var(--type-scale-h3-line-height);
+    margin: 0;
+    font-size: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+    line-height: 1.3;
+    font-family: var(--font-family-display);
+    letter-spacing: 0.01em;
   }
 
   .photo-card__caption p {
     margin: 0;
-    color: var(--color-text-muted);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: var(--type-scale-body-size);
+    line-height: 1.5;
   }
 
-  @media (max-width: 720px) {
-    .photo-card__img {
-      height: 200px;
-    }
+  .photo-card--primary {
+    grid-column: 1 / 2;
+    grid-row: 1 / 3;
+    min-height: 360px;
+  }
 
-    .photo-montage {
-      gap: var(--space-4);
-      padding: var(--space-4);
-    }
+  .photo-card--secondary {
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+    min-height: 260px;
+    align-self: start;
+  }
 
+  @media (max-width: 960px) {
     .photo-montage__grid {
-      gap: var(--space-3);
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-rows: none;
+    }
+
+    .photo-card--primary,
+    .photo-card--secondary {
+      grid-column: auto;
+      grid-row: auto;
     }
   }
 </style>

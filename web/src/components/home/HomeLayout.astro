@@ -1,38 +1,31 @@
 ---
 import Button from "../ui/Button.astro";
-import HighlightsScroller from "../ui/HighlightsScroller.astro";
-import PrayerMeetingCallout from "../sections/PrayerMeetingCallout.astro";
 import EventList from "../sections/EventList.astro";
-import SermonHighlight from "../sections/SermonHighlight.astro";
-import RecurringActivities from "../sections/RecurringActivities.astro";
+import LiveCalendarPreview from "../sections/LiveCalendarPreview.astro";
 import HomeHeroSection from "./HomeHeroSection.astro";
 import HomeCardArea from "./HomeCardArea.astro";
 import HomeGivingBlock from "./HomeGivingBlock.astro";
-import HomePhotoMontage from "./HomePhotoMontage.astro";
-import type {
-  Cta,
-  GivingContent,
-  HeroConfig,
-  HomeCardItem,
-  PhotoMontage,
-} from "../../data/homeContent";
-import { prayerMeetingDetails } from "../../data/activities";
+import HomeVisitSection from "./HomeVisitSection.astro";
+import type { Cta, GivingContent, HeroConfig, HomeCardItem } from "../../data/homeContent";
+import { site } from "../../data/site";
 
 const {
   heroConfig,
   heroMeta,
-  ministryCards,
-  connectedCards,
+  nextStepCards,
   givingContent,
-  photoMontage,
 } = Astro.props as {
   heroConfig: HeroConfig;
   heroMeta: { copy: string; cta: Cta };
-  ministryCards: HomeCardItem[];
-  connectedCards: HomeCardItem[];
+  nextStepCards: HomeCardItem[];
   givingContent: GivingContent;
-  photoMontage: PhotoMontage;
 };
+
+const visitSchedule = site.schedule;
+const address = site.contact.address;
+const mapsUrl = site.contact.mapsUrl;
+const exploreMinistriesLabel = "Explore ministries";
+const exploreMinistriesHref = "/ministries";
 ---
 
 <HomeHeroSection heroConfig={heroConfig}>
@@ -46,162 +39,77 @@ const {
   </div>
 </HomeHeroSection>
 
-<div class="home-grid">
-  <div class="home-grid__section home-grid__section--prayer">
-    <PrayerMeetingCallout meeting={prayerMeetingDetails} />
-  </div>
-
-  <div class="home-grid__section home-grid__section--highlights">
-    <HighlightsScroller />
-  </div>
-
-  <HomeCardArea
-    title="Ministries"
-    subtitle="Find a place to serve, grow, and celebrate with your church family."
-    cards={ministryCards}
-    modifier="home-grid__cards--ministries"
-    columnsMin={240}
+<main class="home-page stack" aria-label="Homepage">
+  <HomeVisitSection
+    schedule={visitSchedule}
+    address={address}
+    mapsUrl={mapsUrl}
+    primaryCtaLabel={heroConfig.primaryCtaLabel}
+    primaryCtaHref={heroConfig.primaryCtaHref}
+    secondaryCtaLabel={exploreMinistriesLabel}
+    secondaryCtaHref={exploreMinistriesHref}
   />
 
   <HomeCardArea
-    title="Get Connected"
-    subtitle="Take your next step in community, worship, and prayer."
-    cards={connectedCards}
-    modifier="home-grid__cards--connected"
-    columnsMin={220}
+    title="Next steps"
+    subtitle="Choose how you want to connect, watch, or reach out."
+    cards={nextStepCards}
   />
 
-  <section class="home-grid__section home-grid__section--giving">
-    <HomeGivingBlock content={givingContent} />
+  <EventList title="Upcoming events" />
+
+  <LiveCalendarPreview
+    title="Live calendar preview"
+    description="The shared campus calendar shows the latest services, ministries, and outreach."
+    compact
+  />
+
+  <section class="home-page__section home-page__media surface-section">
+    <div class="home-page__media-inner">
+      <p class="muted small">Prefer to preview a message before your visit?</p>
+      <Button variant="tertiary" href="/media/videos">
+        Watch the latest sermon
+      </Button>
+    </div>
   </section>
 
-  <section class="home-grid__section home-grid__section--photo">
-    <HomePhotoMontage montage={photoMontage} />
-  </section>
-
-  <div class="home-grid__section home-grid__section--events">
-    <EventList title="Upcoming Events" />
-  </div>
-
-  <div class="home-grid__section home-grid__section--sermon">
-    <SermonHighlight title="Latest Sermon" />
-  </div>
-
-  <div class="home-grid__section home-grid__section--activities">
-    <RecurringActivities />
-  </div>
-</div>
+  <HomeGivingBlock content={givingContent} />
+</main>
 
 <style>
-  .home-grid {
+  .home-page {
     width: 100%;
-    margin: clamp(var(--space-8), 6vw, var(--space-12)) 0 0;
+    margin-top: clamp(var(--space-6), 5vw, var(--space-10));
     display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: clamp(var(--space-6), 2.3vw, var(--space-10));
-    align-items: start;
+    gap: clamp(var(--space-7), 3vw, var(--space-9));
   }
 
-  .home-grid__section {
-    grid-column: 1 / -1;
+  .home-card-area {
+    width: 100%;
   }
 
-  :global(.home-grid__cards) {
-    grid-column: 1 / -1;
+  .home-page__media {
+    width: 100%;
   }
 
-  .home-grid__section--prayer {
-    grid-column: 1 / 8;
-  }
-
-  .home-grid__section--highlights {
-    grid-column: 8 / -1;
-  }
-
-  .home-grid__section--giving {
-    grid-column: 1 / 7;
-  }
-
-  .home-grid__section--photo {
-    grid-column: 7 / -1;
-  }
-
-  .home-grid__section--events {
-    grid-column: 1 / 7;
-  }
-
-  .home-grid__section--sermon {
-    grid-column: 7 / -1;
-  }
-
-  .home-hero__meta-copy {
-    margin: 0;
-    color: var(--color-text-muted);
-    max-width: 60ch;
-  }
-
-  .home-hero__meta-copy-group {
-    display: grid;
+  .home-page__media .home-page__media-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
     gap: var(--space-3);
+    padding: 0;
   }
 
-  .home-hero__meta {
-    margin-top: var(--space-4);
-    display: grid;
-    gap: var(--space-4);
-  }
-
-  @media (max-width: 1100px) {
-    .home-grid {
-      grid-template-columns: repeat(8, minmax(0, 1fr));
+  @media (max-width: 640px) {
+    .home-page__media-inner {
+      flex-direction: column;
+      align-items: flex-start;
     }
 
-    .home-grid__section--prayer,
-    .home-grid__section--highlights {
-      grid-column: 1 / -1;
+    .home-page__media-inner .btn {
+      width: 100%;
+      justify-content: center;
     }
-
-    .home-grid__section--giving {
-      grid-column: 1 / 5;
-    }
-
-    .home-grid__section--photo {
-      grid-column: 5 / -1;
-    }
-
-    .home-grid__section--events {
-      grid-column: 1 / 5;
-    }
-
-    .home-grid__section--sermon {
-      grid-column: 5 / -1;
-    }
-  }
-
-  @media (max-width: 880px) {
-    .home-grid__section--giving,
-    .home-grid__section--photo,
-    .home-grid__section--events,
-    .home-grid__section--sermon {
-      grid-column: 1 / -1;
-    }
-  }
-
-  @media (max-width: 720px) {
-    .home-grid {
-      margin-top: var(--space-6);
-      gap: var(--space-6);
-    }
-  }
-
-  @media (max-width: 420px) {
-    .home-grid {
-      margin-top: var(--space-5);
-      gap: var(--space-5);
-    }
-  }
-
-  :global(.home-grid__cards + .home-grid__cards) {
-    margin-top: var(--space-6);
   }
 </style>

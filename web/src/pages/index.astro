@@ -3,12 +3,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import HomeLayout from "../components/home/HomeLayout.astro";
 import { site } from "../data/site";
 import {
-  connectedCards,
   givingContent,
   homeHeroConfig,
   homeHeroMeta,
-  ministryCards,
-  photoMontage,
+  nextStepCards,
 } from "../data/homeContent";
 ---
 
@@ -16,9 +14,7 @@ import {
   <HomeLayout
     heroConfig={homeHeroConfig}
     heroMeta={homeHeroMeta}
-    ministryCards={ministryCards}
-    connectedCards={connectedCards}
+    nextStepCards={nextStepCards}
     givingContent={givingContent}
-    photoMontage={photoMontage}
   />
 </BaseLayout>
