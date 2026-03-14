@@ -35,7 +35,7 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
         decoding="async"
         class="brand__logo"
       />
-      <span class="brand__title">{site.shortName}</span>
+      <span class="brand__title signature-text">{site.shortName}</span>
     </a>
 
     <nav class="nav nav--desktop" aria-label="Primary navigation">
@@ -162,11 +162,13 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     position: sticky;
     top: 0;
     z-index: 50;
-    background: var(--color-white);
+    background: color-mix(in srgb, var(--color-section-surface) 92%, #ffffff 8%);
     border-bottom: 1px solid var(--color-border);
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    box-shadow: 0 14px 35px rgba(5, 6, 30, 0.12);
+    backdrop-filter: saturate(180%) blur(20px);
   }
 
   .inner {
@@ -207,9 +209,11 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
   }
 
   .brand__title {
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    font-size: var(--font-size-2);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    font-size: 1.65rem;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
   }
 
   .nav {
@@ -226,7 +230,7 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     align-items: center;
     min-height: var(--target-min);
     text-decoration: none;
-    color: inherit;
+    color: var(--color-text);
     font-weight: 700;
     opacity: 0.9;
     padding: 0.55rem 0.7rem;
@@ -237,13 +241,16 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
   }
 
   .nav a:hover {
-    background: var(--color-gray-50);
+    background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface) 88%);
+    color: var(--color-primary);
     opacity: 1;
   }
 
   .nav a[aria-current="page"] {
-    background: var(--color-gray-100);
+    background: color-mix(in srgb, var(--color-primary) 25%, var(--color-primary-soft) 75%);
+    color: var(--color-white);
     opacity: 1;
+    box-shadow: 0 8px 20px rgba(13, 8, 55, 0.25);
   }
 
   .cta {
@@ -279,7 +286,7 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     padding: 0.65rem 0.9rem;
     border-radius: 999px;
     border: 1px solid var(--color-border);
-    background: var(--color-white);
+    background: var(--color-section-surface);
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
@@ -293,7 +300,7 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
   }
 
   .menu[open] .menu__summary {
-    background: var(--color-gray-50);
+    background: color-mix(in srgb, var(--color-primary-soft) 18%, var(--color-section-surface) 82%);
   }
 
   .menu__panel {
@@ -301,7 +308,7 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     right: 0;
     top: calc(100% + 0.6rem);
     width: min(92vw, 22rem);
-    background: var(--color-white);
+    background: var(--color-section-surface-alt);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-3);
     box-shadow: var(--shadow-2);
@@ -319,18 +326,20 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     align-items: center;
     min-height: var(--target-min);
     text-decoration: none;
-    color: inherit;
+    color: var(--color-text);
     font-weight: 700;
     padding: 0.6rem 0.7rem;
     border-radius: var(--radius-2);
   }
 
   .menu__link:hover {
-    background: var(--color-gray-50);
+    background: color-mix(in srgb, var(--color-primary-soft) 12%, var(--color-section-surface) 88%);
   }
 
   .menu__link[aria-current="page"] {
-    background: var(--color-gray-100);
+    background: color-mix(in srgb, var(--color-primary) 24%, var(--color-primary-soft) 76%);
+    color: var(--color-white);
+    box-shadow: 0 8px 18px rgba(13, 8, 55, 0.22);
   }
 
   .menu__divider {
@@ -356,8 +365,8 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     align-items: center;
     min-height: var(--target-min);
     text-decoration: none;
-    color: inherit;
-    opacity: 0.9;
+    color: var(--color-link);
+    opacity: 0.85;
     padding: 0.4rem 0.2rem;
     font-weight: 700;
   }

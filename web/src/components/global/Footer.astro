@@ -39,10 +39,10 @@ const accessibilityHref = "/accessibility";
 <footer class="site-footer">
   <div class="inner">
     <div class="left">
-      <div class="footer-brand">
-        <Image
-          src={churchLogo}
-          alt={`${site.name} logo`}
+        <div class="footer-brand">
+          <Image
+            src={churchLogo}
+            alt={`${site.name} logo`}
           widths={[48, 64, 80]}
           sizes="48px"
           loading="lazy"
@@ -50,7 +50,7 @@ const accessibilityHref = "/accessibility";
           class="footer-brand__logo"
         />
         <div>
-          <strong>{site.name}</strong>
+          <strong class="signature-text">{site.name}</strong>
           <div class="muted footer-brand__address">
             <a href={site.contact.mapsUrl} target="_blank" rel="noopener noreferrer">
               {site.contact.address}
@@ -165,7 +165,8 @@ const accessibilityHref = "/accessibility";
 <style>
   .site-footer {
     border-top: 1px solid var(--color-border);
-    background: var(--color-white);
+    background: color-mix(in srgb, var(--color-section-surface) 92%, var(--color-section-surface-alt) 8%);
+    box-shadow: 0 -10px 30px rgba(5, 6, 30, 0.1);
   }
 
   .footer-brand {
@@ -208,6 +209,10 @@ const accessibilityHref = "/accessibility";
     margin-top: var(--space-2);
   }
 
+  .footer-contact a {
+    color: var(--color-link);
+  }
+
   .footer-contact-label {
     font-weight: 600;
     margin-right: 0.35rem;
@@ -218,7 +223,7 @@ const accessibilityHref = "/accessibility";
   }
 
   .left a {
-    color: inherit;
+    color: var(--color-link);
   }
 
   .right {
@@ -237,6 +242,7 @@ const accessibilityHref = "/accessibility";
   .col-title {
     font-weight: 800;
     letter-spacing: -0.01em;
+    color: var(--color-primary);
   }
 
   .col--primary .col-title {
@@ -272,7 +278,7 @@ const accessibilityHref = "/accessibility";
     min-height: var(--target-min);
     padding: 0.2rem 0;
     text-decoration: none;
-    color: inherit;
+    color: var(--color-link);
     opacity: 0.9;
     font-weight: 600;
   }

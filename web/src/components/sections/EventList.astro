@@ -127,21 +127,8 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
   .event-empty-state {
     text-align: center;
     justify-items: center;
-    border-color: color-mix(
-      in oklab,
-      var(--color-border) 72%,
-      var(--color-primary) 28%
-    );
-    background: linear-gradient(
-      170deg,
-      color-mix(
-          in oklab,
-          var(--color-surface-muted) 84%,
-          var(--color-primary) 16%
-        )
-        0%,
-      var(--color-surface) 100%
-    );
+    border-color: color-mix(in oklab, #224AA8 80%, var(--color-border) 20%);
+    background: linear-gradient(170deg, #1a2f72 0%, #224AA8 45%, #B56FDC 100%);
   }
 
   .event-empty-state__icon {
@@ -164,11 +151,12 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
   .event-empty-state__title {
     margin: 0;
     font-size: clamp(1.16rem, 1rem + 0.48vw, 1.35rem);
+    color: var(--color-white);
   }
 
   .event-empty-state__text {
     margin: 0;
-    color: var(--color-text-muted);
+    color: var(--color-white);
     max-width: 58ch;
   }
 
@@ -181,5 +169,13 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
   .event-empty-state__actions a,
   .event-empty-state__actions button {
     flex: 1;
+  }
+
+  .event-empty-state__actions .btn--tertiary {
+    color: var(--color-white);
+  }
+
+  .event-empty-state__actions .btn--tertiary:hover {
+    color: color-mix(in srgb, var(--color-white) 90%, var(--color-link) 10%);
   }
 </style>

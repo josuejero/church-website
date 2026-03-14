@@ -1,3 +1,9 @@
+@import "@fontsource/poppins/400.css";
+@import "@fontsource/poppins/500.css";
+@import "@fontsource/poppins/600.css";
+@import "@fontsource/poppins/700.css";
+@import "@fontsource/bebas-neue/400.css";
+@import url("https://fonts.googleapis.com/css2?family=Signature&display=swap");
 @import "./tokens.css";
 
 /* Global baseline styles
@@ -25,14 +31,18 @@ body {
 body {
   font-family: var(--font-family-sans);
   color: var(--color-text);
-  background: linear-gradient(
-    180deg,
-    var(--color-section-muted) 0%,
-    var(--color-section-surface-alt) 30%,
-    var(--color-surface) 100%
-  );
+  background: var(--color-gradient-brand);
+  background-attachment: fixed;
+  background-size: cover;
+  background-repeat: no-repeat;
   font-size: var(--type-scale-body-size);
   line-height: var(--type-scale-body-line-height);
+}
+
+.signature-text {
+  font-family: var(--font-family-script);
+  letter-spacing: 0.05em;
+  color: var(--color-primary);
 }
 
 img {
@@ -41,7 +51,7 @@ img {
 }
 
 a {
-  color: var(--color-link-muted);
+  color: var(--color-link);
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 0.18em;
@@ -180,6 +190,8 @@ p {
   margin: 0;
   font-size: clamp(1.45rem, 1.2rem + 0.86vw, 1.9rem);
   line-height: 1.2;
+  font-family: var(--font-family-display);
+  letter-spacing: 0.02em;
 }
 
 .section-heading__subtitle {
@@ -198,8 +210,8 @@ p {
 }
 
 .surface-section:nth-of-type(even) {
-  background: var(--color-section-muted);
-  border-color: color-mix(in oklab, var(--color-section-border) 65%, var(--color-section-muted) 35%);
+  background: var(--color-section-surface-alt);
+  border-color: color-mix(in srgb, var(--color-section-border) 60%, var(--color-section-surface-alt) 40%);
 }
 
 section {
@@ -267,7 +279,7 @@ hr {
   transform: translateY(-3px);
   box-shadow: var(--shadow-2);
   border-color: color-mix(
-    in oklab,
+    in srgb,
     var(--color-border) 70%,
     var(--color-primary) 30%
   );
@@ -279,7 +291,7 @@ hr {
 }
 
 .link {
-  color: var(--color-link-muted);
+  color: var(--color-link);
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 0.18em;
@@ -316,9 +328,9 @@ hr {
     var(--color-border) 55%
   );
   background: color-mix(
-    in oklab,
-    var(--color-primary) 8%,
-    var(--color-surface) 92%
+    in srgb,
+    var(--color-primary) 12%,
+    var(--color-surface) 88%
   );
   color: var(--color-primary);
 }
