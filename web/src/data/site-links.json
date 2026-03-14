@@ -8,5 +8,6 @@
   "volunteerFormUrl": "",
   "bulletinsUrl": "/resources/bulletins",
   "announcementsUrl": "/resources/announcements",
-  "oldWebsiteUrl": "https://firstspringfieldma.adventistchurch.org/"
+  "oldWebsiteUrl": "https://firstspringfieldma.adventistchurch.org/",
+  "calendarEmbedUrl": "https://calendar.google.com/calendar/embed?src=firstspringfieldsda%40gmail.com&ctz=America%2FNew_York"
 }

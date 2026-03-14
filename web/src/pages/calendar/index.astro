@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import AnnualCalendarSection from "../../components/sections/AnnualCalendarSection.astro";
 import LiveCalendarPreview from "../../components/sections/LiveCalendarPreview.astro";
+import { site } from "../../data/site";
 import annualCalendar from "../../data/annual-calendar.json";
 ---
 
@@ -21,7 +22,7 @@ import annualCalendar from "../../data/annual-calendar.json";
       <LiveCalendarPreview
         title="Live event calendar"
         description="This public, shared calendar is the place to find the most current services, outreach, and ministry gatherings."
-        note="Placeholder embed; swap in the public Google Calendar URL once it is ready."
+        embedUrl={site.portals.calendarEmbedUrl}
       />
 
       <AnnualCalendarSection calendarData={annualCalendar} />

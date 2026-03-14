@@ -25,6 +25,7 @@ export type PortalLinks = {
   oldWebsiteUrl: string;
   bulletinsUrl?: string;
   announcementsUrl?: string;
+  calendarEmbedUrl?: string;
 };
 
 export type TeamMember = {
