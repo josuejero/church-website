@@ -10,11 +10,16 @@ type Props = {
 const {
   title = "Live campus calendar",
   description = "The public calendar shows the most current schedule for services, ministries, and outreach.",
-  embedUrl = "https://calendar.google.com/calendar/embed?src=example%40example.com&ctz=America%2FNew_York",
-  note = "This embed is a placeholder; replace it with the public Google Calendar URL when available.",
+  embedUrl,
+  note,
   compact = false,
 } = Astro.props as Props;
 
+const hasEmbed = typeof embedUrl === "string" && embedUrl.trim().length > 0;
+const fallbackNote = hasEmbed
+  ? "This embed shows the live campus schedule."
+  : "The live calendar embed is pending; consult the annual calendar page while we finalize the official feed.";
+const displayNote = note ?? fallbackNote;
 const iframeHeight = compact ? 260 : 420;
 const iframeTitle = `${title} preview`;
 ---
@@ -23,17 +28,28 @@ const iframeTitle = `${title} preview`;
     <h2>{title}</h2>
     <p class="muted small">{description}</p>
   </div>
-  <div class="live-calendar__embed">
-    <iframe
-      src={embedUrl}
-      title={iframeTitle}
-      loading="lazy"
-      allowfullscreen
-      referrerpolicy="no-referrer"
-      height={iframeHeight}
-    ></iframe>
+  <div class="live-calendar__embed" aria-live="polite">
+    {hasEmbed ? (
+      <iframe
+        src={embedUrl}
+        title={iframeTitle}
+        loading="lazy"
+        allowfullscreen
+        referrerpolicy="no-referrer"
+        height={iframeHeight}
+      ></iframe>
+    ) : (
+      <div class="live-calendar__embed-placeholder" style={`min-height:${iframeHeight}px`}>
+        <p class="live-calendar__embed-placeholder-title">Live calendar coming soon</p>
+        <p class="live-calendar__embed-placeholder-copy">
+          We are working to publish the official public calendar. Meanwhile, the annual events timeline and the local
+          calendar page summarize the most important services, ministries, and outreach.
+        </p>
+        <a class="live-calendar__embed-placeholder-link" href="/calendar">Explore the annual calendar page</a>
+      </div>
+    )}
   </div>
-  <p class="muted live-calendar__note">{note}</p>
+  <p class="muted live-calendar__note">{displayNote}</p>
 </section>
 
 <style>
@@ -56,6 +72,31 @@ const iframeTitle = `${title} preview`;
     display: block;
   }
 
+  .live-calendar__embed-placeholder {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    justify-content: center;
+    padding: var(--space-5) var(--space-4);
+    color: var(--color-text-muted);
+  }
+
+  .live-calendar__embed-placeholder-title {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .live-calendar__embed-placeholder-copy {
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .live-calendar__embed-placeholder-link {
+    color: var(--color-link);
+    font-weight: 500;
+    text-decoration: underline;
+  }
+
   .live-calendar__note {
     margin: 0;
     font-size: 0.75rem;
@@ -66,6 +107,9 @@ const iframeTitle = `${title} preview`;
   @media (max-width: 640px) {
     .live-calendar__embed iframe {
       height: 240px;
+    }
+    .live-calendar__embed-placeholder {
+      min-height: 240px;
     }
   }
 </style>
