@@ -12,7 +12,9 @@ test("calendar highlights and featured dates render with the live preview", asyn
   await expect(
     page.getByRole("heading", { name: "Live event calendar", exact: true }),
   ).toBeVisible();
-  await expect(page.locator(".live-calendar__embed iframe")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Load live calendar", exact: true }),
+  ).toBeVisible();
 
   const highlight = page.locator(".calendar-highlight");
   await expect(highlight).toBeVisible();
