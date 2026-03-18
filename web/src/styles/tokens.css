@@ -80,15 +80,15 @@
   --target-min: 44px;
 
   /* Brand */
-  --color-gradient-brand: linear-gradient(135deg, #224AA8 0%, var(--color-primary) 100%);
-  --color-primary: #5d28bb;
-  --color-primary-hover: #4c1580;
-  --color-primary-soft: #7c57f0;
+  --color-gradient-brand: linear-gradient(135deg, #224AA8 0%, #B56FDC 70%, #8C52FF 100%);
+  --color-primary: #8C52FF;
+  --color-primary-hover: #6D2FE7;
+  --color-primary-soft: #A975FF;
   --color-cta-primary: var(--color-primary);
   --color-cta-primary-dark: var(--color-primary-hover);
   --color-cta-secondary: #f8f5ff;
-  --color-link: #5d28bb;
-  --color-link-muted: color-mix(in srgb, #5d28bb 70%, #ffffff 30%);
+  --color-link: var(--color-primary);
+  --color-link-muted: color-mix(in srgb, var(--color-primary) 70%, #ffffff 30%);
   --color-secondary-link: var(--color-link-muted);
   --color-primary-cta: var(--color-cta-primary);
   --color-primary-cta-dark: var(--color-cta-primary-dark);

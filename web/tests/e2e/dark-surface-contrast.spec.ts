@@ -82,6 +82,7 @@ for (const pageCheck of PAGES) {
     await page.goto(pageCheck.path);
 
     const palette = await resolvePalette(page);
+    expect(palette.link).toBe("rgb(140, 82, 255)");
     const heading = page.locator(pageCheck.headingSelector).first();
     const card = page.locator(pageCheck.cardSelector).first();
     const text = page.locator(pageCheck.textSelector).first();

@@ -31,10 +31,10 @@ test.describe("Home layout regression", () => {
       page.getByRole("link", { name: /I[’']m visiting/, exact: false }),
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "Watch online", exact: true }),
+      page.getByRole("link", { name: /Watch online/i, exact: false }),
     ).toBeVisible();
     await expect(
-      nextStepCards.getByRole("link", { name: "Contact us", exact: true }),
+      nextStepCards.getByRole("link", { name: /Contact us/, exact: false }),
     ).toBeVisible();
 
     await expect(

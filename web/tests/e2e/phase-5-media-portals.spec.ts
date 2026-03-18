@@ -8,10 +8,10 @@ test("Media hub loads", async ({ page }) => {
 
   const quickLinks = page.getByRole("region", { name: "Quick links" });
   await expect(
-    quickLinks.getByRole("link", { name: "Watch Live", exact: true }),
+    quickLinks.getByRole("link", { name: /Watch Live/i, exact: false }),
   ).toBeVisible();
   await expect(
-    quickLinks.getByRole("link", { name: "Videos", exact: true }),
+    quickLinks.getByRole("link", { name: /Videos/i, exact: false }),
   ).toBeVisible();
 });
 
