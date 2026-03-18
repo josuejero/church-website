@@ -293,6 +293,9 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
     font-weight: 700;
     min-height: var(--target-min);
     min-width: var(--target-min);
+    width: 100%;
+    justify-content: center;
+    max-width: 220px;
   }
 
   .menu__summary::-webkit-details-marker {
@@ -305,20 +308,24 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
 
   .menu__panel {
     position: absolute;
-    right: 0;
     top: calc(100% + 0.6rem);
-    width: min(92vw, 22rem);
+    left: var(--container-pad);
+    right: var(--container-pad);
+    width: auto;
+    max-width: min(calc(100vw - 2 * var(--container-pad)), 28rem);
     background: var(--color-section-surface-alt);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-3);
     box-shadow: var(--shadow-2);
     padding: var(--space-3);
     z-index: 60;
+    box-sizing: border-box;
   }
 
   .menu__section {
     display: grid;
-    gap: 0.35rem;
+    gap: var(--space-2);
+    width: 100%;
   }
 
   .menu__link {
@@ -436,6 +443,12 @@ const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label 
 
     .menu {
       display: block;
+    }
+
+    .menu__panel {
+      left: var(--space-3);
+      right: var(--space-3);
+      max-width: min(100vw - 1.5rem, 28rem);
     }
   }
 
