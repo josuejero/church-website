@@ -33,7 +33,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `npm run build && npx wrangler dev --local --ip ${HOST} --port ${PORT} --log-level error`,
+    command: `npm run build && node scripts/serve-dist.mjs --host ${HOST} --port ${PORT}`,
     url: BASE_URL,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,

@@ -5,6 +5,7 @@ import LiveCalendarPreview from "../sections/LiveCalendarPreview.astro";
 import HomeHeroSection from "./HomeHeroSection.astro";
 import HomeCardArea from "./HomeCardArea.astro";
 import HomeGivingBlock from "./HomeGivingBlock.astro";
+import HighlightsScroller from "../ui/HighlightsScroller.astro";
 import HomeVisitSection from "./HomeVisitSection.astro";
 import type { Cta, GivingContent, HeroConfig, HomeCardItem } from "../../data/homeContent";
 import { site } from "../../data/site";
@@ -40,6 +41,7 @@ const exploreMinistriesHref = "/ministries";
 </HomeHeroSection>
 
 <main class="home-page stack" aria-label="Homepage">
+  <HighlightsScroller />
   <HomeVisitSection
     schedule={visitSchedule}
     address={address}

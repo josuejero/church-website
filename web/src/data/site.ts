@@ -175,7 +175,6 @@ const announcementsLink =
   portals.announcementsUrl && portals.announcementsUrl !== "TBD"
     ? portals.announcementsUrl
     : "/resources/announcements";
-const prayerLink = hasPrayerForm ? portals.prayerFormUrl ?? "/connect/prayer" : "/connect/prayer";
 export const volunteerLink = hasVolunteerForm ? portals.volunteerFormUrl ?? "/serve" : "/serve";
 
 const contactTopics: ContactTopic[] = [

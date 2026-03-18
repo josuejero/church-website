@@ -44,6 +44,7 @@ const weeklyHighlights: WeeklyHighlight[] = [
   {
     activityId: "womens-ministry",
     title: "WOMEN'S MINISTRY Meeting",
+    text: "WOMEN'S MINISTRY Meeting · First Tuesday of every month · 6:00 PM – 8:00 PM",
     description: "First Tuesday of every month · 6:00 PM – 8:00 PM",
     badge: "This week",
     href: "/ministries/womens-ministry",

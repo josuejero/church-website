@@ -13,7 +13,7 @@
     "preview": "npm run astro -- preview",
     "check": "npm run astro -- check",
     "test:unit": "vitest run",
-    "test:e2e": "npm run build && playwright test",
+    "test:e2e": "playwright test",
     "test:e2e:ci": "npx playwright install --with-deps && playwright test",
     "test:links": "npm run build && linkinator ./dist --config ./linkinator.config.json",
     "test:links:ci": "linkinator ./dist --config=./linkinator.config.json",
