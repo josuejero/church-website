@@ -48,12 +48,12 @@ const hasMultipleSlides = highlights.length > 1;
       <div class="highlights-carousel__viewport">
         <div class="highlights-carousel__track" role="list">
           {highlights.map((item, index) => (
-            <article
+            <div
               class="highlights-carousel__slide"
               role="listitem"
               data-slide-index={index}
             >
-              <div class="highlights-carousel__card">
+              <article class="highlights-carousel__card">
                 <div class="highlights-carousel__badge-row">
                   {item.badge ? (
                     <span class="highlights-carousel__badge">{item.badge}</span>
@@ -85,8 +85,8 @@ const hasMultipleSlides = highlights.length > 1;
                     {item.ctaLabel}
                   </a>
                 ) : null}
-              </div>
-            </article>
+              </article>
+            </div>
           ))}
         </div>
       </div>
@@ -284,13 +284,13 @@ const hasMultipleSlides = highlights.length > 1;
   .highlights-carousel__dots {
     display: inline-flex;
     justify-content: center;
-    gap: var(--space-2);
-    padding: 0 var(--space-1) var(--space-1);
+    gap: clamp(var(--space-2), 1vw, var(--space-3));
+    padding: var(--space-1) var(--space-2);
   }
 
   .highlights-carousel__dot {
-    width: 0.55rem;
-    height: 0.55rem;
+    width: 1.5rem;
+    height: 1.5rem;
     border-radius: 999px;
     border: 0;
     background: color-mix(
@@ -303,7 +303,7 @@ const hasMultipleSlides = highlights.length > 1;
   }
 
   .highlights-carousel__dot[aria-selected="true"] {
-    width: 1.35rem;
+    width: 2.2rem;
     background: var(--color-primary);
   }
 

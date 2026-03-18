@@ -21,11 +21,12 @@ const utilityLinks = site.utilityLinks ?? [];
 const watchLive = site.quickActions.find((i) => i.label === "Watch Live") ?? site.quickActions[0];
 const give = site.quickActions.find((i) => i.label === "Give") ?? site.quickActions[1];
 const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label && i.label !== give?.label);
+const brandAriaLabel = `${site.shortName} – ${site.name}`;
 ---
 
 <header class="site-header">
   <div class="inner">
-    <a class="brand" href="/" aria-label={site.name}>
+    <a class="brand" href="/" aria-label={brandAriaLabel}>
       <Image
         src={churchLogo}
         alt={`${site.name} logo`}

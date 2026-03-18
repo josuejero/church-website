@@ -80,15 +80,15 @@
   --target-min: 44px;
 
   /* Brand */
-  --color-gradient-brand: linear-gradient(135deg, #224AA8 0%, #B56FDC 100%);
-  --color-primary: #8c52ff;
-  --color-primary-hover: #6c31d4;
-  --color-primary-soft: #b291ff;
+  --color-gradient-brand: linear-gradient(135deg, #224AA8 0%, var(--color-primary) 100%);
+  --color-primary: #5d28bb;
+  --color-primary-hover: #4c1580;
+  --color-primary-soft: #7c57f0;
   --color-cta-primary: var(--color-primary);
-  --color-cta-primary-dark: #6c31d4;
+  --color-cta-primary-dark: var(--color-primary-hover);
   --color-cta-secondary: #f8f5ff;
-  --color-link: #b56fdc;
-  --color-link-muted: color-mix(in srgb, #b56fdc 70%, #ffffff 30%);
+  --color-link: #5d28bb;
+  --color-link-muted: color-mix(in srgb, #5d28bb 70%, #ffffff 30%);
   --color-secondary-link: var(--color-link-muted);
   --color-primary-cta: var(--color-cta-primary);
   --color-primary-cta-dark: var(--color-cta-primary-dark);
@@ -139,6 +139,6 @@
   --color-primary-700: var(--color-primary-hover);
 
   /* Focus */
-  --color-focus: #b56fdc;
+  --color-focus: var(--color-primary);
   --focus-ring: 3px solid color-mix(in srgb, var(--color-focus) 65%, var(--color-white) 35%);
 }
