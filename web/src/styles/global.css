@@ -30,7 +30,7 @@ body {
 
 body {
   font-family: var(--font-family-sans);
-  color: var(--color-text);
+  color: var(--color-white);
   background: var(--color-gradient-brand);
   background-attachment: scroll;
   background-size: cover;
@@ -225,6 +225,158 @@ section:first-of-type {
 .muted {
   color: var(--color-text-muted);
 }
+.text-on-dark {
+  color: var(--color-white);
+}
+.text-on-dark h1,
+.text-on-dark h2,
+.text-on-dark h3,
+.text-on-dark h4,
+.text-on-dark p,
+.text-on-dark li,
+.text-on-dark .muted,
+.text-on-dark .section-heading__title,
+.text-on-dark .section-heading__subtitle {
+  color: inherit;
+}
+.text-on-dark a {
+  color: var(--color-primary-soft);
+  text-decoration: underline;
+  text-decoration-color: var(--color-primary-soft);
+}
+.text-on-dark a:hover,
+.text-on-dark a:focus-visible {
+  color: var(--color-white);
+  text-decoration-color: currentColor;
+}
+.text-on-dark :where(
+  .surface-section,
+  .section-block,
+  .card,
+  .hero,
+  .banner,
+  .highlights-carousel,
+  .connect-card__form,
+  .prayer-callout,
+  .activity-card,
+  .weekly-highlights__card,
+  .budget-progress,
+  .schedule
+) {
+  color: var(--color-text);
+}
+.text-on-dark a:where(
+  .surface-section,
+  .section-block,
+  .card,
+  .hero,
+  .banner,
+  .highlights-carousel,
+  .connect-card__form,
+  .prayer-callout,
+  .activity-card,
+  .weekly-highlights__card,
+  .budget-progress,
+  .schedule
+) {
+  color: var(--color-text);
+  text-decoration: none;
+}
+.text-on-dark a:where(
+  .surface-section,
+  .section-block,
+  .card,
+  .hero,
+  .banner,
+  .highlights-carousel,
+  .connect-card__form,
+  .prayer-callout,
+  .activity-card,
+  .weekly-highlights__card,
+  .budget-progress,
+  .schedule
+):hover,
+.text-on-dark a:where(
+  .surface-section,
+  .section-block,
+  .card,
+  .hero,
+  .banner,
+  .highlights-carousel,
+  .connect-card__form,
+  .prayer-callout,
+  .activity-card,
+  .weekly-highlights__card,
+  .budget-progress,
+  .schedule
+):focus-visible {
+  color: var(--color-text);
+  text-decoration: none;
+}
+.text-on-dark :where(
+  .surface-section,
+  .section-block,
+  .card,
+  .hero,
+  .banner,
+  .highlights-carousel,
+  .connect-card__form,
+  .prayer-callout,
+  .activity-card,
+  .weekly-highlights__card,
+  .budget-progress,
+  .schedule
+) :is(.muted, .section-heading__subtitle) {
+  color: var(--color-text-muted);
+}
+.text-on-dark :where(
+  .surface-section,
+  .section-block,
+  .card,
+  .hero,
+  .banner,
+  .highlights-carousel,
+  .connect-card__form,
+  .prayer-callout,
+  .activity-card,
+  .weekly-highlights__card,
+  .budget-progress,
+  .schedule
+) a:not(.btn) {
+  color: var(--color-link);
+  text-decoration-color: var(--color-link);
+}
+.text-on-dark :where(
+  .surface-section,
+  .section-block,
+  .card,
+  .hero,
+  .banner,
+  .highlights-carousel,
+  .connect-card__form,
+  .prayer-callout,
+  .activity-card,
+  .weekly-highlights__card,
+  .budget-progress,
+  .schedule
+) a:not(.btn):hover,
+.text-on-dark :where(
+  .surface-section,
+  .section-block,
+  .card,
+  .hero,
+  .banner,
+  .highlights-carousel,
+  .connect-card__form,
+  .prayer-callout,
+  .activity-card,
+  .weekly-highlights__card,
+  .budget-progress,
+  .schedule
+) a:not(.btn):focus-visible {
+  color: var(--color-primary);
+  text-decoration-color: currentColor;
+}
 .center {
   text-align: center;
 }
@@ -250,6 +402,24 @@ hr {
     box-shadow 180ms ease,
     border-color 180ms ease,
     transform 180ms ease;
+  color: var(--color-text);
+}
+
+:where(
+  .surface-section,
+  .section-block,
+  .card,
+  .hero,
+  .banner,
+  .highlights-carousel,
+  .connect-card__form,
+  .prayer-callout,
+  .activity-card,
+  .weekly-highlights__card,
+  .budget-progress,
+  .schedule
+) {
+  color: var(--color-text);
 }
 
 .card--muted {

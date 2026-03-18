@@ -24,7 +24,9 @@ Through Bible study, prayer, fellowship, outreach, and service, Women’s Minist
 
 • Tween & Teen Retreat – May 15–16, 2026: A faith-building retreat for tweens and teens at Camp Winnekeag, focused on spiritual growth, connection, and empowerment.
 
-• enditnow® Emphasis Day – Fourth Sabbath of August. This annual emphasis day provides an opportunity for our church to address the issue of abuse, educate members and leadership, raise community awareness, and affirm to victims that the church is a place of care, support, and hope.
+• Women’s Ministries Emphasis Day – June 13: Women lead worship, introduce the committee and ministry purpose, invite new women to join, and honor those who have done something unusual or outstanding in the congregation. Learn more on the [event page](/events/2026-06-13-womens-ministries-emphasis-day).
+
+• enditnow® Emphasis Day – August 22: A worship experience where we address the issue of abuse, educate members and leadership, raise community awareness, and assure victims that the church is a safe place of care, support, and hope.
 
 ### Resources
 

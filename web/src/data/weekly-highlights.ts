@@ -42,6 +42,13 @@ const weeklyHighlights: WeeklyHighlight[] = [
     badge: "Men's Fellowship",
   },
   {
+    activityId: "womens-ministry",
+    title: "WOMEN'S MINISTRY Meeting",
+    description: "First Tuesday of every month · 6:00 PM – 8:00 PM",
+    badge: "This week",
+    href: "/ministries/womens-ministry",
+  },
+  {
     activityId: "bible-study",
     text: "Bible Study · Fourth Sabbath deeper dive for all ages",
     href: "/ministries/bible-study",

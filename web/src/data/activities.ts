@@ -97,6 +97,8 @@ export const recurringActivities: RecurringActivity[] = [
     id: "womens-ministry",
     title: "Women's ministry",
     cadence: "First Tuesday of every month",
+    day: "Tuesday",
+    time: "6:00 PM – 8:00 PM",
     link: "/ministries/womens-ministry",
     note: "Public",
     category: "ministry",

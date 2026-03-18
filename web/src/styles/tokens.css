@@ -113,10 +113,13 @@
 
   /* Surfaces */
   --color-surface: #ffffff;
+  --color-surface-alt: var(--color-section-surface-alt);
   --color-surface-2: #f4eeff;
   --color-surface-muted: #f8f5ff;
+  --color-bg: var(--color-surface-2);
   --color-border: #d9cffc;
   --color-border-muted: #e4ddff;
+  --color-border-strong: color-mix(in srgb, var(--color-border) 72%, var(--color-primary) 28%);
 
   /* Text accents */
   --color-text-muted: #6d5a9b;
@@ -133,6 +136,7 @@
   --color-success-border: #34d399;
   --color-success-bg: #ecfdf5;
   --color-secondary: var(--color-primary-soft);
+  --color-primary-700: var(--color-primary-hover);
 
   /* Focus */
   --color-focus: #b56fdc;
