@@ -4,7 +4,7 @@ summary: "Connection, encouragement, and discipleship for women of all ages."
 leaderName: "Women's Ministry Team"
 leaderEmail: "firstspringfieldsda@gmail.com"
 meetingTime: "First Tuesday of every month from 6:00–8:00 PM"
-category: "Women"
+category: "Care & Community"
 tags: ["women", "discipleship", "community"]
 ---
 

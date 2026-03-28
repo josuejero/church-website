@@ -48,7 +48,6 @@ const iconMap: Record<SiteAlertVariant, string> = {
 };
 
 const iconSymbol = iconMap[variant];
-const ctaText = ctaLabel ?? "See updates";
 const showActions = Boolean(formattedDate || (alertHref && !hideCta));
 const rootClass = `site-alert site-alert--${variant}`;
 ---
@@ -68,11 +67,6 @@ const rootClass = `site-alert site-alert--${variant}`;
     <div class="site-alert__actions">
       {formattedDate ? (
         <p class="site-alert__meta">Updated {formattedDate}</p>
-      ) : null}
-      {alertHref && !hideCta ? (
-        <Button href={alertHref} variant="secondary" size="sm" external={ctaExternal}>
-          {ctaText}
-        </Button>
       ) : null}
     </div>
   ) : null}

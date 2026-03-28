@@ -180,7 +180,7 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: var(--space-4);
+    gap: var(--space-3);
   }
 
 
@@ -199,7 +199,7 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    min-width: max-content;
+    min-width: 0;
   }
 
   .brand__logo {
@@ -213,7 +213,7 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
   .brand__title {
     font-weight: 600;
     letter-spacing: 0.12em;
-    font-size: 1.65rem;
+    font-size: clamp(1.2rem, 1.05rem + 0.7vw, 1.55rem);
     text-transform: uppercase;
     color: var(--color-text-muted);
   }
@@ -234,8 +234,9 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     text-decoration: none;
     color: var(--color-primary);
     font-weight: 700;
+    font-size: clamp(0.84rem, 0.8rem + 0.22vw, 0.95rem);
     opacity: 0.9;
-    padding: 0.55rem 0.7rem;
+    padding: 0.5rem 0.62rem;
     min-width: auto;
     justify-content: center;
     border-radius: 999px;
@@ -259,7 +260,7 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     align-items: center;
     gap: var(--space-2);
     justify-content: flex-end;
-    min-width: max-content;
+    min-width: 0;
   }
 
   .right {
@@ -267,7 +268,7 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     align-items: center;
     justify-content: flex-end;
     gap: var(--space-2);
-    min-width: max-content;
+    min-width: 0;
   }
 
   .cta--mobile {
@@ -296,7 +297,7 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     min-width: var(--target-min);
     width: 100%;
     justify-content: center;
-    max-width: 220px;
+    max-width: 200px;
   }
 
   .menu__summary::-webkit-details-marker {
@@ -417,17 +418,45 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     }
 
     .inner {
-      grid-template-columns: auto 1fr;
-      grid-template-rows: auto auto;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto auto auto;
       gap: var(--space-2);
+    }
+
+    .brand {
+      grid-row: 1;
+    }
+
+    .brand__title {
+      white-space: nowrap;
+    }
+
+    .right {
+      grid-column: 1;
+      grid-row: 2;
+      justify-content: space-between;
+    }
+
+    .cta--mobile {
+      flex: 1;
+      justify-content: flex-start;
+    }
+
+    .cta--mobile .btn {
+      min-width: 0;
+      padding-inline: var(--space-3);
     }
 
     .nav {
       grid-column: 1 / -1;
-      grid-row: 2;
+      grid-row: 3;
       justify-content: flex-start;
       overflow-x: auto;
-      padding: 0 var(--space-3);
+      gap: var(--space-2);
+      padding: 0;
+      scrollbar-width: thin;
+      width: 100%;
+      max-width: 100%;
     }
 
     .nav--desktop {
@@ -436,10 +465,11 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
 
     .nav a {
       flex: 0 0 auto;
+      padding: 0.48rem 0.6rem;
     }
 
     .right {
-      grid-column: 2;
+      gap: var(--space-1);
     }
 
     .menu {
@@ -454,12 +484,25 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
   }
 
   @media (max-width: 420px) {
+    .brand__title {
+      font-size: 1.08rem;
+      letter-spacing: 0.08em;
+    }
+
+    .cta--mobile .btn {
+      padding-inline: var(--space-2);
+    }
+
     .menu__label {
       display: none;
     }
 
     .menu__summary {
       padding: 0.55rem 0.6rem;
+    }
+
+    .nav a {
+      padding: 0.45rem 0.56rem;
     }
   }
 </style>

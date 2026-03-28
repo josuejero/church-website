@@ -4,7 +4,7 @@ import {
   categoryLabels,
   formatDateRange,
   getHighlightEvent,
-  sortCalendarEvents,
+  splitCalendarEventsByRecency,
   type CalendarFormatters,
 } from "../../lib/calendar-utils";
 
@@ -53,9 +53,9 @@ const updatedFormatter = new Intl.DateTimeFormat(locale, {
   timeZone,
 });
 
-const enrichedEvents = sortCalendarEvents(events);
-const highlightEvent = getHighlightEvent(enrichedEvents);
-const calendarEvents = enrichedEvents.filter((entry) => entry !== highlightEvent);
+const { upcomingEvents, pastEvents } = splitCalendarEventsByRecency(events);
+const highlightEvent = getHighlightEvent(upcomingEvents);
+const calendarEvents = upcomingEvents.filter((entry) => entry !== highlightEvent);
 const formatters: CalendarFormatters = {
   monthFormatter,
   monthDayFormatter,
@@ -105,7 +105,7 @@ const updatedCopy = updatedDate
     </div>
 
     {calendarEvents.length === 0 ? (
-      <p class="muted">No additional dates are published yet.</p>
+      <p class="muted">No upcoming highlight dates are published yet.</p>
     ) : (
       <div class="stack">
         {calendarEvents.map((entry) => (
@@ -127,6 +127,36 @@ const updatedCopy = updatedDate
       </div>
     )}
   </section>
+
+  {pastEvents.length > 0 ? (
+    <section class="stack">
+      <div class="cluster--between">
+        <div>
+          <h2>Past highlights</h2>
+          <p class="muted">Earlier dates stay here for reference after the current season has passed.</p>
+        </div>
+      </div>
+
+      <div class="stack">
+        {pastEvents.map((entry) => (
+          <article class="card calendar-event calendar-event--past">
+            <div class="cluster--between calendar-event__header">
+              <p class="muted small">
+                {categoryLabels[entry.category ?? "community"] ?? "Event"}
+              </p>
+              <p class="muted small">
+                {formatDateRange(entry.startDate, entry.endDate, formatters)}
+              </p>
+            </div>
+            <h3>{entry.title}</h3>
+            <p class="muted">{entry.summary}</p>
+            <p class="muted small">Location: {entry.location}</p>
+            {entry.notes ? <p class="muted small">{entry.notes}</p> : null}
+          </article>
+        ))}
+      </div>
+    </section>
+  ) : null}
 </section>
 
 <style>
@@ -154,5 +184,9 @@ const updatedCopy = updatedDate
   .calendar-event {
     display: grid;
     gap: var(--space-3);
+  }
+
+  .calendar-event--past {
+    opacity: 0.9;
   }
 </style>

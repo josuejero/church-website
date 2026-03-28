@@ -22,7 +22,7 @@ const fallbackNote = hasEmbed
   ? "This embed shows the live campus schedule."
   : "The live calendar embed is pending; consult the annual calendar page while we finalize the official feed.";
 const displayNote = note ?? fallbackNote;
-const iframeHeight = compact ? 260 : 420;
+const iframeHeight = compact ? 280 : 520;
 const iframeTitle = `${title} preview`;
 ---
 <section class="live-calendar stack surface-section">
@@ -137,10 +137,10 @@ const iframeTitle = `${title} preview`;
 
   @media (max-width: 640px) {
     .live-calendar__embed iframe {
-      height: 240px;
+      height: 420px;
     }
     .live-calendar__embed-placeholder {
-      min-height: 240px;
+      min-height: 280px;
     }
   }
 </style>

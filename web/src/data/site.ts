@@ -226,6 +226,7 @@ const nav: NavItem[] = [
   { label: "Visit", href: "/connect/plan-a-visit" },
   { label: "About", href: "/connect/about" },
   { label: "Ministries", href: "/ministries" },
+  { label: "Calendar", href: "/calendar" },
   { label: "Media", href: "/media" },
   { label: "Contact", href: "/connect/contact" },
 ];

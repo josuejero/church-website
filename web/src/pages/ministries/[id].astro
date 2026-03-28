@@ -4,6 +4,7 @@ import HeroSection from "../../components/sections/Hero.astro";
 import { getCollection, getEntry, render } from "astro:content";
 import EventList from "../../components/sections/EventList.astro";
 import AdventurerActionCards from "../../components/sections/AdventurerActionCards.astro";
+import AdventurerPaymentInstructions from "../../components/sections/AdventurerPaymentInstructions.astro";
 import { mailto } from "../../lib/links";
 
 export async function getStaticPaths() {
@@ -40,7 +41,7 @@ const title =
 const description =
   data.description ?? data.summary ?? `Learn more about ${title}.`;
 const heroSubtitle = data.summary ?? description;
-const showAdventurerActionCards = id === "adventurers";
+const showClubResourceCards = id === "pathfinders";
 ---
 
 <BaseLayout title={title} description={description}>
@@ -82,13 +83,15 @@ const showAdventurerActionCards = id === "adventurers";
       </div>
     </section>
 
-    {showAdventurerActionCards ? <AdventurerActionCards /> : null}
+    {showClubResourceCards ? <AdventurerActionCards /> : null}
+
+    {showClubResourceCards ? <AdventurerPaymentInstructions /> : null}
 
     {data.showUpcomingEvents ? (
       <EventList
         limit={2}
         showViewAll={false}
-        title="Upcoming Adventurer gatherings"
+        title="Upcoming gatherings"
       />
     ) : null}
   </div>

@@ -21,6 +21,11 @@ export type CalendarFormatters = {
   yearFormatter: Intl.DateTimeFormat;
 };
 
+export type SplitCalendarEvents = {
+  upcomingEvents: EnrichedAnnualEvent[];
+  pastEvents: EnrichedAnnualEvent[];
+};
+
 export const categoryLabels: Record<string, string> = {
   worship: "Worship + praise",
   camp: "Camp meeting",
@@ -28,6 +33,14 @@ export const categoryLabels: Record<string, string> = {
 };
 
 const isValidDate = (value: Date) => !Number.isNaN(value.valueOf());
+
+function parseCalendarDate(value: string) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return new Date(`${value}T12:00:00Z`);
+  }
+
+  return new Date(value);
+}
 
 export function formatDateRange(
   start: Date,
@@ -60,11 +73,11 @@ export function formatDateRange(
 export function sortCalendarEvents(events: AnnualEventInput[]): EnrichedAnnualEvent[] {
   return events
     .map((event) => {
-      const startDate = new Date(event.start);
+      const startDate = parseCalendarDate(event.start);
       if (!isValidDate(startDate)) {
         return null;
       }
-      const endDate = event.end ? new Date(event.end) : startDate;
+      const endDate = event.end ? parseCalendarDate(event.end) : startDate;
       return {
         ...event,
         startDate,
@@ -77,4 +90,25 @@ export function sortCalendarEvents(events: AnnualEventInput[]): EnrichedAnnualEv
 
 export function getHighlightEvent(events: EnrichedAnnualEvent[]) {
   return events.find((entry) => entry.highlight);
+}
+
+export function splitCalendarEventsByRecency(
+  events: AnnualEventInput[],
+  now = new Date(),
+): SplitCalendarEvents {
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const sortedEvents = sortCalendarEvents(events);
+
+  return sortedEvents.reduce<SplitCalendarEvents>(
+    (groups, event) => {
+      if (event.endDate >= startOfToday) {
+        groups.upcomingEvents.push(event);
+      } else {
+        groups.pastEvents.unshift(event);
+      }
+
+      return groups;
+    },
+    { upcomingEvents: [], pastEvents: [] },
+  );
 }

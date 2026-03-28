@@ -41,6 +41,7 @@ const alertConfig = siteAlert as {
   href?: string;
   variant?: "info" | "warn";
   updatedAt?: string;
+  hideCta?: boolean;
 };
 const showAlert = Boolean(alertConfig.enabled && alertConfig.title && alertConfig.message);
 ---
@@ -84,6 +85,7 @@ const showAlert = Boolean(alertConfig.enabled && alertConfig.title && alertConfi
         href={alertConfig.href}
         variant={alertConfig.variant}
         updatedAt={alertConfig.updatedAt}
+        hideCta={alertConfig.hideCta}
       />
     ) : null}
     <Header />

@@ -8,7 +8,8 @@ const ministries = await getCollection('ministries', ({ data }) => {
   return import.meta.env.PROD ? data.draft !== true : true;
 });
 
-const sorted = ministries.sort((a, b) => a.data.title.localeCompare(b.data.title));
+const visibleMinistries = ministries.filter((ministry) => ministry.data.hideFromIndex !== true);
+const sorted = visibleMinistries.sort((a, b) => a.data.title.localeCompare(b.data.title));
 const grouped = sorted.reduce(
   (acc, ministry) => {
     const category = ministry.data.category ?? "Other";
@@ -20,12 +21,9 @@ const grouped = sorted.reduce(
 );
 const categoryOrder = [
   "Children & Youth",
-  "Men",
-  "Women",
-  "Outreach",
-  "Bible Study",
+  "Worship & Study",
+  "Care & Community",
   "Leadership",
-  "Other",
 ];
 const orderedCategories = [
   ...categoryOrder.filter((category) => grouped[category]?.length),
@@ -38,7 +36,8 @@ const orderedCategories = [
 <BaseLayout title="Ministries" description="Ways to serve and grow together.">
   <Hero title="Ministries" subtitle="Find a place to belong and serve." />
 
-  <section class="stack text-on-dark">
+  <section class="stack">
+    <p class="muted small ministries__note">Only currently active ministries are listed here.</p>
     {sorted.length === 0 ? (
       <p class="muted">No ministries are published yet.</p>
     ) : (
@@ -60,3 +59,10 @@ const orderedCategories = [
     )}
   </section>
 </BaseLayout>
+
+<style>
+  .ministries__note {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+</style>

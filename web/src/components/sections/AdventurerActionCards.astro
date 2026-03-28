@@ -4,11 +4,11 @@ import Button from "../ui/Button.astro";
 
 const props = Astro.props as {
   showMemoCard?: boolean;
-  showEventsCard?: boolean;
+  showCalendarCard?: boolean;
 };
 const showMemoCard = props.showMemoCard !== false;
-const showEventsCard = props.showEventsCard !== false;
-const { registration, memo, events, guideText } = adventurerConfig;
+const showCalendarCard = props.showCalendarCard !== false;
+const { registration, memo, calendar, guideText } = adventurerConfig;
 ---
 
 <section class="grid--cards adventurer-cta" aria-label="Adventurer action cards">
@@ -46,18 +46,18 @@ const { registration, memo, events, guideText } = adventurerConfig;
     </article>
   ) : null}
 
-  {showEventsCard ? (
+  {showCalendarCard ? (
     <article class="card card--link adventurer-cta__card">
       <div class="card__body stack--tight">
         <div>
-          <h3>Upcoming Events</h3>
-          <p>Explore outings, service projects, and Adventurer-friendly church moments so your family can plan ahead.</p>
+          <h3>Campus calendar</h3>
+          <p>Check the live church calendar for Adventurer gatherings, Pathfinder dates, and shared ministry events.</p>
         </div>
         <div class="adventurer-cta__action">
-          <Button variant="ghost" href={events.ctaHref} aria-describedby="adventurer-events-note">
-            {events.ctaLabel}
+          <Button variant="ghost" href={calendar.ctaHref} aria-describedby="adventurer-calendar-note">
+            {calendar.ctaLabel}
           </Button>
-          <p class="muted small adventurer-cta__note" id="adventurer-events-note">{events.note}</p>
+          <p class="muted small adventurer-cta__note" id="adventurer-calendar-note">{calendar.note}</p>
         </div>
       </div>
     </article>

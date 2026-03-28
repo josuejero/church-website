@@ -42,4 +42,4 @@ We look forward to a successful year as we work together to prepare the Adventur
 
 Please note that the Atlantic Union will hold a joint Adventurer and Pathfinder camporee in May. Adventurers may only attend this event with a parent or guardian, and children may sleep in tents only with their own parent or guardian. Let club leaders know if you plan to attend with your child.
 
-<p><a class="link" href="/ministries/adventurers">Back to Adventurer page</a></p>
+<p><a class="link" href="/ministries/pathfinders#adventurers">Back to Pathfinders &amp; Adventurers</a></p>

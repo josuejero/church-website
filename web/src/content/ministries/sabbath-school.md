@@ -4,7 +4,7 @@ summary: "Sabbath School equips Seventh-day Adventists to know Christ and share 
 leaderName: "Elder Paul Moulema"
 leaderEmail: "firstspringfieldsda@gmail.com"
 meetingTime: "Sabbath 10 am"
-category: "Bible Study"
+category: "Worship & Study"
 tags: ["sabbath school", "fellowship", "discipleship", "mission"]
 ---
 

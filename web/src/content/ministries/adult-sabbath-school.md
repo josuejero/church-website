@@ -4,7 +4,7 @@ summary: "A Christ-centered Sabbath School focused on prayer, member care, servi
 leaderName: "Sabbath School Superintendent"
 leaderEmail: "firstspringfieldsda@gmail.com"
 meetingTime: "Sabbaths at 10:00 AM"
-category: "Bible Study"
+category: "Worship & Study"
 tags: ["adult", "sabbath school", "bible study", "prayer", "service"]
 ---
 

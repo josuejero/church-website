@@ -3,6 +3,7 @@ import {
   categoryLabels,
   formatDateRange,
   getHighlightEvent,
+  splitCalendarEventsByRecency,
   sortCalendarEvents,
   type AnnualEventInput,
 } from "../../src/lib/calendar-utils";
@@ -54,6 +55,20 @@ test("getHighlightEvent picks the flagged event", () => {
   const sorted = sortCalendarEvents(events);
   const highlight = getHighlightEvent(sorted);
   expect(highlight?.title).toBe("Hero");
+});
+
+test("splitCalendarEventsByRecency keeps same-day items current and moves older items to past", () => {
+  const events: AnnualEventInput[] = [
+    { title: "Earlier", start: "2026-03-14", summary: "", location: "" },
+    { title: "Today", start: "2026-03-27", summary: "", location: "" },
+    { title: "Later", start: "2026-04-05", summary: "", location: "", highlight: true },
+  ];
+
+  const now = new Date(2026, 2, 27, 18, 0, 0);
+  const result = splitCalendarEventsByRecency(events, now);
+
+  expect(result.upcomingEvents.map((event) => event.title)).toEqual(["Today", "Later"]);
+  expect(result.pastEvents.map((event) => event.title)).toEqual(["Earlier"]);
 });
 
 test("category labels include expected keys", () => {

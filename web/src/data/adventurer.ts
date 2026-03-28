@@ -18,14 +18,10 @@ export type AdventurerConfig = {
     ctaLabel: string;
     note: string;
   };
-  events: {
-    ctaHref: string;
-    ctaLabel: string;
-    note: string;
-  };
   calendar: {
     ctaHref: string;
     ctaLabel: string;
+    note: string;
   };
   payment: {
     intro: string;
@@ -36,7 +32,7 @@ export type AdventurerConfig = {
 const adventurerConfig: AdventurerConfig = {
   yearLabel: "2026",
   guideText:
-    "Start with the memo, review the live events list, then finish at the registration form so the whole flow feels connected.",
+    "Start with the memo, check the campus calendar, then finish the registration form so the family plan stays in one place.",
   registration: {
     url: "https://example.com/adventurer-registration",
     ctaLabel: "Register Now",
@@ -48,14 +44,10 @@ const adventurerConfig: AdventurerConfig = {
     ctaLabel: "View Memo",
     note: "This page hosts the current Adventurer memo.",
   },
-  events: {
-    ctaHref: "/events",
-    ctaLabel: "See Events",
-    note: "Opens the campus events calendar with Adventurer gatherings.",
-  },
   calendar: {
     ctaHref: "/calendar",
     ctaLabel: "View campus calendar",
+    note: "Use the shared campus calendar for the latest Adventurer, Pathfinder, and church-wide dates.",
   },
   payment: {
     intro:

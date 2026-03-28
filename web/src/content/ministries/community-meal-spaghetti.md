@@ -4,7 +4,7 @@ summary: "A free community meal to share food, fellowship, and care."
 leaderName: "Community Meal Team"
 leaderEmail: "firstspringfieldsda@gmail.com"
 meetingTime: "4th Wednesday"
-category: "Outreach"
+category: "Care & Community"
 tags: ["outreach", "community", "hospitality"]
 ---
 

@@ -1,95 +1,60 @@
 ---
 title: "Pathfinders & Adventurers"
-summary: "The Seventh-day Adventist Church’s Adventurers and Pathfinders Clubs are Christ-centered programs designed to nurture children and youth in their spiritual, mental, physical, and social development."
+summary: "The Springfield clubs help children and teens grow in faith, character, service, and practical life skills through a shared family-centered ministry."
 leaderName: "Daunette Lemard-Reid"
 leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "First and Third Sabbath of each month, from 3:00 p.m. – 5:00 p.m."
+meetingTime: "First and third Sabbaths, 3:00 p.m. - 5:00 p.m. Check the campus calendar for confirmed dates and special outings."
 category: "Children & Youth"
-tags: ["children", "teens", "family", "discipleship", "adventure"]
+tags: ["children", "teens", "family", "discipleship", "clubs"]
 ---
 
-## Overview
+## Shared overview
 
-“The Seventh-day Adventist Church’s Adventurers and Pathfinders Clubs are Christ-centered programs designed to nurture children and youth in their spiritual, mental, physical, and social development.”
+Pathfinders and Adventurers share one church home so families can follow club life, registration steps, and calendar updates from a single place. The ministry helps children and teens grow spiritually, mentally, physically, and socially through worship, service, outdoor learning, and practical skill-building.
 
 Pathfinders & Adventurers Club Director: Daunette Lemard-Reid
 
-Meeting Time: First and Third Sabbath of each month, from 3:00 p.m. – 5:00 p.m.
+### Club rhythm
+
+- Shared club meetings usually happen on the first and third Sabbaths from 3:00 p.m. to 5:00 p.m.
+- Some Adventurer outings or special family activities happen on selected Sundays and will be confirmed on the campus calendar.
+- The live campus calendar is the source of truth for confirmed meeting dates, outreach days, and church-wide youth events.
 
 ### Club logos
 
-We proudly display both club insignias so families can recognize the young people’s ministry that speaks to them.
-
-<figure>
-  <img src="../../assets/photos/club-adventurers-logo.png" alt="Adventurers Club badge" width="220" loading="lazy" />
-  <figcaption>Adventurers Club (ages 4–9)</figcaption>
-</figure>
-
-<figure>
-  <img src="../../assets/photos/club-pathfinders-logo.png" alt="Pathfinders Club badge" width="220" loading="lazy" />
-  <figcaption>Pathfinders Club (ages 10–15)</figcaption>
-</figure>
-
-## Adventurers
-
-"The Adventurer Club is a fun, Christ-centered program for children ages 4–9 that helps them grow spiritually, socially, mentally, and physically. Through hands-on activities, Bible learning, games, and service projects, children build faith, character, confidence, friendships, and life skills in a supportive, family-focused environment while preparing for the Pathfinder journey ahead."
-
-Stay connected to the broader Pathfinders & Adventurers story by visiting the dedicated [Adventurer Club page](/ministries/adventurers) for the Springfield Junior Pioneers (linked from Youth/AY). That page hosts the latest schedules, memos, and registration prompts for this part of the ministry.
-
-### Adventurer journey
-
-From Bible stories acted out with props to art stations, every Adventurer experience is designed to be playful yet purposeful. Adults partner with families so kids can celebrate their gifts, learn caring habits, and explore nature through guided hikes, bug safaris, and garden care.
-
-<section class="grid--cards" aria-label="Adventurer journey highlights">
-  <article class="card">
-    <div class="card__body">
-      <div>
-        <div class="card__title">Hands-on learning</div>
-        <p class="card__desc">Stations rotate between Bible memory, sensory play, and simple science so kids stay engaged.</p>
-      </div>
-    </div>
+<section class="grid--cards" aria-label="Club logos">
+  <article class="card stack--tight">
+    <img src="../../assets/photos/club-adventurers-logo.png" alt="Adventurers Club badge" width="220" loading="lazy" />
+    <p class="muted small">Adventurers Club (ages 4-9)</p>
   </article>
-  <article class="card">
-    <div class="card__body">
-      <div>
-        <div class="card__title">Weekly rhythm</div>
-        <p class="card__desc">Crafts, songs, and service glimpses happen every 1st & 3rd Sabbath, 3:00 p.m. – 5:00 p.m.</p>
-      </div>
-    </div>
-  </article>
-  <article class="card">
-    <div class="card__body">
-      <div>
-        <div class="card__title">Family service</div>
-        <p class="card__desc">Parents and caregivers join outreach projects, fostering shared worship experiences.</p>
-      </div>
-    </div>
+  <article class="card stack--tight">
+    <img src="../../assets/photos/club-pathfinders-logo.png" alt="Pathfinders Club badge" width="220" loading="lazy" />
+    <p class="muted small">Pathfinders Club (ages 10-15)</p>
   </article>
 </section>
 
+## Adventurers
+
+The Springfield Junior Pioneers Adventurer Club serves children ages 4-9 and partners closely with parents and guardians. Club time blends Bible learning, crafts, nature activities, service projects, and playful faith formation so children can build confidence, friendships, and Christ-centered habits.
+
+### Adventurer highlights
+
+- Family participation matters: parents and guardians stay involved in club life, communication, and extracurricular activities.
+- The registration form and memo cover practical details such as participation expectations, fees, supplies, and communication channels.
+- Additional outings, Sunday activities, and schedule adjustments are posted on the campus calendar rather than managed on a separate club page.
+
 ## Pathfinders
 
-“Pathfinders are a worldwide organization of young people sponsored by the Seventh-day Adventist Church, with nearly 2 million members around the globe. Young people of any religious persuasion, or none at all, are welcome and encouraged to join the organization.”
+Pathfinders welcomes youth ages 10-15 and helps them grow in leadership, teamwork, responsibility, service, and outdoor confidence. Meetings may include worship, drill, honors, camping skills, community service planning, and mentorship that prepares young people to serve both in church and in the wider community.
 
-### Pathfinder adventures
+### Pathfinder focus
 
-- Pathfinders (ages 10–15) provides opportunities for youth to grow in leadership, teamwork, and personal responsibility through outdoor activities, community service, spiritual growth, and practical life skills.
-- Kids explore wilderness survival, orienteering, and service badges, then share those stories around the campfire during monthly fellowship nights.
+- Leadership, teamwork, and responsibility through hands-on club life.
+- Outdoor skills, camping, honors, and service experiences that build resilience and confidence.
+- Shared worship and service opportunities with the wider church family throughout the year.
 
-### Family participation
+## Registration, resources, and contact
 
-Parents bring snacks, help with craft stations, and stay nearby so teens learn modeling, mentorship, and hospitality skills from leaders.
+Use the resources below to review the current Adventurer memo, complete registration, check payment guidance, and confirm dates on the campus calendar. If your family needs help deciding where to start, email [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) or submit a [Connect Card](/connect/connect-card).
 
-### What to expect
-
-- Welcome circle, scripture, and prayer to center every meeting in worship.
-- Split stations (Adventurer and Pathfinder focus) that rotate between faith-building games, art, and service planning.
-- End-of-meeting reflections with snack time and reminders about upcoming campouts, community events, or service days.
-
-### Get involved
-
-Ready to join the fun? Submit a [Connect Card](/connect/connect-card) or email [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) to receive registration details, volunteer opportunities, or Adventurer badge schedules.
-
-## Contact
-
-To learn more about our Pathfinders and Adventurers Clubs or to get involved, email [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) or visit our [Contact page](/connect/contact).
+For the latest confirmed meeting dates, special outings, and shared ministry events, always check the [campus calendar](/calendar).

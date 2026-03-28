@@ -1,7 +1,7 @@
 ---
 title: "Media & Audio Visual"
 summary: "Supports worship and campus events with livestream, sound, and visual storytelling."
-category: "Other"
+category: "Leadership"
 tags: ["media", "audio", "visual", "communications"]
 ---
 

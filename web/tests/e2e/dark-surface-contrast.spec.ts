@@ -44,11 +44,11 @@ const PAGES: PageCheck[] = [
   },
   {
     path: "/ministries",
-    headingSelector: ".text-on-dark h2",
-    cardSelector: ".text-on-dark .card",
-    textSelector: ".text-on-dark .card .card-summary",
+    headingSelector: "section.hero h1",
+    cardSelector: ".grid--cards .card",
+    textSelector: ".grid--cards .card .card-summary",
     textColor: "text",
-    linkSelector: ".text-on-dark .card .link",
+    linkSelector: ".grid--cards .card .link",
   },
 ];
 
@@ -78,18 +78,17 @@ async function resolvePalette(page: Page) {
 }
 
 for (const pageCheck of PAGES) {
-  test(`dark-surface contrast reset works on ${pageCheck.path}`, async ({ page }) => {
+  test(`light-shell contrast tokens resolve on ${pageCheck.path}`, async ({ page }) => {
     await page.goto(pageCheck.path);
 
     const palette = await resolvePalette(page);
-    expect(palette.link).toBe("rgb(140, 82, 255)");
     const heading = page.locator(pageCheck.headingSelector).first();
     const card = page.locator(pageCheck.cardSelector).first();
     const text = page.locator(pageCheck.textSelector).first();
     const link = page.locator(pageCheck.linkSelector).first();
 
     await expect(heading).toBeVisible();
-    await expect(heading).toHaveCSS("color", palette.white);
+    await expect(heading).toHaveCSS("color", palette.text);
 
     await expect(card).toBeVisible();
     await expect(card).toHaveCSS("background-color", palette.surfaceAlt);

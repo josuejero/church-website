@@ -4,7 +4,7 @@ summary: "Holistic ministry serving the Pioneer Valley and Springfield through c
 leaderName: "Adventist Community Services Team"
 leaderEmail: "firstspringfieldsda@gmail.com"
 meetingTime: "Monthly programs (see details below)."
-category: "Outreach"
+category: "Care & Community"
 tags: ["community", "outreach", "service", "holistic ministry"]
 ---
 

@@ -1,94 +1,25 @@
 ---
 title: "Adventurer Club"
-summary: >
-  “But Jesus said, ‘Let the little children come to Me, and do not forbid them; for of such is the kingdom of heaven.’ Matthew 19:12 NKJV” — the Springfield Junior Pioneers Adventurer Club is a church-sponsored program for families with Pre-K through fourth grade.
-leaderName: "Anthia Elliott (AY Director)"
+summary: "Adventurer information now lives inside the shared Pathfinders & Adventurers page so families can find schedules, registration, and resources in one place."
+leaderName: "Daunette Lemard-Reid"
 leaderEmail: "firstspringfieldsda@gmail.com"
-meetingTime: "1st & 3rd Sabbaths · 3:00 p.m. – 5:00 p.m. · Additional 3rd Sunday outings · 10:00 a.m. – 2:00 p.m."
+meetingTime: "See the shared club page and campus calendar for the latest Adventurer schedule."
 category: "Children & Youth"
 tags:
   - "adventurers"
   - "children"
-  - "AY"
+  - "family"
   - "club"
-showUpcomingEvents: true
+hideFromIndex: true
 ---
 
-## Welcome to Adventurer Club
+## Adventurer information moved
 
-“But Jesus said, ‘Let the little children come to Me, and do not forbid them; for of such is the kingdom of heaven.’” Matthew 19:12 NKJV
+This temporary page stays live so older bookmarks still resolve, but Adventurer details now live on the shared [Pathfinders & Adventurers page](/ministries/pathfinders#adventurers).
 
-The Springfield Junior Pioneers Adventurer Club is a Seventh-day Adventist Church–sponsored ministry that partners with parents and guardians to support the holistic development of children Pre-K through fourth grade. We lean into playful, purposeful learning so kids grow spiritually, mentally, socially, and physically while families stay connected to the wider AY community. We share schedule updates via text alerts, WhatsApp, and the online calendar, so please review each notice promptly.
+### Start here
 
-### What We Do
-
-<section class="grid--cards" aria-label="Adventurer highlights">
-  <article class="card">
-    <div class="card__body">
-      <div>
-        <h3>Faith-bolstered life skills</h3>
-        <p>Children practice personal grooming and everyday life skills in ways that feel effortless yet intentional.</p>
-      </div>
-    </div>
-  </article>
-  <article class="card">
-    <div class="card__body">
-      <div>
-        <h3>Character & community</h3>
-        <p>Team spirit, loyalty, responsibility, and respect for God, self, country, and others are woven through every activity.</p>
-      </div>
-    </div>
-  </article>
-  <article class="card">
-    <div class="card__body">
-      <div>
-        <h3>Active exploration</h3>
-        <p>Physical fitness, science, arts and crafts, games, nature study, and outdoor discoveries keep curiosity alive.</p>
-      </div>
-    </div>
-  </article>
-</section>
-
-### Meeting Schedule
-
-<section class="grid--cards" aria-label="Adventurer meeting schedule">
-  <article class="card">
-    <div class="card__body stack--tight">
-      <div>
-        <h3>1st & 3rd Sabbaths</h3>
-        <p>We gather in the fellowship hall from 3:00 p.m. to 5:00 p.m. for stations, Bible stories, and playful worship experiences.</p>
-      </div>
-    </div>
-  </article>
-  <article class="card">
-    <div class="card__body stack--tight">
-      <div>
-        <h3>3rd Sunday outings</h3>
-        <p>Additional meetings or special outings run every 3rd Sunday from 10:00 a.m. to 2:00 p.m., as published on the calendar.</p>
-      </div>
-    </div>
-  </article>
-  <article class="card">
-    <div class="card__body stack--tight">
-      <div>
-        <h3>Location & updates</h3>
-        <p>Unless the calendar notes otherwise, all gatherings take place in the First Springfield Seventh-day Adventist Church fellowship hall. We share schedule changes via text messages, the WhatsApp group, or the online calendar, so please review each notice promptly.</p>
-      </div>
-    </div>
-  </article>
-</section>
-
-<section class="card" aria-label="Adventurer registration overview">
-  <div class="prose">
-    <h3>Adventurer registration</h3>
-    <p>
-  The Springfield Junior Pioneers Adventurer Club Registration &amp; Health Form is mandatory for every Adventurer joining the current Adventurer year and collects child and parent/guardian information, contact preferences, and consent so families stay connected and leaders can support each child safely.
-    </p>
-    <p>
-      Parents and guardians should complete the form in full and submit it so the club knows who will participate, how to reach you, and how to care for your child during events.
-    </p>
-    <p class="muted small">
-      <strong>What you’ll need before you register:</strong> basic child information, parent/guardian contact details, emergency contact, and general consent/communication preferences.
-    </p>
-  </div>
-</section>
+- Review the combined [Pathfinders & Adventurers page](/ministries/pathfinders) for the current ministry overview.
+- Use the [campus calendar](/calendar) for confirmed Adventurer and Pathfinder dates.
+- Read the latest [Adventurer Club memo](/resources/2026/03/adventurer-club-memo).
+- Reach out through our [Contact page](/connect/contact) if your family needs help.

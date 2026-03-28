@@ -1,8 +1,9 @@
 {
   "enabled": true,
   "title": "Annex access paused for safety review",
-  "message": "The annex is temporarily closed while engineers finish a safety inspection and repairs; check the update for details.",
+  "message": "The annex is temporarily closed while engineers finish a safety inspection and repairs.",
   "href": "/updates/annex-access-paused-for-safety",
   "variant": "warn",
-  "updatedAt": "2026-02-12T15:00:00Z"
+  "updatedAt": "2026-02-12T15:00:00Z",
+  "hideCta": true
 }

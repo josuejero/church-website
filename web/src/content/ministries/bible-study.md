@@ -4,7 +4,7 @@ summary: "Interactive study and discussion of Scripture."
 leaderName: "Bible Study Facilitator"
 leaderEmail: "firstspringfieldsda@gmail.com"
 meetingTime: "4th Sabbath"
-category: "Bible Study"
+category: "Worship & Study"
 tags: ["bible", "study", "growth"]
 ---
 

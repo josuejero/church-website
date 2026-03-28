@@ -34,9 +34,9 @@ const { section } = Astro.props as { section: ContactSectionDefinition };
 
         return (
           <div class="contact-topics__row" role="row">
-            <span>{topic.topic}</span>
-            <span>{topic.contactRole}</span>
-            <span>
+            <span class="contact-topics__cell contact-topics__cell--topic">{topic.topic}</span>
+            <span class="contact-topics__cell contact-topics__cell--contact">{topic.contactRole}</span>
+            <span class="contact-topics__cell contact-topics__cell--method">
               {methodHref ? (
                 <a
                   href={methodHref}
@@ -166,9 +166,39 @@ const { section } = Astro.props as { section: ContactSectionDefinition };
   }
 
   @media (max-width: 720px) {
+    .contact-topics__row--head {
+      display: none;
+    }
+
     .contact-topics__row {
       grid-template-columns: 1fr;
       gap: var(--space-2);
+      padding: var(--space-3);
+    }
+
+    .contact-topics__cell {
+      display: grid;
+      gap: var(--space-1);
+    }
+
+    .contact-topics__cell::before {
+      font-size: var(--font-size-0);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    .contact-topics__cell--topic::before {
+      content: "Topic";
+    }
+
+    .contact-topics__cell--contact::before {
+      content: "Contact";
+    }
+
+    .contact-topics__cell--method::before {
+      content: "Best way to reach them";
     }
   }
 </style>
