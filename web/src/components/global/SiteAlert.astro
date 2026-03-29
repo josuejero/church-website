@@ -23,7 +23,7 @@ const {
   variant = "info",
   updatedAt,
   announce = true,
-  ctaLabel,
+  ctaLabel = "See updates",
   ctaExternal = false,
   hideCta = false,
 } = Astro.props as Props;
@@ -48,7 +48,8 @@ const iconMap: Record<SiteAlertVariant, string> = {
 };
 
 const iconSymbol = iconMap[variant];
-const showActions = Boolean(formattedDate || (alertHref && !hideCta));
+const ctaVisible = Boolean(alertHref && !hideCta);
+const showActions = Boolean(formattedDate || ctaVisible);
 const rootClass = `site-alert site-alert--${variant}`;
 ---
 
@@ -67,6 +68,11 @@ const rootClass = `site-alert site-alert--${variant}`;
     <div class="site-alert__actions">
       {formattedDate ? (
         <p class="site-alert__meta">Updated {formattedDate}</p>
+      ) : null}
+      {ctaVisible ? (
+        <Button variant="tertiary" href={alertHref} external={ctaExternal}>
+          {ctaLabel}
+        </Button>
       ) : null}
     </div>
   ) : null}
