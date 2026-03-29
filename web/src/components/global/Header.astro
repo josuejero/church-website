@@ -18,9 +18,14 @@ function linkAttrs(item: { href: string; external?: boolean }) {
 const primaryNav = site.nav;
 const utilityLinks = site.utilityLinks ?? [];
 
-const watchLive = site.quickActions.find((i) => i.label === "Watch Live") ?? site.quickActions[0];
-const give = site.quickActions.find((i) => i.label === "Give") ?? site.quickActions[1];
-const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label && i.label !== give?.label);
+const watchLive =
+  site.quickActions.find((i) => i.label === "Watch Live") ??
+  site.quickActions[0];
+const give =
+  site.quickActions.find((i) => i.label === "Give") ?? site.quickActions[1];
+const otherQuick = site.quickActions.filter(
+  (i) => i.label !== watchLive?.label && i.label !== give?.label,
+);
 const brandAriaLabel = `${site.shortName} – ${site.name}`;
 ---
 
@@ -40,42 +45,72 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     </a>
 
     <nav class="nav nav--desktop" aria-label="Primary navigation">
-      {primaryNav.map((item) => (
-        <a
-          href={item.href}
-          aria-current={isActive(item.href) ? "page" : undefined}
-          {...linkAttrs(item)}
-        >
-          {item.label}
-        </a>
-      ))}
+      {
+        primaryNav.map((item) => (
+          <a
+            href={item.href}
+            aria-current={isActive(item.href) ? "page" : undefined}
+            {...linkAttrs(item)}
+          >
+            {item.label}
+          </a>
+        ))
+      }
     </nav>
 
     <div class="right">
       <div class="cta cta--desktop" aria-label="Primary actions">
-        {watchLive && (
-          <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
-            {watchLive.label}
-          </Button>
-        )}
-        {give && (
-          <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
-            {give.label}
-          </Button>
-        )}
+        {
+          watchLive && (
+            <Button
+              href={watchLive.href}
+              variant="secondary"
+              size="sm"
+              external={!!watchLive.external}
+            >
+              {watchLive.label}
+            </Button>
+          )
+        }
+        {
+          give && (
+            <Button
+              href={give.href}
+              variant="primary"
+              size="sm"
+              external={!!give.external}
+            >
+              {give.label}
+            </Button>
+          )
+        }
       </div>
 
       <div class="cta cta--mobile" aria-label="Primary actions">
-        {watchLive && (
-          <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
-            {watchLive.label}
-          </Button>
-        )}
-        {give && (
-          <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
-            {give.label}
-          </Button>
-        )}
+        {
+          watchLive && (
+            <Button
+              href={watchLive.href}
+              variant="secondary"
+              size="sm"
+              external={!!watchLive.external}
+            >
+              {watchLive.label}
+            </Button>
+          )
+        }
+        {
+          give && (
+            <Button
+              href={give.href}
+              variant="primary"
+              size="sm"
+              external={!!give.external}
+            >
+              {give.label}
+            </Button>
+          )
+        }
       </div>
 
       <details class="menu" aria-label="Mobile menu">
@@ -85,77 +120,135 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
         </summary>
 
         <div class="menu__panel">
-          <div class="menu__section" aria-label="Primary navigation" role="navigation">
-            {site.nav.map((item) => (
-              <a
-                class="menu__link"
-                href={item.href}
-                aria-current={isActive(item.href) ? "page" : undefined}
-                {...linkAttrs(item)}
-              >
-                {item.label}
-              </a>
-            ))}
-          </div>
+          <nav class="menu__section" aria-label="Primary navigation">
+            {
+              site.nav.map((item) => (
+                <a
+                  class="menu__link"
+                  href={item.href}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  {...linkAttrs(item)}
+                >
+                  {item.label}
+                </a>
+              ))
+            }
+          </nav>
 
-          <div class="menu__divider" role="separator" aria-hidden="true"></div>
+          {
+            otherQuick.length > 0 && (
+              <>
+                <div
+                  class="menu__divider"
+                  role="separator"
+                  aria-hidden="true"
+                />
 
-          <div class="menu__section" aria-label="Quick actions">
-            <div class="menu__actions">
-              {watchLive && (
-                <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
-                  {watchLive.label}
-                </Button>
-              )}
-              {give && (
-                <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
-                  {give.label}
-                </Button>
-              )}
-            </div>
+                <div class="menu__section" aria-label="Quick links">
+                  <p class="menu__section-title">Quick links</p>
+                  <div class="menu__quicklinks" aria-label="More quick links">
+                    {otherQuick.map((item) => (
+                      <a
+                        class="menu__sublink"
+                        href={item.href}
+                        {...linkAttrs(item)}
+                      >
+                        {item.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )
+          }
 
-            {otherQuick.length > 0 && (
-              <div class="menu__quicklinks" aria-label="More quick links">
-                {otherQuick.map((item) => (
-                  <a class="menu__sublink" href={item.href} {...linkAttrs(item)}>
-                    {item.label}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
+          {
+            utilityLinks.length > 0 && (
+              <>
+                <div
+                  class="menu__divider"
+                  role="separator"
+                  aria-hidden="true"
+                />
 
-          <div class="menu__divider" role="separator" aria-hidden="true"></div>
-
-          <div class="menu__section" aria-label="More links">
-            <p class="menu__section-title">More links</p>
-            {utilityLinks.map((item) => (
-              <a
-                class="menu__link"
-                href={item.href}
-                {...linkAttrs(item)}
-              >
-                {item.label}
-              </a>
-            ))}
-          </div>
+                <div class="menu__section" aria-label="More links">
+                  <p class="menu__section-title">More links</p>
+                  {utilityLinks.map((item) => (
+                    <a class="menu__link" href={item.href} {...linkAttrs(item)}>
+                      {item.label}
+                    </a>
+                  ))}
+                </div>
+              </>
+            )
+          }
         </div>
       </details>
     </div>
   </div>
-
 </header>
 
 <script>
-  // Close the mobile menu when a link is clicked.
-  document.addEventListener("click", (e) => {
-    const target = e.target;
-    if (!(target instanceof HTMLElement)) return;
+  const header = document.querySelector(".site-header");
 
-    const link = target.closest("a");
-    const details = target.closest("details.menu");
-    if (link && details) details.removeAttribute("open");
-  });
+  if (header instanceof HTMLElement) {
+    const menu = header.querySelector("details.menu");
+    const summary = menu?.querySelector("summary.menu__summary");
+
+    if (menu instanceof HTMLDetailsElement && summary instanceof HTMLElement) {
+      const desktopNavBreakpoint = window.matchMedia("(max-width: 1100px)");
+
+      const syncMenuLabel = () => {
+        const label = menu.open ? "Close menu" : "Open menu";
+        summary.setAttribute("aria-label", label);
+        summary.setAttribute("aria-expanded", String(menu.open));
+      };
+
+      const closeMenu = (restoreFocus = false) => {
+        if (!menu.open) return;
+        menu.open = false;
+        if (restoreFocus) summary.focus();
+      };
+
+      syncMenuLabel();
+      menu.addEventListener("toggle", syncMenuLabel);
+
+      document.addEventListener("click", (event) => {
+        if (!menu.open) return;
+
+        const target = event.target;
+        if (!(target instanceof Node)) return;
+
+        if (target instanceof Element) {
+          const link = target.closest("a");
+          if (link && menu.contains(link)) {
+            closeMenu();
+            return;
+          }
+        }
+
+        if (!menu.contains(target)) {
+          closeMenu();
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape" || !menu.open) return;
+        event.preventDefault();
+        closeMenu(true);
+      });
+
+      const handleBreakpointChange = (event: MediaQueryListEvent) => {
+        if (!event.matches) closeMenu();
+      };
+
+      if (typeof desktopNavBreakpoint.addEventListener === "function") {
+        desktopNavBreakpoint.addEventListener("change", handleBreakpointChange);
+      } else {
+        desktopNavBreakpoint.addListener(handleBreakpointChange);
+      }
+    }
+  }
 </script>
 
 <style>
@@ -163,7 +256,11 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     position: sticky;
     top: 0;
     z-index: 50;
-    background: color-mix(in srgb, var(--color-section-surface) 92%, #ffffff 8%);
+    background: color-mix(
+      in srgb,
+      var(--color-section-surface) 92%,
+      #ffffff 8%
+    );
     color: var(--color-text);
     border-bottom: 1px solid var(--color-border);
     display: flex;
@@ -182,7 +279,6 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     align-items: center;
     gap: var(--space-3);
   }
-
 
   .menu__section-title {
     margin: 0;
@@ -244,12 +340,20 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
   }
 
   .nav a:hover {
-    background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface) 88%);
+    background: color-mix(
+      in srgb,
+      var(--color-primary) 12%,
+      var(--color-surface) 88%
+    );
     opacity: 1;
   }
 
   .nav a[aria-current="page"] {
-    background: color-mix(in srgb, var(--color-primary) 25%, var(--color-primary-soft) 75%);
+    background: color-mix(
+      in srgb,
+      var(--color-primary) 25%,
+      var(--color-primary-soft) 75%
+    );
     color: var(--color-white);
     opacity: 1;
     box-shadow: 0 8px 20px rgba(13, 8, 55, 0.25);
@@ -269,6 +373,7 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     justify-content: flex-end;
     gap: var(--space-2);
     min-width: 0;
+    position: relative;
   }
 
   .cta--mobile {
@@ -278,7 +383,6 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
   /* Mobile menu */
   .menu {
     display: none;
-    position: relative;
   }
 
   .menu__summary {
@@ -305,16 +409,21 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
   }
 
   .menu[open] .menu__summary {
-    background: color-mix(in srgb, var(--color-primary-soft) 18%, var(--color-section-surface) 82%);
+    background: color-mix(
+      in srgb,
+      var(--color-primary-soft) 18%,
+      var(--color-section-surface) 82%
+    );
   }
 
   .menu__panel {
     position: absolute;
-    top: calc(100% + 0.6rem);
-    left: var(--container-pad);
-    right: var(--container-pad);
-    width: auto;
-    max-width: min(calc(100vw - 2 * var(--container-pad)), 28rem);
+    top: calc(100% + var(--space-2));
+    left: 0;
+    right: 0;
+    max-width: min(28rem, calc(100vw - 2 * var(--container-pad)));
+    max-height: calc(100vh - 8rem);
+    max-height: calc(100dvh - 8rem);
     background: var(--color-section-surface-alt);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-3);
@@ -322,6 +431,8 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     padding: var(--space-3);
     z-index: 60;
     box-sizing: border-box;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .menu__section {
@@ -342,11 +453,19 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
   }
 
   .menu__link:hover {
-    background: color-mix(in srgb, var(--color-primary-soft) 12%, var(--color-section-surface) 88%);
+    background: color-mix(
+      in srgb,
+      var(--color-primary-soft) 12%,
+      var(--color-section-surface) 88%
+    );
   }
 
   .menu__link[aria-current="page"] {
-    background: color-mix(in srgb, var(--color-primary) 24%, var(--color-primary-soft) 76%);
+    background: color-mix(
+      in srgb,
+      var(--color-primary) 24%,
+      var(--color-primary-soft) 76%
+    );
     color: var(--color-white);
     box-shadow: 0 8px 18px rgba(13, 8, 55, 0.22);
   }
@@ -355,12 +474,6 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     height: 1px;
     background: var(--color-border);
     margin: var(--space-3) 0;
-  }
-
-  .menu__actions {
-    display: flex;
-    gap: var(--space-2);
-    flex-wrap: wrap;
   }
 
   .menu__quicklinks {
@@ -409,17 +522,9 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
   }
 
   @media (max-width: 860px) {
-    .cta--desktop {
-      display: none;
-    }
-
-    .cta--mobile {
-      display: flex;
-    }
-
     .inner {
       grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: auto auto auto;
+      grid-template-rows: auto auto;
       gap: var(--space-2);
     }
 
@@ -447,39 +552,8 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
       padding-inline: var(--space-3);
     }
 
-    .nav {
-      grid-column: 1 / -1;
-      grid-row: 3;
-      justify-content: flex-start;
-      overflow-x: auto;
-      gap: var(--space-2);
-      padding: 0;
-      scrollbar-width: thin;
-      width: 100%;
-      max-width: 100%;
-    }
-
-    .nav--desktop {
-      display: flex;
-    }
-
-    .nav a {
-      flex: 0 0 auto;
-      padding: 0.48rem 0.6rem;
-    }
-
     .right {
       gap: var(--space-1);
-    }
-
-    .menu {
-      display: block;
-    }
-
-    .menu__panel {
-      left: var(--space-3);
-      right: var(--space-3);
-      max-width: min(100vw - 1.5rem, 28rem);
     }
   }
 
