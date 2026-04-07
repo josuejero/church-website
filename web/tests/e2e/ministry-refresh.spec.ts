@@ -16,15 +16,30 @@ test("calendar is available in desktop nav and mobile menu", async ({ page }) =>
   await expect(menu.getByRole("link", { name: "Calendar", exact: true })).toBeVisible();
 });
 
-test("ministries hub lists only active public ministry tiles", async ({ page }) => {
+test("ministries hub lists public ministry tiles and keeps hidden handoff pages out of view", async ({ page }) => {
   await page.goto("/ministries");
 
   await expect(page.getByText("Only currently active ministries are listed here.")).toBeVisible();
-  await expect(page.locator("main")).not.toContainText("Men's Ministry");
-  await expect(page.locator("main")).not.toContainText("Social Ministry");
-  await expect(page.locator("main")).not.toContainText("Music Ministry");
+  await expect(page.getByRole("link", { name: /Health Ministry/i })).toBeVisible();
   await expect(page.locator("main")).not.toContainText("Adventurer Club");
   await expect(page.getByRole("link", { name: /Pathfinders & Adventurers/i })).toBeVisible();
+});
+
+test("health ministry page renders approved content and seminar details", async ({ page }) => {
+  await page.goto("/ministries/health-ministry");
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Health Ministry", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator("main")).toContainText("Coordinator: Gary Peiffer");
+  await expect(page.getByRole("heading", { name: "Our Health Principles", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "The NEWSTART Approach", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Upcoming Event: Diabetes Undone Seminar", exact: true })).toBeVisible();
+  await expect(page.locator("main")).toContainText("Monday, April 20, 2026");
+  await expect(page.locator("main")).toContainText("7:00 PM");
+  await expect(
+    page.getByRole("link", { name: "Diabetes Undone Seminar", exact: true }),
+  ).toBeVisible();
 });
 
 test("combined Pathfinders page carries shared club resources", async ({ page }) => {

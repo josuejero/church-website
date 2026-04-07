@@ -1206,114 +1206,6 @@ Do not publish a `health-ministry` collection entry until content is approved.
 - Verify calendar references are used for dated talks or seminars.
 </file>
 
-<file path="docs/ui-handoff.md">
-# UI Handoff - First Springfield SDA Website
-
-## 1) Design goals
-- Calm, readable, welcoming tone with generous breathing room and restrained color.
-- Mobile-first layout, fast loads, minimal JS (Astro SSR + partial hydration only where necessary).
-- Accessible interactions: clear focus-visible rings, 44px+ tap targets, text that reads well across screen sizes.
-
-## 2) Breakpoints (responsive rules)
-Source of truth: `web/src/styles/global.css`.
-- Base: mobile-first stack — `.stack`, hero, cards, and nav all stack vertically using tokens so there is no media query assumption.
-- `@media (max-width: 860px)`: hides desktop `nav`/`cta` stacks, surfaces the mobile `details.menu`, and tightens `.main` padding to `var(--space-6)` while keeping all sections legible.
-- `@media (max-width: 520px)` and `(max-width: 420px)`: collapse footer columns into single-column flow and hide the menu label to preserve tap area while keeping the icon visible.
-
-## 3) Spacing scale (tokens)
-Source of truth: `web/src/styles/tokens.css`.
-
-| Token | Intended use | Examples |
-|------|--------------|----------|
-| `--space-1` | micro gaps or icon/text separation | `header .brand` gap, `.footer-contact` stack spacing |
-| `--space-2` | petite padding between inline elements | button gutters, card subtitle margin, `.col-body` link spacing |
-| `--space-3` | standard rhythm between sections | `.stack` spacing, hero actions gap, mobile nav spacing |
-| `--space-4` | generous separation / nested stacks | hero-inner gap, `.hero` vs hero background, `grid` gap |
-| `--space-6` | card padding or section padding inside containers | `.card` padding, `.inner` padding top/bottom, footer body padding |
-| `--space-8` | container padding and major vertical gaps | `.main` padding, `Header` inner padding, `.stack--loose` |
-| `--space-12` | extra-wide sections if/when needed | large hero spacing or future horizontal rules |
-
-Implementation notes:
-- Import tokens once (`@import "./tokens.css"`) and reference via `var(--space-*)` to keep vertical rhythm consistent.
-- Use `.stack`, `.grid`, and `.cluster` utility classes from `global.css` so spacing scales with the same token set rather than hard-coded px values.
-
-## 4) Typography scale (global rules)
-Source of truth: `web/src/styles/global.css`.
-- Base `body` font size is `var(--font-size-1)` (1rem) with a 1.6 line-height.
-- Headings rely on `clamp()` for responsiveness:
-  - `h1`: clamp(2.2rem, 1.6rem + 2.4vw, 3.2rem) for hero-level impact.
-  - `h2`: clamp(1.6rem, 1.2rem + 1.6vw, 2.4rem) for section headers.
-  - `h3`: clamp(1.25rem, 1.05rem + 1vw, 1.7rem) for subsections.
-- Paragraphs and lists are capped at 70ch to hit the 60–80ch readability target.
-- Hero component overrides `h1` (`clamp(2.4rem ... 3.5rem)`) and adds a `muted` subtitle with its own clamp.
-
-## 5) Color + elevation
-Source of truth: `web/src/styles/tokens.css`.
-- Surfaces: `--color-bg`, `--color-surface`, `--color-surface-2`, and `--color-surface-muted` keep backgrounds and cards light.
-- Text: `--color-text`, `--color-text-muted`, `--color-primary`, `--color-primary-hover`, and `--color-focus` drive links, CTAs, and focus outlines.
-- Borders use `--color-border` / `--color-border-strong` with consistent `--radius-*` rounding (cards, buttons, menu, footer).
-- Elevation: `--shadow-1` for cards, `--shadow-2` for hover states (cards, menu panel), no complex layering keeps performance predictable.
-
-## 6) Components catalog (what exists + how to use)
-### Button
-File: `web/src/components/ui/Button.astro`
-- Variants: `primary` (solid key actions), `secondary` (light background, dark border), `ghost` (transparent, outlines), plus implicit text/inline usage through `ButtonLink`.
-- Sizes: `sm`, `md`, `lg` adjust font-size (vars `--font-size-0..2`) and padding (`--space-2..6`).
-- States:
-  - `hover`: darkens (`--color-primary-hover`) or swaps to gray hover fills.
-  - `focus-visible`: global `outline: 3px solid var(--color-focus)` via `global.css` keeps keyboard nav visible.
-  - `disabled`: not styled explicitly, so rely on native browser styling; add `disabled` prop before applying `Button` for future needs.
-- Uses `var(--space-2)` for gaps and ensures `min-height: var(--target-min)` for 44px tap targets.
-
-### Card
-File: `web/src/components/ui/Card.astro`
-- Reused for service cards, announcements, and hero wrapper (`<section class="hero card">`).
-- Provides `card`/`card--link` classes defined globally (background, border, radius, shadows) and tailored title/description text.
-- Outline: `card__title` uses `--font-size-2`, `card__desc` uses `muted` color, and CTAs reuse `.link` styling for hover/focus.
-
-### Hero
-File: `web/src/components/ui/Hero.astro`
-- Wraps title/subtitle + CTA buttons in `.hero.card` to reuse card surface rules.
-- `hero__inner` grid uses `--space-4`; `hero__title` and `hero__subtitle` each define their own `clamp()` scalings.
-- CTA stack uses `--space-3` so buttons align vertically on mobile yet stay horizontal when space is available.
-
-### Header / Nav
-File: `web/src/components/global/Header.astro`
-- Brand link + nav items are laid out in a 3-column grid inside `.inner` with container padding/token values.
-- Desktop nav vs mobile menu (`details.menu` + `.menu__panel`), including quick actions derived from `site.quickActions`.
-- Nav links highlight active route (`aria-current`) and use `var(--space-2)` gaps, so `--space-3` spacing between the nav cluster and CTA group.
-- Mobile menu uses `var(--shadow-2)` and `--radius-3` to match overall surface language; event listener closes menu when selecting a link.
-
-### Footer
-File: `web/src/components/global/Footer.astro`
-- Two-part layout: info column + nav grid, all inside `.inner` with `var(--space-6)` padding.
-- Uses `.links` helper and `var(--space-2)` gap to keep links stacked, and `@media (max-width: 520px)` collapses columns to full width.
-- Includes dynamic sections (primary/exploratory nav, quick actions, service times) sourced from `site.nav`, `site.quickActions`, and `site.schedule`.
-
-## 7) Accessibility checklist (project expectations)
-- Keyboard navigation: global `a:focus-visible`, `button:focus-visible`, and `summary:focus-visible` outlines defined in `global.css` for consistent focus states.
-- Skip link (`.skip-link`) is available globally and reveals itself on focus so screen-reader/keyboard users can jump straight to `.main`.
-- Tap targets: `--target-min` enforces 44px+ heights for buttons, nav pills, menu links.
-- Semantic text: `heading` scalings, `muted` helpers, and list height constraints keep readability high, and `Hero` CTA order remains logical.
-- Images (e.g., `Hero` and CTA icons) should always include `alt` text from the content source; decorative elements rely on empty `alt`.
-
-## 8) “Design-to-code” notes
-- Tokens live in `web/src/styles/tokens.css` and are the single source for spacing, color, radius, and typography values.
-- Components (`Button`, `Card`, `Hero`, `Header`, `Footer`) rely on tokens instead of raw px to preserve rhythm as screen widths change.
-- Responsive rules mirror tokens: `.stack`, `.grid`, `.container`, and media queries share numeric values from the tokens file for predictable scaling.
-- Animations/transitions are minimal (`120–160ms ease`) and tied to hover/focus states in `global.css`; keep new interactions aligned with that timing.
-
-## 9) Screenshots & callouts
-- ![Home hero callout](assets/home-hero.png) Spacing uses `--space-3` between stacked sections, matching the `.stack` gap in `global.css`.
-- ![Plan a Visit callout](assets/plan-visit.png) Typography: `h2` uses `clamp()` to scale with viewport width (`global.css`).
-- ![Footer callout](assets/footer.png) Footer spacing leans on `--space-4`/`--space-6` to keep columns breathing and align with the header container.
-
-## 10) Decision log
-- Why Astro: content-first rendering with partial hydration keeps the site fast and lets us pull in Markdown/data without heavy bundling.
-- Why tokens: centralized spacing/color/typescale means any new component can reuse variables instead of uncoordinated values.
-- Why smoke tests: quick, cross-engine smoke tests give confidence that renders stay consistent without slowing down the full CI pipeline.
-</file>
-
 <file path="docs/ui-reliability.md">
 # UI reliability notes
 
@@ -4088,32 +3980,6 @@ test("connect card keeps hidden address summary updated and enforces interest se
 });
 </file>
 
-<file path="web/tests/e2e/header-layout.spec.ts">
-import { test, expect } from "@playwright/test";
-
-test.describe("Header layout", () => {
-  test("desktop nav stays on one line", async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/");
-
-    const nav = page.locator("nav.nav--desktop");
-    await expect(nav).toBeVisible();
-    await expect(nav).toHaveCSS("flex-wrap", "nowrap");
-
-    const ministriesLink = nav.getByRole("link", { name: "Ministries", exact: true });
-    await expect(ministriesLink).toHaveCSS("white-space", "nowrap");
-  });
-
-  test("tablet breakpoint shows mobile menu instead of nav", async ({ page }) => {
-    await page.setViewportSize({ width: 1050, height: 900 });
-    await page.goto("/");
-
-    await expect(page.locator("nav.nav--desktop")).toBeHidden();
-    await expect(page.locator("details.menu")).toBeVisible();
-  });
-});
-</file>
-
 <file path="web/tests/e2e/ministry-refresh.spec.ts">
 import { expect, test } from "@playwright/test";
 
@@ -4615,6 +4481,140 @@ This repo runs on the latest dependencies pinned in `web/package-lock.json`. Sec
 - Keep dependencies up to date (`npm update` inside `web/` and rerun `npm run qa`).
 - Avoid committing secrets or tokens; use the GitHub secrets store for private configuration.
 - Document security implications of large changes in both the PR body and `docs/ui-reliability.md` when relevant.
+</file>
+
+<file path="docs/ui-handoff.md">
+# UI Handoff - First Springfield SDA Website
+
+## 1) Design goals
+
+- Calm, readable, welcoming tone with generous breathing room and restrained color.
+- Mobile-first layout, fast loads, minimal JS (Astro SSR + partial hydration only where necessary).
+- Accessible interactions: clear focus-visible rings, 44px+ tap targets, text that reads well across screen sizes.
+
+## 2) Breakpoints (responsive rules)
+
+Source of truth: `web/src/styles/global.css`.
+
+- Base: mobile-first stack — `.stack`, hero, cards, and nav all stack vertically using tokens so there is no media query assumption.
+- `@media (max-width: 860px)`: tightens global spacing in `global.css` by reducing `--container-pad` and `.main` padding to `var(--space-6)` while keeping all sections legible.
+- `Header.astro @media (max-width: 1100px)`: hides the desktop header nav/CTA stack and switches to the mobile CTA row plus `details.menu` disclosure panel.
+- `@media (max-width: 520px)` and `(max-width: 420px)`: collapse footer columns into single-column flow and hide the menu label to preserve tap area while keeping the icon visible.
+
+## 3) Spacing scale (tokens)
+
+Source of truth: `web/src/styles/tokens.css`.
+
+| Token        | Intended use                                      | Examples                                                          |
+| ------------ | ------------------------------------------------- | ----------------------------------------------------------------- |
+| `--space-1`  | micro gaps or icon/text separation                | `header .brand` gap, `.footer-contact` stack spacing              |
+| `--space-2`  | petite padding between inline elements            | button gutters, card subtitle margin, `.col-body` link spacing    |
+| `--space-3`  | standard rhythm between sections                  | `.stack` spacing, hero actions gap, mobile nav spacing            |
+| `--space-4`  | generous separation / nested stacks               | hero-inner gap, `.hero` vs hero background, `grid` gap            |
+| `--space-6`  | card padding or section padding inside containers | `.card` padding, `.inner` padding top/bottom, footer body padding |
+| `--space-8`  | container padding and major vertical gaps         | `.main` padding, `Header` inner padding, `.stack--loose`          |
+| `--space-12` | extra-wide sections if/when needed                | large hero spacing or future horizontal rules                     |
+
+Implementation notes:
+
+- Import tokens once (`@import "./tokens.css"`) and reference via `var(--space-*)` to keep vertical rhythm consistent.
+- Use `.stack`, `.grid`, and `.cluster` utility classes from `global.css` so spacing scales with the same token set rather than hard-coded px values.
+
+## 4) Typography scale (global rules)
+
+Source of truth: `web/src/styles/global.css`.
+
+- Base `body` font size is `var(--font-size-1)` (1rem) with a 1.6 line-height.
+- Headings rely on `clamp()` for responsiveness:
+  - `h1`: clamp(2.2rem, 1.6rem + 2.4vw, 3.2rem) for hero-level impact.
+  - `h2`: clamp(1.6rem, 1.2rem + 1.6vw, 2.4rem) for section headers.
+  - `h3`: clamp(1.25rem, 1.05rem + 1vw, 1.7rem) for subsections.
+- Paragraphs and lists are capped at 70ch to hit the 60–80ch readability target.
+- Hero component overrides `h1` (`clamp(2.4rem ... 3.5rem)`) and adds a `muted` subtitle with its own clamp.
+
+## 5) Color + elevation
+
+Source of truth: `web/src/styles/tokens.css`.
+
+- Surfaces: `--color-bg`, `--color-surface`, `--color-surface-2`, and `--color-surface-muted` keep backgrounds and cards light.
+- Text: `--color-text`, `--color-text-muted`, `--color-primary`, `--color-primary-hover`, and `--color-focus` drive links, CTAs, and focus outlines.
+- Borders use `--color-border` / `--color-border-strong` with consistent `--radius-*` rounding (cards, buttons, menu, footer).
+- Elevation: `--shadow-1` for cards, `--shadow-2` for hover states (cards, menu panel), no complex layering keeps performance predictable.
+
+## 6) Components catalog (what exists + how to use)
+
+### Button
+
+File: `web/src/components/ui/Button.astro`
+
+- Variants: `primary` (solid key actions), `secondary` (light background, dark border), `ghost` (transparent, outlines), plus implicit text/inline usage through `ButtonLink`.
+- Sizes: `sm`, `md`, `lg` adjust font-size (vars `--font-size-0..2`) and padding (`--space-2..6`).
+- States:
+  - `hover`: darkens (`--color-primary-hover`) or swaps to gray hover fills.
+  - `focus-visible`: global `outline: 3px solid var(--color-focus)` via `global.css` keeps keyboard nav visible.
+  - `disabled`: not styled explicitly, so rely on native browser styling; add `disabled` prop before applying `Button` for future needs.
+- Uses `var(--space-2)` for gaps and ensures `min-height: var(--target-min)` for 44px tap targets.
+
+### Card
+
+File: `web/src/components/ui/Card.astro`
+
+- Reused for service cards, announcements, and hero wrapper (`<section class="hero card">`).
+- Provides `card`/`card--link` classes defined globally (background, border, radius, shadows) and tailored title/description text.
+- Outline: `card__title` uses `--font-size-2`, `card__desc` uses `muted` color, and CTAs reuse `.link` styling for hover/focus.
+
+### Hero
+
+File: `web/src/components/ui/Hero.astro`
+
+- Wraps title/subtitle + CTA buttons in `.hero.card` to reuse card surface rules.
+- `hero__inner` grid uses `--space-4`; `hero__title` and `hero__subtitle` each define their own `clamp()` scalings.
+- CTA stack uses `--space-3` so buttons align vertically on mobile yet stay horizontal when space is available.
+
+### Header / Nav
+
+File: `web/src/components/global/Header.astro`
+
+- Brand link + nav items are laid out in a 3-column grid inside `.inner` with container padding/token values.
+- Desktop nav stays active above `1100px`; at and below `1100px`, the header switches to a mobile CTA row plus `details.menu` / `.menu__panel`.
+- Nav links highlight active route (`aria-current`) and use `var(--space-2)` gaps, so `--space-3` spacing between the nav cluster and CTA group.
+- Mobile menu uses `var(--shadow-2)` and `--radius-3` to match overall surface language; the disclosure script closes on link click, outside click, `Escape`, and when resizing back above the mobile breakpoint.
+- `Watch Live` and `Give` stay visible in the mobile header CTA row and are not duplicated inside the disclosure panel; the panel holds primary nav plus utility links.
+
+### Footer
+
+File: `web/src/components/global/Footer.astro`
+
+- Two-part layout: info column + nav grid, all inside `.inner` with `var(--space-6)` padding.
+- Uses `.links` helper and `var(--space-2)` gap to keep links stacked, and `@media (max-width: 520px)` collapses columns to full width.
+- Includes dynamic sections (primary/exploratory nav, quick actions, service times) sourced from `site.nav`, `site.quickActions`, and `site.schedule`.
+
+## 7) Accessibility checklist (project expectations)
+
+- Keyboard navigation: global `a:focus-visible`, `button:focus-visible`, and `summary:focus-visible` outlines defined in `global.css` for consistent focus states.
+- Skip link (`.skip-link`) is available globally and reveals itself on focus so screen-reader/keyboard users can jump straight to `.main`.
+- Tap targets: `--target-min` enforces 44px+ heights for buttons, nav pills, menu links.
+- Semantic text: `heading` scalings, `muted` helpers, and list height constraints keep readability high, and `Hero` CTA order remains logical.
+- Images (e.g., `Hero` and CTA icons) should always include `alt` text from the content source; decorative elements rely on empty `alt`.
+
+## 8) “Design-to-code” notes
+
+- Tokens live in `web/src/styles/tokens.css` and are the single source for spacing, color, radius, and typography values.
+- Components (`Button`, `Card`, `Hero`, `Header`, `Footer`) rely on tokens instead of raw px to preserve rhythm as screen widths change.
+- Responsive rules mirror tokens: `.stack`, `.grid`, `.container`, and media queries share numeric values from the tokens file for predictable scaling.
+- Animations/transitions are minimal (`120–160ms ease`) and tied to hover/focus states in `global.css`; keep new interactions aligned with that timing.
+
+## 9) Screenshots & callouts
+
+- ![Home hero callout](assets/home-hero.png) Spacing uses `--space-3` between stacked sections, matching the `.stack` gap in `global.css`.
+- ![Plan a Visit callout](assets/plan-visit.png) Typography: `h2` uses `clamp()` to scale with viewport width (`global.css`).
+- ![Footer callout](assets/footer.png) Footer spacing leans on `--space-4`/`--space-6` to keep columns breathing and align with the header container.
+
+## 10) Decision log
+
+- Why Astro: content-first rendering with partial hydration keeps the site fast and lets us pull in Markdown/data without heavy bundling.
+- Why tokens: centralized spacing/color/typescale means any new component can reuse variables instead of uncoordinated values.
+- Why smoke tests: quick, cross-engine smoke tests give confidence that renders stay consistent without slowing down the full CI pipeline.
 </file>
 
 <file path="web/public/scripts/highlights-carousel.js">
@@ -6886,6 +6886,63 @@ test("calendar highlights and featured dates render with the live preview", asyn
   expect(updatedText).toMatch(/subject/i);
 
   await expect(page.locator(".calendar-event").first()).toBeVisible();
+});
+</file>
+
+<file path="web/tests/e2e/header-layout.spec.ts">
+import { test, expect } from "@playwright/test";
+
+test.describe("Header layout", () => {
+  test("desktop nav stays on one line at wide desktop widths", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+
+    const header = page.locator("header.site-header");
+    const nav = page.locator("nav.nav--desktop");
+    await expect(nav).toBeVisible();
+    await expect(header.locator("details.menu")).toBeHidden();
+    await expect(header.locator(".cta--desktop")).toBeVisible();
+    await expect(header.locator(".cta--mobile")).toBeHidden();
+    await expect(nav).toHaveCSS("flex-wrap", "nowrap");
+
+    const ministriesLink = nav.getByRole("link", {
+      name: "Ministries",
+      exact: true,
+    });
+    await expect(ministriesLink).toHaveCSS("white-space", "nowrap");
+  });
+
+  test("tablet widths show mobile menu and CTA row instead of desktop nav", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1050, height: 900 });
+    await page.goto("/");
+
+    const header = page.locator("header.site-header");
+    await expect(header.locator("nav.nav--desktop")).toBeHidden();
+    await expect(header.locator("details.menu")).toBeVisible();
+    await expect(header.locator(".cta--desktop")).toBeHidden();
+    await expect(header.locator(".cta--mobile")).toBeVisible();
+  });
+
+  test("the header switches exactly at the 1100px boundary", async ({
+    page,
+  }) => {
+    const header = page.locator("header.site-header");
+
+    await page.setViewportSize({ width: 1101, height: 900 });
+    await page.goto("/");
+
+    await expect(header.locator("nav.nav--desktop")).toBeVisible();
+    await expect(header.locator("details.menu")).toBeHidden();
+
+    await page.setViewportSize({ width: 1100, height: 900 });
+
+    await expect(header.locator("nav.nav--desktop")).toBeHidden();
+    await expect(header.locator("details.menu")).toBeVisible();
+  });
 });
 </file>
 
@@ -13786,60 +13843,6 @@ test.describe("Home layout regression", () => {
 });
 </file>
 
-<file path="web/tests/e2e/mobile.smoke.spec.ts">
-import { test, expect } from "@playwright/test";
-
-test.describe("Smoke - mobile device", () => {
-  test("mobile header nav and primary CTA stay accessible on home", async ({
-    page,
-  }) => {
-    await page.goto("/");
-    const header = page.locator("header.site-header");
-    await expect(
-      page.locator("header.site-header nav.nav--desktop"),
-    ).toBeVisible();
-    await expect(
-      header.getByRole("link", { name: "Give", exact: true }),
-    ).toBeVisible();
-    await expect(
-      header.getByRole("link", { name: "Watch Live", exact: true }),
-    ).toBeVisible();
-  });
-
-  test("visit page loads key content and CTA", async ({ page }) => {
-    await page.goto("/visit");
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.locator("main")).toContainText(
-      /parking|directions|address/i,
-    );
-    const header = page.locator("header.site-header");
-    await expect(header.getByRole("link", { name: /give/i })).toBeVisible();
-  });
-
-  test("mobile gutters tighten on narrow viewports", async ({ page }) => {
-    const projectName = test.info().project.name;
-    test.skip(projectName !== "mobile-smoke", "mobile project only");
-
-    await page.goto("/");
-
-    const containerPad = await page.evaluate(() =>
-      getComputedStyle(document.documentElement)
-        .getPropertyValue("--container-pad")
-        .trim(),
-    );
-    expect(["0.875rem", ".875rem"]).toContain(containerPad);
-    const hero = page.locator("section.hero").first();
-    await expect(
-      hero.getByRole("link", { name: "Plan a Visit", exact: true }),
-    ).toBeVisible();
-    await expect(
-      hero.getByRole("link", { name: "Submit a Connect Card", exact: true }),
-    ).toBeVisible();
-  });
-
-});
-</file>
-
 <file path="web/playwright.config.ts">
 import { defineConfig, devices } from "@playwright/test";
 
@@ -14171,6 +14174,132 @@ const showClubResourceCards = id === "pathfinders";
     ) : null}
   </div>
 </BaseLayout>
+</file>
+
+<file path="web/tests/e2e/mobile.smoke.spec.ts">
+import { test, expect } from "@playwright/test";
+
+test.describe("Smoke - mobile device", () => {
+  test.beforeEach(async ({}, testInfo) => {
+    test.skip(testInfo.project.name !== "mobile-smoke", "mobile project only");
+  });
+
+  test("mobile header uses a disclosure menu and keeps primary CTAs outside the panel", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const header = page.locator("header.site-header");
+    const mobileActions = header.locator(".cta--mobile");
+    const desktopNav = header.locator("nav.nav--desktop");
+    const menu = header.locator("details.menu");
+    const menuSummary = menu.locator("summary.menu__summary");
+    const menuPanel = menu.locator(".menu__panel");
+
+    await expect(desktopNav).toBeHidden();
+    await expect(mobileActions).toBeVisible();
+    await expect(
+      mobileActions.getByRole("link", { name: "Give", exact: true }),
+    ).toBeVisible();
+    await expect(
+      mobileActions.getByRole("link", { name: "Watch Live", exact: true }),
+    ).toBeVisible();
+    await expect(menuSummary).toBeVisible();
+    await expect(menuSummary).toHaveAttribute("aria-label", "Open menu");
+
+    await menuSummary.click();
+
+    await expect(menu).toHaveJSProperty("open", true);
+    await expect(menuSummary).toHaveAttribute("aria-label", "Close menu");
+    await expect(menuPanel).toBeVisible();
+    await expect(
+      menuPanel.getByRole("link", { name: "Visit", exact: true }),
+    ).toBeVisible();
+    await expect(
+      menuPanel.getByRole("link", { name: "Calendar", exact: true }),
+    ).toBeVisible();
+    await expect(
+      menuPanel.getByRole("link", { name: "Watch Live", exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      menuPanel.getByRole("link", { name: "Give", exact: true }),
+    ).toHaveCount(0);
+
+    await page.keyboard.press("Escape");
+
+    await expect(menu).toHaveJSProperty("open", false);
+    await expect(menuSummary).toHaveAttribute("aria-label", "Open menu");
+    await expect(menuPanel).toBeHidden();
+    await expect(menuSummary).toBeFocused();
+  });
+
+  test("mobile menu closes when clicking outside the open panel", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const header = page.locator("header.site-header");
+    const menu = header.locator("details.menu");
+    const menuSummary = menu.locator("summary.menu__summary");
+    const menuPanel = menu.locator(".menu__panel");
+
+    await menuSummary.click();
+    await expect(menuPanel).toBeVisible();
+
+    await page.locator("#main").click({ position: { x: 20, y: 20 } });
+
+    await expect(menu).toHaveJSProperty("open", false);
+    await expect(menuPanel).toBeHidden();
+  });
+
+  test("visit page loads key content and the mobile header CTA", async ({
+    page,
+  }) => {
+    await page.goto("/visit");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.locator("main")).toContainText(
+      /parking|directions|address/i,
+    );
+
+    const header = page.locator("header.site-header");
+    await expect(
+      header
+        .locator(".cta--mobile")
+        .getByRole("link", { name: "Give", exact: true }),
+    ).toBeVisible();
+  });
+
+  test("mobile header panel stays within the viewport without horizontal overflow", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const header = page.locator("header.site-header");
+    const menuSummary = header.locator("details.menu summary.menu__summary");
+    const menuPanel = header.locator("details.menu .menu__panel");
+
+    await menuSummary.click();
+    await expect(menuPanel).toBeVisible();
+
+    const hasHorizontalOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > window.innerWidth,
+    );
+    expect(hasHorizontalOverflow).toBe(false);
+
+    const viewport = await page.evaluate(() => ({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    }));
+    const panelBounds = await menuPanel.boundingBox();
+
+    expect(panelBounds).not.toBeNull();
+    expect(panelBounds!.x).toBeGreaterThanOrEqual(0);
+    expect(panelBounds!.y).toBeGreaterThanOrEqual(0);
+    expect(panelBounds!.x + panelBounds!.width).toBeLessThanOrEqual(
+      viewport.width + 1,
+    );
+  });
+});
 </file>
 
 <file path="web/src/components/ui/Hero.astro">
@@ -15960,9 +16089,14 @@ function linkAttrs(item: { href: string; external?: boolean }) {
 const primaryNav = site.nav;
 const utilityLinks = site.utilityLinks ?? [];
 
-const watchLive = site.quickActions.find((i) => i.label === "Watch Live") ?? site.quickActions[0];
-const give = site.quickActions.find((i) => i.label === "Give") ?? site.quickActions[1];
-const otherQuick = site.quickActions.filter((i) => i.label !== watchLive?.label && i.label !== give?.label);
+const watchLive =
+  site.quickActions.find((i) => i.label === "Watch Live") ??
+  site.quickActions[0];
+const give =
+  site.quickActions.find((i) => i.label === "Give") ?? site.quickActions[1];
+const otherQuick = site.quickActions.filter(
+  (i) => i.label !== watchLive?.label && i.label !== give?.label,
+);
 const brandAriaLabel = `${site.shortName} – ${site.name}`;
 ---
 
@@ -15982,42 +16116,72 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     </a>
 
     <nav class="nav nav--desktop" aria-label="Primary navigation">
-      {primaryNav.map((item) => (
-        <a
-          href={item.href}
-          aria-current={isActive(item.href) ? "page" : undefined}
-          {...linkAttrs(item)}
-        >
-          {item.label}
-        </a>
-      ))}
+      {
+        primaryNav.map((item) => (
+          <a
+            href={item.href}
+            aria-current={isActive(item.href) ? "page" : undefined}
+            {...linkAttrs(item)}
+          >
+            {item.label}
+          </a>
+        ))
+      }
     </nav>
 
     <div class="right">
       <div class="cta cta--desktop" aria-label="Primary actions">
-        {watchLive && (
-          <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
-            {watchLive.label}
-          </Button>
-        )}
-        {give && (
-          <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
-            {give.label}
-          </Button>
-        )}
+        {
+          watchLive && (
+            <Button
+              href={watchLive.href}
+              variant="secondary"
+              size="sm"
+              external={!!watchLive.external}
+            >
+              {watchLive.label}
+            </Button>
+          )
+        }
+        {
+          give && (
+            <Button
+              href={give.href}
+              variant="primary"
+              size="sm"
+              external={!!give.external}
+            >
+              {give.label}
+            </Button>
+          )
+        }
       </div>
 
       <div class="cta cta--mobile" aria-label="Primary actions">
-        {watchLive && (
-          <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
-            {watchLive.label}
-          </Button>
-        )}
-        {give && (
-          <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
-            {give.label}
-          </Button>
-        )}
+        {
+          watchLive && (
+            <Button
+              href={watchLive.href}
+              variant="secondary"
+              size="sm"
+              external={!!watchLive.external}
+            >
+              {watchLive.label}
+            </Button>
+          )
+        }
+        {
+          give && (
+            <Button
+              href={give.href}
+              variant="primary"
+              size="sm"
+              external={!!give.external}
+            >
+              {give.label}
+            </Button>
+          )
+        }
       </div>
 
       <details class="menu" aria-label="Mobile menu">
@@ -16027,77 +16191,135 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
         </summary>
 
         <div class="menu__panel">
-          <div class="menu__section" aria-label="Primary navigation" role="navigation">
-            {site.nav.map((item) => (
-              <a
-                class="menu__link"
-                href={item.href}
-                aria-current={isActive(item.href) ? "page" : undefined}
-                {...linkAttrs(item)}
-              >
-                {item.label}
-              </a>
-            ))}
-          </div>
+          <nav class="menu__section" aria-label="Primary navigation">
+            {
+              site.nav.map((item) => (
+                <a
+                  class="menu__link"
+                  href={item.href}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  {...linkAttrs(item)}
+                >
+                  {item.label}
+                </a>
+              ))
+            }
+          </nav>
 
-          <div class="menu__divider" role="separator" aria-hidden="true"></div>
+          {
+            otherQuick.length > 0 && (
+              <>
+                <div
+                  class="menu__divider"
+                  role="separator"
+                  aria-hidden="true"
+                />
 
-          <div class="menu__section" aria-label="Quick actions">
-            <div class="menu__actions">
-              {watchLive && (
-                <Button href={watchLive.href} variant="secondary" size="sm" external={!!watchLive.external}>
-                  {watchLive.label}
-                </Button>
-              )}
-              {give && (
-                <Button href={give.href} variant="primary" size="sm" external={!!give.external}>
-                  {give.label}
-                </Button>
-              )}
-            </div>
+                <div class="menu__section" aria-label="Quick links">
+                  <p class="menu__section-title">Quick links</p>
+                  <div class="menu__quicklinks" aria-label="More quick links">
+                    {otherQuick.map((item) => (
+                      <a
+                        class="menu__sublink"
+                        href={item.href}
+                        {...linkAttrs(item)}
+                      >
+                        {item.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )
+          }
 
-            {otherQuick.length > 0 && (
-              <div class="menu__quicklinks" aria-label="More quick links">
-                {otherQuick.map((item) => (
-                  <a class="menu__sublink" href={item.href} {...linkAttrs(item)}>
-                    {item.label}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
+          {
+            utilityLinks.length > 0 && (
+              <>
+                <div
+                  class="menu__divider"
+                  role="separator"
+                  aria-hidden="true"
+                />
 
-          <div class="menu__divider" role="separator" aria-hidden="true"></div>
-
-          <div class="menu__section" aria-label="More links">
-            <p class="menu__section-title">More links</p>
-            {utilityLinks.map((item) => (
-              <a
-                class="menu__link"
-                href={item.href}
-                {...linkAttrs(item)}
-              >
-                {item.label}
-              </a>
-            ))}
-          </div>
+                <div class="menu__section" aria-label="More links">
+                  <p class="menu__section-title">More links</p>
+                  {utilityLinks.map((item) => (
+                    <a class="menu__link" href={item.href} {...linkAttrs(item)}>
+                      {item.label}
+                    </a>
+                  ))}
+                </div>
+              </>
+            )
+          }
         </div>
       </details>
     </div>
   </div>
-
 </header>
 
 <script>
-  // Close the mobile menu when a link is clicked.
-  document.addEventListener("click", (e) => {
-    const target = e.target;
-    if (!(target instanceof HTMLElement)) return;
+  const header = document.querySelector(".site-header");
 
-    const link = target.closest("a");
-    const details = target.closest("details.menu");
-    if (link && details) details.removeAttribute("open");
-  });
+  if (header instanceof HTMLElement) {
+    const menu = header.querySelector("details.menu");
+    const summary = menu?.querySelector("summary.menu__summary");
+
+    if (menu instanceof HTMLDetailsElement && summary instanceof HTMLElement) {
+      const desktopNavBreakpoint = window.matchMedia("(max-width: 1100px)");
+
+      const syncMenuLabel = () => {
+        const label = menu.open ? "Close menu" : "Open menu";
+        summary.setAttribute("aria-label", label);
+        summary.setAttribute("aria-expanded", String(menu.open));
+      };
+
+      const closeMenu = (restoreFocus = false) => {
+        if (!menu.open) return;
+        menu.open = false;
+        if (restoreFocus) summary.focus();
+      };
+
+      syncMenuLabel();
+      menu.addEventListener("toggle", syncMenuLabel);
+
+      document.addEventListener("click", (event) => {
+        if (!menu.open) return;
+
+        const target = event.target;
+        if (!(target instanceof Node)) return;
+
+        if (target instanceof Element) {
+          const link = target.closest("a");
+          if (link && menu.contains(link)) {
+            closeMenu();
+            return;
+          }
+        }
+
+        if (!menu.contains(target)) {
+          closeMenu();
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape" || !menu.open) return;
+        event.preventDefault();
+        closeMenu(true);
+      });
+
+      const handleBreakpointChange = (event: MediaQueryListEvent) => {
+        if (!event.matches) closeMenu();
+      };
+
+      if (typeof desktopNavBreakpoint.addEventListener === "function") {
+        desktopNavBreakpoint.addEventListener("change", handleBreakpointChange);
+      } else {
+        desktopNavBreakpoint.addListener(handleBreakpointChange);
+      }
+    }
+  }
 </script>
 
 <style>
@@ -16105,7 +16327,11 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     position: sticky;
     top: 0;
     z-index: 50;
-    background: color-mix(in srgb, var(--color-section-surface) 92%, #ffffff 8%);
+    background: color-mix(
+      in srgb,
+      var(--color-section-surface) 92%,
+      #ffffff 8%
+    );
     color: var(--color-text);
     border-bottom: 1px solid var(--color-border);
     display: flex;
@@ -16124,7 +16350,6 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     align-items: center;
     gap: var(--space-3);
   }
-
 
   .menu__section-title {
     margin: 0;
@@ -16186,12 +16411,20 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
   }
 
   .nav a:hover {
-    background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface) 88%);
+    background: color-mix(
+      in srgb,
+      var(--color-primary) 12%,
+      var(--color-surface) 88%
+    );
     opacity: 1;
   }
 
   .nav a[aria-current="page"] {
-    background: color-mix(in srgb, var(--color-primary) 25%, var(--color-primary-soft) 75%);
+    background: color-mix(
+      in srgb,
+      var(--color-primary) 25%,
+      var(--color-primary-soft) 75%
+    );
     color: var(--color-white);
     opacity: 1;
     box-shadow: 0 8px 20px rgba(13, 8, 55, 0.25);
@@ -16211,6 +16444,7 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     justify-content: flex-end;
     gap: var(--space-2);
     min-width: 0;
+    position: relative;
   }
 
   .cta--mobile {
@@ -16220,7 +16454,6 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
   /* Mobile menu */
   .menu {
     display: none;
-    position: relative;
   }
 
   .menu__summary {
@@ -16247,16 +16480,21 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
   }
 
   .menu[open] .menu__summary {
-    background: color-mix(in srgb, var(--color-primary-soft) 18%, var(--color-section-surface) 82%);
+    background: color-mix(
+      in srgb,
+      var(--color-primary-soft) 18%,
+      var(--color-section-surface) 82%
+    );
   }
 
   .menu__panel {
     position: absolute;
-    top: calc(100% + 0.6rem);
-    left: var(--container-pad);
-    right: var(--container-pad);
-    width: auto;
-    max-width: min(calc(100vw - 2 * var(--container-pad)), 28rem);
+    top: calc(100% + var(--space-2));
+    left: 0;
+    right: 0;
+    max-width: min(28rem, calc(100vw - 2 * var(--container-pad)));
+    max-height: calc(100vh - 8rem);
+    max-height: calc(100dvh - 8rem);
     background: var(--color-section-surface-alt);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-3);
@@ -16264,6 +16502,8 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     padding: var(--space-3);
     z-index: 60;
     box-sizing: border-box;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .menu__section {
@@ -16284,11 +16524,19 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
   }
 
   .menu__link:hover {
-    background: color-mix(in srgb, var(--color-primary-soft) 12%, var(--color-section-surface) 88%);
+    background: color-mix(
+      in srgb,
+      var(--color-primary-soft) 12%,
+      var(--color-section-surface) 88%
+    );
   }
 
   .menu__link[aria-current="page"] {
-    background: color-mix(in srgb, var(--color-primary) 24%, var(--color-primary-soft) 76%);
+    background: color-mix(
+      in srgb,
+      var(--color-primary) 24%,
+      var(--color-primary-soft) 76%
+    );
     color: var(--color-white);
     box-shadow: 0 8px 18px rgba(13, 8, 55, 0.22);
   }
@@ -16297,12 +16545,6 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
     height: 1px;
     background: var(--color-border);
     margin: var(--space-3) 0;
-  }
-
-  .menu__actions {
-    display: flex;
-    gap: var(--space-2);
-    flex-wrap: wrap;
   }
 
   .menu__quicklinks {
@@ -16351,17 +16593,9 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
   }
 
   @media (max-width: 860px) {
-    .cta--desktop {
-      display: none;
-    }
-
-    .cta--mobile {
-      display: flex;
-    }
-
     .inner {
       grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: auto auto auto;
+      grid-template-rows: auto auto;
       gap: var(--space-2);
     }
 
@@ -16389,39 +16623,8 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
       padding-inline: var(--space-3);
     }
 
-    .nav {
-      grid-column: 1 / -1;
-      grid-row: 3;
-      justify-content: flex-start;
-      overflow-x: auto;
-      gap: var(--space-2);
-      padding: 0;
-      scrollbar-width: thin;
-      width: 100%;
-      max-width: 100%;
-    }
-
-    .nav--desktop {
-      display: flex;
-    }
-
-    .nav a {
-      flex: 0 0 auto;
-      padding: 0.48rem 0.6rem;
-    }
-
     .right {
       gap: var(--space-1);
-    }
-
-    .menu {
-      display: block;
-    }
-
-    .menu__panel {
-      left: var(--space-3);
-      right: var(--space-3);
-      max-width: min(100vw - 1.5rem, 28rem);
     }
   }
 
