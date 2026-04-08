@@ -32,7 +32,7 @@ body {
   font-family: var(--font-family-sans);
   color: var(--color-text);
   background:
-    radial-gradient(circle at top, rgba(139, 120, 255, 0.12), transparent 28%),
+    radial-gradient(circle at top, rgba(0, 94, 162, 0.12), transparent 28%),
     linear-gradient(180deg, #f8fafd 0%, var(--color-bg) 100%);
   background-attachment: scroll;
   font-size: var(--type-scale-body-size);
@@ -59,7 +59,7 @@ a {
 }
 
 a:hover {
-  color: var(--color-primary);
+  color: var(--color-primary-hover);
   text-decoration-thickness: 0.19em;
 }
 
@@ -317,7 +317,7 @@ hr {
   border-color: color-mix(
     in srgb,
     var(--color-border) 70%,
-    var(--color-primary) 30%
+    var(--color-primary-hover) 30%
   );
 }
 

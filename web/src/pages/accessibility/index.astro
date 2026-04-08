@@ -4,7 +4,7 @@ import Hero from "../../components/ui/Hero.astro";
 import { mailto, tel } from "../../lib/links";
 import { site } from "../../data/site";
 
-const reviewDate = "February 12, 2026";
+const reviewDate = "April 8, 2026";
 const contactPage = "/connect/contact";
 const contactEmailHref = mailto(site.contact.email);
 const contactPhoneHref = tel(site.contact.phone);
@@ -33,8 +33,9 @@ const contactPhoneHref = tel(site.contact.phone);
       <p class="muted">
         The site is built with the goal of conforming to WCAG 2.2 Level AA success criteria. We rely on semantic HTML,
         meaningful heading structure, descriptive alt text, high contrast palettes, focus-visible outlines, and
-        keyboard-friendly components to support broad accessibility. Every major update goes through accessibility
-        review before it goes live.
+        keyboard-friendly components to support broad accessibility. We choose link and action colors based on contrast
+        with their background, not a single preset color, and we test new pages against WCAG color-contrast targets.
+        Every major update goes through accessibility review before it goes live.
       </p>
 
       <h2>Known limitations</h2>

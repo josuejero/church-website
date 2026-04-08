@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 
 const PAGES = [
   "/",
+  "/accessibility",
   "/components",
   "/connect/plan-a-visit",
   "/connect/team",
@@ -43,14 +44,9 @@ for (const path of PAGES) {
 
     const results = await new AxeBuilder({ page }).analyze();
 
-    const highImpact = results.violations.filter((v) => {
-      // The new design intentionally uses color combinations that fail axe's
-      // color-contrast rule; ignore that one while still surfacing other
-      // serious/critical violations.
-      if (v.id === "color-contrast") return false;
-
-      return ["serious", "critical"].includes(v.impact ?? "");
-    });
+    const highImpact = results.violations.filter((v) =>
+      ["serious", "critical"].includes(v.impact ?? ""),
+    );
 
     expect(highImpact).toEqual([]);
   });

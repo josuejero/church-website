@@ -52,6 +52,7 @@ Source of truth: `web/src/styles/tokens.css`.
 
 - Surfaces: `--color-bg`, `--color-surface`, `--color-surface-2`, and `--color-surface-muted` keep backgrounds and cards light.
 - Text: `--color-text`, `--color-text-muted`, `--color-primary`, `--color-primary-hover`, and `--color-focus` drive links, CTAs, and focus outlines.
+- Contrast policy: use WCAG AA minimums of 4.5:1 for normal text and 3:1 for large text and key UI components. Approved dark-blue action/link values are `#005EA2` and `#274863`; pale blue tokens such as `--color-primary-soft` and `--color-cta-secondary` are for surfaces only, not text.
 - Borders use `--color-border` / `--color-border-strong` with consistent `--radius-*` rounding (cards, buttons, menu, footer).
 - Elevation: `--shadow-1` for cards, `--shadow-2` for hover states (cards, menu panel), no complex layering keeps performance predictable.
 

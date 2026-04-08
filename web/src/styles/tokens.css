@@ -80,14 +80,14 @@
   --target-min: 44px;
 
   /* Brand */
-  --color-gradient-brand: linear-gradient(135deg, #5c3fd6 0%, #7357ec 55%, #947cff 100%);
-  --color-primary: #5c3fd6;
-  --color-primary-hover: #4528b7;
-  --color-primary-soft: #8b78ff;
+  --color-gradient-brand: linear-gradient(135deg, #005EA2 0%, #1F5A89 55%, #274863 100%);
+  --color-primary: #005EA2;
+  --color-primary-hover: #274863;
+  --color-primary-soft: #E6F0F8;
   --color-cta-primary: var(--color-primary);
   --color-cta-primary-dark: var(--color-primary-hover);
-  --color-cta-secondary: #f4f1ff;
-  --color-link: var(--color-primary);
+  --color-cta-secondary: #EAF4FB;
+  --color-link: #005EA2;
   --color-link-muted: color-mix(in srgb, var(--color-primary) 70%, #ffffff 30%);
   --color-secondary-link: var(--color-link-muted);
   --color-primary-cta: var(--color-cta-primary);
@@ -135,10 +135,10 @@
   --color-danger-bg: #fee2e2;
   --color-success-border: #34d399;
   --color-success-bg: #ecfdf5;
-  --color-secondary: var(--color-primary-soft);
+  --color-secondary: var(--color-primary-hover);
   --color-primary-700: var(--color-primary-hover);
 
   /* Focus */
-  --color-focus: #244bb2;
+  --color-focus: #274863;
   --focus-ring: 3px solid color-mix(in srgb, var(--color-focus) 78%, var(--color-white) 22%);
 }
