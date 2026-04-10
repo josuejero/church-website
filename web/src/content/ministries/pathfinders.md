@@ -24,11 +24,11 @@ Pathfinders & Adventurers Club Director: Daunette Lemard-Reid
 
 <section class="grid--cards" aria-label="Club logos">
   <article class="card stack--tight">
-    <img src="../../assets/photos/club-adventurers-logo.png" alt="Adventurers Club badge" width="220" loading="lazy" />
+    <img src="/club-logos/club-adventurers-logo.png" alt="Adventurers Club badge" width="220" loading="lazy" />
     <p class="muted small">Adventurers Club (ages 4-9)</p>
   </article>
   <article class="card stack--tight">
-    <img src="../../assets/photos/club-pathfinders-logo.png" alt="Pathfinders Club badge" width="220" loading="lazy" />
+    <img src="/club-logos/club-pathfinders-logo.png" alt="Pathfinders Club badge" width="220" loading="lazy" />
     <p class="muted small">Pathfinders Club (ages 10-15)</p>
   </article>
 </section>

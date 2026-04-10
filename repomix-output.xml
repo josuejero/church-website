@@ -218,6 +218,7 @@ web/
             13/
               restored-songs.md
       events/
+        2026-04-20-diabetes-undone-seminar.md
         2026-06-13-womens-ministries-emphasis-day.md
         2026-08-22-enditnow-emphasis-day.md
         sabbath-service.md
@@ -229,10 +230,14 @@ web/
         board-meeting.md
         children.md
         community-meal-spaghetti.md
+        health-ministry.md
         media-audio-visual.md
+        mens-ministry.md
+        music-ministry.md
         pathfinders.md
         sabbath-school.md
         secretary-communications.md
+        social-ministry.md
         womens-ministry.md
         youth-young-adults.md
       resources/
@@ -2832,6 +2837,24 @@ When we carry guilt or regret, it’s tempting to stay quiet—but the Spirit in
 Lord, lift the weight from my shoulders and help me sing the songs you have restored in my heart.
 </file>
 
+<file path="web/src/content/events/2026-04-20-diabetes-undone-seminar.md">
+---
+title: "Diabetes Undone Seminar"
+summary: "An 8-week lifestyle-based seminar that helps participants understand and take steps toward reversing type 2 diabetes."
+start: "2026-04-20T19:00:00-04:00"
+locationName: "First Springfield Seventh-day Adventist Church"
+tags: ["health", "seminar", "diabetes"]
+---
+
+## A better way to approach type 2 diabetes
+
+Diabetes Undone Seminar is an 8-week program that helps participants understand type 2 diabetes and take practical steps toward better health through natural, lifestyle-based approaches.
+
+Each session focuses on whole-person wellness, including nutrition, activity, rest, and habits that support long-term health. The seminar is designed for people who want to take control of their health in a clear, practical, faith-aware setting.
+
+The seminar begins on Monday, April 20, 2026 at 7:00 PM at First Springfield Seventh-day Adventist Church and continues over eight weeks.
+</file>
+
 <file path="web/src/content/events/2026-06-13-womens-ministries-emphasis-day.md">
 ---
 title: "Women’s Ministries Emphasis Day"
@@ -2887,6 +2910,77 @@ Board meetings are for members and invited guests to plan and shepherd church li
 ## How to get involved
 
 If you are a board member, watch for the monthly agenda and meeting link.
+</file>
+
+<file path="web/src/content/ministries/health-ministry.md">
+---
+title: "Health Ministry"
+summary: "Promoting whole-person wellness through practical, faith-based habits for body, mind, and spirit."
+leaderName: "Gary Peiffer"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "See current seminars and featured programs for the latest schedule."
+category: "Care & Community"
+tags: ["health", "wellness", "NEWSTART", "community"]
+---
+
+Coordinator: Gary Peiffer
+
+At the Seventh-day Adventist Church, we believe that true health involves the whole person: body, mind, and spirit. Our Health Ministry is dedicated to promoting practical, faith-based principles that support a vibrant and balanced life.
+
+## Our Health Principles
+
+We encourage a lifestyle that nurtures overall well-being through habits that support daily strength, clarity, and peace.
+
+### Healthy Eating
+
+We emphasize nutritious, whole, plant-based foods that fuel the body and support disease prevention. For practical ideas and meal inspiration, explore [Joy of Eating recipes](https://nadhealth.org/joyofeating/recipes/).
+
+### Regular Exercise
+
+Physical activity helps strengthen the body, improve energy, and support mental health. Even a 20-minute walk after a meal can help your muscles use glucose from the bloodstream for energy, which helps lower blood sugar naturally and improves insulin response.
+
+### Rest and Balance
+
+Adequate sleep and healthy balance allow the body to repair, restore, and recharge. Rest supports hormone regulation, strengthens the immune system, and contributes to mental clarity and emotional health.
+
+### Spiritual Wellness
+
+We encourage a deeper connection with God as the foundation for true healing and peace. We also value the gift of Sabbath rest, a sacred weekly time to pause from daily demands, restore body and mind, and nurture a closer relationship with God.
+
+## The NEWSTART Approach
+
+Our ministry embraces the NEWSTART model, a holistic framework for healthy living:
+
+- Nutrition
+- Exercise
+- Water
+- Sunshine
+- Temperance
+- Air
+- Rest
+- Trust in God
+
+These simple but powerful principles work together to help prevent illness, support healing, and promote long-term wellness.
+
+## Our Mission
+
+Through seminars, community programs, and educational resources, we aim to empower individuals and families to make healthier lifestyle choices and experience abundant life.
+
+## Resources
+
+- [Joy of Eating recipes](https://nadhealth.org/joyofeating/recipes/)
+- [It Is Written health resources playlist](https://itiswritten.tv/playlists/107)
+
+## Upcoming Event: Diabetes Undone Seminar
+
+Take control of your health and discover a better way to live.
+
+Join us at First Springfield Seventh-day Adventist Church for our upcoming [Diabetes Undone Seminar](/events/2026-04-20-diabetes-undone-seminar), an 8-week program designed to help participants understand and take steps toward reversing type 2 diabetes through natural, lifestyle-based approaches.
+
+- Start date: Monday, April 20, 2026
+- Time: 7:00 PM
+- Location: First Springfield Seventh-day Adventist Church
+- Duration: 8 weeks
 </file>
 
 <file path="web/src/content/updates/_building-annex-closed.md">
@@ -3383,85 +3477,6 @@ const buildThankYouUrl = (origin?: string) => {
 };
 
 export { formAction, usesCustomFormAction, turnstileSiteKey, buildThankYouUrl };
-</file>
-
-<file path="web/src/pages/accessibility/index.astro">
----
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import Hero from "../../components/ui/Hero.astro";
-import { mailto, tel } from "../../lib/links";
-import { site } from "../../data/site";
-
-const reviewDate = "February 12, 2026";
-const contactPage = "/connect/contact";
-const contactEmailHref = mailto(site.contact.email);
-const contactPhoneHref = tel(site.contact.phone);
----
-
-<BaseLayout
-  title="Accessibility"
-  description="Accessibility statement for the First Springfield SDA Church website."
->
-  <div class="stack">
-    <Hero
-      title="Accessibility"
-      subtitle="We are committed to keeping this website welcoming for every guest."
-    />
-
-    <section class="card stack">
-      <h2>Our commitment</h2>
-      <p class="muted">
-        First Springfield Seventh-day Adventist Church strives to provide an accessible online experience for everyone,
-        including people with visual, hearing, mobility, or cognitive differences. We follow W3C WAI guidance when
-        designing new pages and maintaining existing content so you can find worship times, ministry updates, and
-        ways to connect without barriers.
-      </p>
-
-      <h2>Conformance target</h2>
-      <p class="muted">
-        The site is built with the goal of conforming to WCAG 2.2 Level AA success criteria. We rely on semantic HTML,
-        meaningful heading structure, descriptive alt text, high contrast palettes, focus-visible outlines, and
-        keyboard-friendly components to support broad accessibility. Every major update goes through accessibility
-        review before it goes live.
-      </p>
-
-      <h2>Known limitations</h2>
-      <p class="muted">
-        While we work toward full conformance, there are a few areas that remain in progress:
-      </p>
-      <ul class="muted">
-        <li>
-          Third-party giving, prayer, and volunteer tools are hosted on external platforms, and we cannot guarantee that their
-          entire workflow meets WCAG 2.2 AA.
-        </li>
-        <li>
-          Live streams and archived media rely on YouTube for playback and captions, so availability depends on the channel host.
-        </li>
-        <li>
-          Some downloadable PDFs and older documents shared on the site have not yet been remediated for assistive technologies.
-        </li>
-      </ul>
-
-      <h2>Feedback</h2>
-      <p class="muted">
-        If you encounter an accessibility barrier, please let us know. Email us at
-        <a href={contactEmailHref}>{site.contact.email}</a>, call
-        <a href={contactPhoneHref}>{site.contact.phone}</a>, or use our
-        <a href={contactPage}>contact form</a>. We aim to respond within two business days and will describe alternative
-        ways to access the information or service you need.
-      </p>
-
-      <h2>Assessment</h2>
-      <p class="muted">
-        We combine manual keyboard and screen reader testing with automated checks (for example: Lighthouse, axe, and contrast
-        analyzers) whenever we publish new content. After major feature releases we re-run these audits and invite volunteer
-        feedback so we can keep improving.
-      </p>
-
-      <p class="small muted">Statement last reviewed on {reviewDate}.</p>
-    </section>
-  </div>
-</BaseLayout>
 </file>
 
 <file path="web/src/pages/resources/announcements/rss.xml.ts">
@@ -3980,80 +3995,6 @@ test("connect card keeps hidden address summary updated and enforces interest se
 });
 </file>
 
-<file path="web/tests/e2e/ministry-refresh.spec.ts">
-import { expect, test } from "@playwright/test";
-
-test("calendar is available in desktop nav and mobile menu", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
-
-  const desktopNav = page.locator("nav.nav--desktop");
-  await expect(desktopNav.getByRole("link", { name: "Calendar", exact: true })).toBeVisible();
-
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
-
-  const menu = page.locator("details.menu");
-  await expect(menu).toBeVisible();
-  await menu.locator("summary").click();
-  await expect(menu.getByRole("link", { name: "Calendar", exact: true })).toBeVisible();
-});
-
-test("ministries hub lists only active public ministry tiles", async ({ page }) => {
-  await page.goto("/ministries");
-
-  await expect(page.getByText("Only currently active ministries are listed here.")).toBeVisible();
-  await expect(page.locator("main")).not.toContainText("Men's Ministry");
-  await expect(page.locator("main")).not.toContainText("Social Ministry");
-  await expect(page.locator("main")).not.toContainText("Music Ministry");
-  await expect(page.locator("main")).not.toContainText("Adventurer Club");
-  await expect(page.getByRole("link", { name: /Pathfinders & Adventurers/i })).toBeVisible();
-});
-
-test("combined Pathfinders page carries shared club resources", async ({ page }) => {
-  await page.goto("/ministries/pathfinders");
-
-  await expect(page.getByRole("heading", { name: "Adventurers", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Pathfinders", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Registration, resources, and contact", exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Register Now", exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "View Memo", exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "View campus calendar", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Payment & dues", exact: true })).toBeVisible();
-});
-
-test("adventurer handoff routes point families to the combined page and calendar", async ({ page }) => {
-  await page.goto("/ministries/adventurers");
-  await expect(page.getByRole("heading", { name: "Adventurer information moved", exact: true })).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: /Pathfinders & Adventurers page/i }).first(),
-  ).toBeVisible();
-
-  await page.goto("/ministries/adventurers/events");
-  await expect(page.getByRole("heading", { name: "Adventurer schedule", exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "View campus calendar", exact: true }).first()).toBeVisible();
-});
-
-test("calendar, ministries, and contact stay usable on narrow mobile widths", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-
-  for (const path of ["/calendar", "/ministries", "/connect/contact"]) {
-    await page.goto(path);
-
-    const hasHorizontalOverflow = await page.evaluate(
-      () => document.documentElement.scrollWidth > window.innerWidth,
-    );
-    expect(hasHorizontalOverflow).toBe(false);
-  }
-
-  await page.goto("/calendar");
-  await expect(page.getByRole("button", { name: "Load live calendar", exact: true })).toBeVisible();
-
-  await page.goto("/connect/contact");
-  await expect(page.locator(".contact-topics__row--head")).toBeHidden();
-});
-</file>
-
 <file path="web/tests/unit/activity-utils.spec.ts">
 import { expect, test } from "vitest";
 import {
@@ -4481,140 +4422,6 @@ This repo runs on the latest dependencies pinned in `web/package-lock.json`. Sec
 - Keep dependencies up to date (`npm update` inside `web/` and rerun `npm run qa`).
 - Avoid committing secrets or tokens; use the GitHub secrets store for private configuration.
 - Document security implications of large changes in both the PR body and `docs/ui-reliability.md` when relevant.
-</file>
-
-<file path="docs/ui-handoff.md">
-# UI Handoff - First Springfield SDA Website
-
-## 1) Design goals
-
-- Calm, readable, welcoming tone with generous breathing room and restrained color.
-- Mobile-first layout, fast loads, minimal JS (Astro SSR + partial hydration only where necessary).
-- Accessible interactions: clear focus-visible rings, 44px+ tap targets, text that reads well across screen sizes.
-
-## 2) Breakpoints (responsive rules)
-
-Source of truth: `web/src/styles/global.css`.
-
-- Base: mobile-first stack — `.stack`, hero, cards, and nav all stack vertically using tokens so there is no media query assumption.
-- `@media (max-width: 860px)`: tightens global spacing in `global.css` by reducing `--container-pad` and `.main` padding to `var(--space-6)` while keeping all sections legible.
-- `Header.astro @media (max-width: 1100px)`: hides the desktop header nav/CTA stack and switches to the mobile CTA row plus `details.menu` disclosure panel.
-- `@media (max-width: 520px)` and `(max-width: 420px)`: collapse footer columns into single-column flow and hide the menu label to preserve tap area while keeping the icon visible.
-
-## 3) Spacing scale (tokens)
-
-Source of truth: `web/src/styles/tokens.css`.
-
-| Token        | Intended use                                      | Examples                                                          |
-| ------------ | ------------------------------------------------- | ----------------------------------------------------------------- |
-| `--space-1`  | micro gaps or icon/text separation                | `header .brand` gap, `.footer-contact` stack spacing              |
-| `--space-2`  | petite padding between inline elements            | button gutters, card subtitle margin, `.col-body` link spacing    |
-| `--space-3`  | standard rhythm between sections                  | `.stack` spacing, hero actions gap, mobile nav spacing            |
-| `--space-4`  | generous separation / nested stacks               | hero-inner gap, `.hero` vs hero background, `grid` gap            |
-| `--space-6`  | card padding or section padding inside containers | `.card` padding, `.inner` padding top/bottom, footer body padding |
-| `--space-8`  | container padding and major vertical gaps         | `.main` padding, `Header` inner padding, `.stack--loose`          |
-| `--space-12` | extra-wide sections if/when needed                | large hero spacing or future horizontal rules                     |
-
-Implementation notes:
-
-- Import tokens once (`@import "./tokens.css"`) and reference via `var(--space-*)` to keep vertical rhythm consistent.
-- Use `.stack`, `.grid`, and `.cluster` utility classes from `global.css` so spacing scales with the same token set rather than hard-coded px values.
-
-## 4) Typography scale (global rules)
-
-Source of truth: `web/src/styles/global.css`.
-
-- Base `body` font size is `var(--font-size-1)` (1rem) with a 1.6 line-height.
-- Headings rely on `clamp()` for responsiveness:
-  - `h1`: clamp(2.2rem, 1.6rem + 2.4vw, 3.2rem) for hero-level impact.
-  - `h2`: clamp(1.6rem, 1.2rem + 1.6vw, 2.4rem) for section headers.
-  - `h3`: clamp(1.25rem, 1.05rem + 1vw, 1.7rem) for subsections.
-- Paragraphs and lists are capped at 70ch to hit the 60–80ch readability target.
-- Hero component overrides `h1` (`clamp(2.4rem ... 3.5rem)`) and adds a `muted` subtitle with its own clamp.
-
-## 5) Color + elevation
-
-Source of truth: `web/src/styles/tokens.css`.
-
-- Surfaces: `--color-bg`, `--color-surface`, `--color-surface-2`, and `--color-surface-muted` keep backgrounds and cards light.
-- Text: `--color-text`, `--color-text-muted`, `--color-primary`, `--color-primary-hover`, and `--color-focus` drive links, CTAs, and focus outlines.
-- Borders use `--color-border` / `--color-border-strong` with consistent `--radius-*` rounding (cards, buttons, menu, footer).
-- Elevation: `--shadow-1` for cards, `--shadow-2` for hover states (cards, menu panel), no complex layering keeps performance predictable.
-
-## 6) Components catalog (what exists + how to use)
-
-### Button
-
-File: `web/src/components/ui/Button.astro`
-
-- Variants: `primary` (solid key actions), `secondary` (light background, dark border), `ghost` (transparent, outlines), plus implicit text/inline usage through `ButtonLink`.
-- Sizes: `sm`, `md`, `lg` adjust font-size (vars `--font-size-0..2`) and padding (`--space-2..6`).
-- States:
-  - `hover`: darkens (`--color-primary-hover`) or swaps to gray hover fills.
-  - `focus-visible`: global `outline: 3px solid var(--color-focus)` via `global.css` keeps keyboard nav visible.
-  - `disabled`: not styled explicitly, so rely on native browser styling; add `disabled` prop before applying `Button` for future needs.
-- Uses `var(--space-2)` for gaps and ensures `min-height: var(--target-min)` for 44px tap targets.
-
-### Card
-
-File: `web/src/components/ui/Card.astro`
-
-- Reused for service cards, announcements, and hero wrapper (`<section class="hero card">`).
-- Provides `card`/`card--link` classes defined globally (background, border, radius, shadows) and tailored title/description text.
-- Outline: `card__title` uses `--font-size-2`, `card__desc` uses `muted` color, and CTAs reuse `.link` styling for hover/focus.
-
-### Hero
-
-File: `web/src/components/ui/Hero.astro`
-
-- Wraps title/subtitle + CTA buttons in `.hero.card` to reuse card surface rules.
-- `hero__inner` grid uses `--space-4`; `hero__title` and `hero__subtitle` each define their own `clamp()` scalings.
-- CTA stack uses `--space-3` so buttons align vertically on mobile yet stay horizontal when space is available.
-
-### Header / Nav
-
-File: `web/src/components/global/Header.astro`
-
-- Brand link + nav items are laid out in a 3-column grid inside `.inner` with container padding/token values.
-- Desktop nav stays active above `1100px`; at and below `1100px`, the header switches to a mobile CTA row plus `details.menu` / `.menu__panel`.
-- Nav links highlight active route (`aria-current`) and use `var(--space-2)` gaps, so `--space-3` spacing between the nav cluster and CTA group.
-- Mobile menu uses `var(--shadow-2)` and `--radius-3` to match overall surface language; the disclosure script closes on link click, outside click, `Escape`, and when resizing back above the mobile breakpoint.
-- `Watch Live` and `Give` stay visible in the mobile header CTA row and are not duplicated inside the disclosure panel; the panel holds primary nav plus utility links.
-
-### Footer
-
-File: `web/src/components/global/Footer.astro`
-
-- Two-part layout: info column + nav grid, all inside `.inner` with `var(--space-6)` padding.
-- Uses `.links` helper and `var(--space-2)` gap to keep links stacked, and `@media (max-width: 520px)` collapses columns to full width.
-- Includes dynamic sections (primary/exploratory nav, quick actions, service times) sourced from `site.nav`, `site.quickActions`, and `site.schedule`.
-
-## 7) Accessibility checklist (project expectations)
-
-- Keyboard navigation: global `a:focus-visible`, `button:focus-visible`, and `summary:focus-visible` outlines defined in `global.css` for consistent focus states.
-- Skip link (`.skip-link`) is available globally and reveals itself on focus so screen-reader/keyboard users can jump straight to `.main`.
-- Tap targets: `--target-min` enforces 44px+ heights for buttons, nav pills, menu links.
-- Semantic text: `heading` scalings, `muted` helpers, and list height constraints keep readability high, and `Hero` CTA order remains logical.
-- Images (e.g., `Hero` and CTA icons) should always include `alt` text from the content source; decorative elements rely on empty `alt`.
-
-## 8) “Design-to-code” notes
-
-- Tokens live in `web/src/styles/tokens.css` and are the single source for spacing, color, radius, and typography values.
-- Components (`Button`, `Card`, `Hero`, `Header`, `Footer`) rely on tokens instead of raw px to preserve rhythm as screen widths change.
-- Responsive rules mirror tokens: `.stack`, `.grid`, `.container`, and media queries share numeric values from the tokens file for predictable scaling.
-- Animations/transitions are minimal (`120–160ms ease`) and tied to hover/focus states in `global.css`; keep new interactions aligned with that timing.
-
-## 9) Screenshots & callouts
-
-- ![Home hero callout](assets/home-hero.png) Spacing uses `--space-3` between stacked sections, matching the `.stack` gap in `global.css`.
-- ![Plan a Visit callout](assets/plan-visit.png) Typography: `h2` uses `clamp()` to scale with viewport width (`global.css`).
-- ![Footer callout](assets/footer.png) Footer spacing leans on `--space-4`/`--space-6` to keep columns breathing and align with the header container.
-
-## 10) Decision log
-
-- Why Astro: content-first rendering with partial hydration keeps the site fast and lets us pull in Markdown/data without heavy bundling.
-- Why tokens: centralized spacing/color/typescale means any new component can reuse variables instead of uncoordinated values.
-- Why smoke tests: quick, cross-engine smoke tests give confidence that renders stay consistent without slowing down the full CI pipeline.
 </file>
 
 <file path="web/public/scripts/highlights-carousel.js">
@@ -6310,6 +6117,86 @@ export function getRecentUpdates(entries: UpdateEntry[], limit = 4) {
 }
 </file>
 
+<file path="web/src/pages/accessibility/index.astro">
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Hero from "../../components/ui/Hero.astro";
+import { mailto, tel } from "../../lib/links";
+import { site } from "../../data/site";
+
+const reviewDate = "April 8, 2026";
+const contactPage = "/connect/contact";
+const contactEmailHref = mailto(site.contact.email);
+const contactPhoneHref = tel(site.contact.phone);
+---
+
+<BaseLayout
+  title="Accessibility"
+  description="Accessibility statement for the First Springfield SDA Church website."
+>
+  <div class="stack">
+    <Hero
+      title="Accessibility"
+      subtitle="We are committed to keeping this website welcoming for every guest."
+    />
+
+    <section class="card stack">
+      <h2>Our commitment</h2>
+      <p class="muted">
+        First Springfield Seventh-day Adventist Church strives to provide an accessible online experience for everyone,
+        including people with visual, hearing, mobility, or cognitive differences. We follow W3C WAI guidance when
+        designing new pages and maintaining existing content so you can find worship times, ministry updates, and
+        ways to connect without barriers.
+      </p>
+
+      <h2>Conformance target</h2>
+      <p class="muted">
+        The site is built with the goal of conforming to WCAG 2.2 Level AA success criteria. We rely on semantic HTML,
+        meaningful heading structure, descriptive alt text, high contrast palettes, focus-visible outlines, and
+        keyboard-friendly components to support broad accessibility. We choose link and action colors based on contrast
+        with their background, not a single preset color, and we test new pages against WCAG color-contrast targets.
+        Every major update goes through accessibility review before it goes live.
+      </p>
+
+      <h2>Known limitations</h2>
+      <p class="muted">
+        While we work toward full conformance, there are a few areas that remain in progress:
+      </p>
+      <ul class="muted">
+        <li>
+          Third-party giving, prayer, and volunteer tools are hosted on external platforms, and we cannot guarantee that their
+          entire workflow meets WCAG 2.2 AA.
+        </li>
+        <li>
+          Live streams and archived media rely on YouTube for playback and captions, so availability depends on the channel host.
+        </li>
+        <li>
+          Some downloadable PDFs and older documents shared on the site have not yet been remediated for assistive technologies.
+        </li>
+      </ul>
+
+      <h2>Feedback</h2>
+      <p class="muted">
+        If you encounter an accessibility barrier, please let us know. Email us at
+        <a href={contactEmailHref}>{site.contact.email}</a>, call
+        <a href={contactPhoneHref}>{site.contact.phone}</a>, or use our
+        <a href={contactPage}>contact form</a>. We aim to respond within two business days and will describe alternative
+        ways to access the information or service you need.
+      </p>
+
+      <h2>Assessment</h2>
+      <p class="muted">
+        We combine manual keyboard and screen reader testing with automated checks (for example: Lighthouse, axe, and contrast
+        analyzers) whenever we publish new content. After major feature releases we re-run these audits and invite volunteer
+        feedback so we can keep improving.
+      </p>
+
+      <p class="small muted">Statement last reviewed on {reviewDate}.</p>
+    </section>
+  </div>
+</BaseLayout>
+</file>
+
 <file path="web/src/pages/api/connect-card.ts">
 import type { APIRoute } from "astro";
 import { site } from "../../data/site";
@@ -6946,6 +6833,95 @@ test.describe("Header layout", () => {
 });
 </file>
 
+<file path="web/tests/e2e/ministry-refresh.spec.ts">
+import { expect, test } from "@playwright/test";
+
+test("calendar is available in desktop nav and mobile menu", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  const desktopNav = page.locator("nav.nav--desktop");
+  await expect(desktopNav.getByRole("link", { name: "Calendar", exact: true })).toBeVisible();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const menu = page.locator("details.menu");
+  await expect(menu).toBeVisible();
+  await menu.locator("summary").click();
+  await expect(menu.getByRole("link", { name: "Calendar", exact: true })).toBeVisible();
+});
+
+test("ministries hub lists public ministry tiles and keeps hidden handoff pages out of view", async ({ page }) => {
+  await page.goto("/ministries");
+
+  await expect(page.getByText("Only currently active ministries are listed here.")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Health Ministry/i })).toBeVisible();
+  await expect(page.locator("main")).not.toContainText("Adventurer Club");
+  await expect(page.getByRole("link", { name: /Pathfinders & Adventurers/i })).toBeVisible();
+});
+
+test("health ministry page renders approved content and seminar details", async ({ page }) => {
+  await page.goto("/ministries/health-ministry");
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Health Ministry", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator("main")).toContainText("Coordinator: Gary Peiffer");
+  await expect(page.getByRole("heading", { name: "Our Health Principles", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "The NEWSTART Approach", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Upcoming Event: Diabetes Undone Seminar", exact: true })).toBeVisible();
+  await expect(page.locator("main")).toContainText("Monday, April 20, 2026");
+  await expect(page.locator("main")).toContainText("7:00 PM");
+  await expect(
+    page.getByRole("link", { name: "Diabetes Undone Seminar", exact: true }),
+  ).toBeVisible();
+});
+
+test("combined Pathfinders page carries shared club resources", async ({ page }) => {
+  await page.goto("/ministries/pathfinders");
+
+  await expect(page.getByRole("heading", { name: "Adventurers", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Pathfinders", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Registration, resources, and contact", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Register Now", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "View Memo", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "View campus calendar", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Payment & dues", exact: true })).toBeVisible();
+});
+
+test("adventurer handoff routes point families to the combined page and calendar", async ({ page }) => {
+  await page.goto("/ministries/adventurers");
+  await expect(page.getByRole("heading", { name: "Adventurer information moved", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /Pathfinders & Adventurers page/i }).first(),
+  ).toBeVisible();
+
+  await page.goto("/ministries/adventurers/events");
+  await expect(page.getByRole("heading", { name: "Adventurer schedule", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "View campus calendar", exact: true }).first()).toBeVisible();
+});
+
+test("calendar, ministries, and contact stay usable on narrow mobile widths", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  for (const path of ["/calendar", "/ministries", "/connect/contact"]) {
+    await page.goto(path);
+
+    const hasHorizontalOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > window.innerWidth,
+    );
+    expect(hasHorizontalOverflow).toBe(false);
+  }
+
+  await page.goto("/calendar");
+  await expect(page.getByRole("button", { name: "Load live calendar", exact: true })).toBeVisible();
+
+  await page.goto("/connect/contact");
+  await expect(page.locator(".contact-topics__row--head")).toBeHidden();
+});
+</file>
+
 <file path="web/tests/e2e/phase-7-sitefiles.spec.ts">
 import { expect, test } from "@playwright/test";
 
@@ -7492,6 +7468,141 @@ The front-end script also ensures at least one `interests[]` checkbox is checked
 - The built-in `/api/connect-card` route fails closed if any of the required secrets (`PRIVATE_TURNSTILE_SECRET_KEY`, `PRIVATE_CONNECT_CARD_FORWARD_URL`, `PUBLIC_TURNSTILE_SITE_KEY`) are missing, so make sure your hosting environment defines them before going live.
 - Use `CONNECT_CARD_NOTIFY_EMAILS` (comma-separated list) and `CONNECT_CARD_NOTIFY_FROM` to route email alerts via SendGrid, or set `CONNECT_CARD_NOTIFY_EMAILS` empty if you prefer forwarding only to your script.
 - Rate limiting is not enforced inside the handler itself; protect the endpoint with your host’s edge rules (Cloudflare rate limiting, a WAF, or platform throttling) to guard against automated abuse before submissions reach the Turnstile check.
+</file>
+
+<file path="docs/ui-handoff.md">
+# UI Handoff - First Springfield SDA Website
+
+## 1) Design goals
+
+- Calm, readable, welcoming tone with generous breathing room and restrained color.
+- Mobile-first layout, fast loads, minimal JS (Astro SSR + partial hydration only where necessary).
+- Accessible interactions: clear focus-visible rings, 44px+ tap targets, text that reads well across screen sizes.
+
+## 2) Breakpoints (responsive rules)
+
+Source of truth: `web/src/styles/global.css`.
+
+- Base: mobile-first stack — `.stack`, hero, cards, and nav all stack vertically using tokens so there is no media query assumption.
+- `@media (max-width: 860px)`: tightens global spacing in `global.css` by reducing `--container-pad` and `.main` padding to `var(--space-6)` while keeping all sections legible.
+- `Header.astro @media (max-width: 1100px)`: hides the desktop header nav/CTA stack and switches to the mobile CTA row plus `details.menu` disclosure panel.
+- `@media (max-width: 520px)` and `(max-width: 420px)`: collapse footer columns into single-column flow and hide the menu label to preserve tap area while keeping the icon visible.
+
+## 3) Spacing scale (tokens)
+
+Source of truth: `web/src/styles/tokens.css`.
+
+| Token        | Intended use                                      | Examples                                                          |
+| ------------ | ------------------------------------------------- | ----------------------------------------------------------------- |
+| `--space-1`  | micro gaps or icon/text separation                | `header .brand` gap, `.footer-contact` stack spacing              |
+| `--space-2`  | petite padding between inline elements            | button gutters, card subtitle margin, `.col-body` link spacing    |
+| `--space-3`  | standard rhythm between sections                  | `.stack` spacing, hero actions gap, mobile nav spacing            |
+| `--space-4`  | generous separation / nested stacks               | hero-inner gap, `.hero` vs hero background, `grid` gap            |
+| `--space-6`  | card padding or section padding inside containers | `.card` padding, `.inner` padding top/bottom, footer body padding |
+| `--space-8`  | container padding and major vertical gaps         | `.main` padding, `Header` inner padding, `.stack--loose`          |
+| `--space-12` | extra-wide sections if/when needed                | large hero spacing or future horizontal rules                     |
+
+Implementation notes:
+
+- Import tokens once (`@import "./tokens.css"`) and reference via `var(--space-*)` to keep vertical rhythm consistent.
+- Use `.stack`, `.grid`, and `.cluster` utility classes from `global.css` so spacing scales with the same token set rather than hard-coded px values.
+
+## 4) Typography scale (global rules)
+
+Source of truth: `web/src/styles/global.css`.
+
+- Base `body` font size is `var(--font-size-1)` (1rem) with a 1.6 line-height.
+- Headings rely on `clamp()` for responsiveness:
+  - `h1`: clamp(2.2rem, 1.6rem + 2.4vw, 3.2rem) for hero-level impact.
+  - `h2`: clamp(1.6rem, 1.2rem + 1.6vw, 2.4rem) for section headers.
+  - `h3`: clamp(1.25rem, 1.05rem + 1vw, 1.7rem) for subsections.
+- Paragraphs and lists are capped at 70ch to hit the 60–80ch readability target.
+- Hero component overrides `h1` (`clamp(2.4rem ... 3.5rem)`) and adds a `muted` subtitle with its own clamp.
+
+## 5) Color + elevation
+
+Source of truth: `web/src/styles/tokens.css`.
+
+- Surfaces: `--color-bg`, `--color-surface`, `--color-surface-2`, and `--color-surface-muted` keep backgrounds and cards light.
+- Text: `--color-text`, `--color-text-muted`, `--color-primary`, `--color-primary-hover`, and `--color-focus` drive links, CTAs, and focus outlines.
+- Contrast policy: use WCAG AA minimums of 4.5:1 for normal text and 3:1 for large text and key UI components. Approved dark-blue action/link values are `#005EA2` and `#274863`; pale blue tokens such as `--color-primary-soft` and `--color-cta-secondary` are for surfaces only, not text.
+- Borders use `--color-border` / `--color-border-strong` with consistent `--radius-*` rounding (cards, buttons, menu, footer).
+- Elevation: `--shadow-1` for cards, `--shadow-2` for hover states (cards, menu panel), no complex layering keeps performance predictable.
+
+## 6) Components catalog (what exists + how to use)
+
+### Button
+
+File: `web/src/components/ui/Button.astro`
+
+- Variants: `primary` (solid key actions), `secondary` (light background, dark border), `ghost` (transparent, outlines), plus implicit text/inline usage through `ButtonLink`.
+- Sizes: `sm`, `md`, `lg` adjust font-size (vars `--font-size-0..2`) and padding (`--space-2..6`).
+- States:
+  - `hover`: darkens (`--color-primary-hover`) or swaps to gray hover fills.
+  - `focus-visible`: global `outline: 3px solid var(--color-focus)` via `global.css` keeps keyboard nav visible.
+  - `disabled`: not styled explicitly, so rely on native browser styling; add `disabled` prop before applying `Button` for future needs.
+- Uses `var(--space-2)` for gaps and ensures `min-height: var(--target-min)` for 44px tap targets.
+
+### Card
+
+File: `web/src/components/ui/Card.astro`
+
+- Reused for service cards, announcements, and hero wrapper (`<section class="hero card">`).
+- Provides `card`/`card--link` classes defined globally (background, border, radius, shadows) and tailored title/description text.
+- Outline: `card__title` uses `--font-size-2`, `card__desc` uses `muted` color, and CTAs reuse `.link` styling for hover/focus.
+
+### Hero
+
+File: `web/src/components/ui/Hero.astro`
+
+- Wraps title/subtitle + CTA buttons in `.hero.card` to reuse card surface rules.
+- `hero__inner` grid uses `--space-4`; `hero__title` and `hero__subtitle` each define their own `clamp()` scalings.
+- CTA stack uses `--space-3` so buttons align vertically on mobile yet stay horizontal when space is available.
+
+### Header / Nav
+
+File: `web/src/components/global/Header.astro`
+
+- Brand link + nav items are laid out in a 3-column grid inside `.inner` with container padding/token values.
+- Desktop nav stays active above `1100px`; at and below `1100px`, the header switches to a mobile CTA row plus `details.menu` / `.menu__panel`.
+- Nav links highlight active route (`aria-current`) and use `var(--space-2)` gaps, so `--space-3` spacing between the nav cluster and CTA group.
+- Mobile menu uses `var(--shadow-2)` and `--radius-3` to match overall surface language; the disclosure script closes on link click, outside click, `Escape`, and when resizing back above the mobile breakpoint.
+- `Watch Live` and `Give` stay visible in the mobile header CTA row and are not duplicated inside the disclosure panel; the panel holds primary nav plus utility links.
+
+### Footer
+
+File: `web/src/components/global/Footer.astro`
+
+- Two-part layout: info column + nav grid, all inside `.inner` with `var(--space-6)` padding.
+- Uses `.links` helper and `var(--space-2)` gap to keep links stacked, and `@media (max-width: 520px)` collapses columns to full width.
+- Includes dynamic sections (primary/exploratory nav, quick actions, service times) sourced from `site.nav`, `site.quickActions`, and `site.schedule`.
+
+## 7) Accessibility checklist (project expectations)
+
+- Keyboard navigation: global `a:focus-visible`, `button:focus-visible`, and `summary:focus-visible` outlines defined in `global.css` for consistent focus states.
+- Skip link (`.skip-link`) is available globally and reveals itself on focus so screen-reader/keyboard users can jump straight to `.main`.
+- Tap targets: `--target-min` enforces 44px+ heights for buttons, nav pills, menu links.
+- Semantic text: `heading` scalings, `muted` helpers, and list height constraints keep readability high, and `Hero` CTA order remains logical.
+- Images (e.g., `Hero` and CTA icons) should always include `alt` text from the content source; decorative elements rely on empty `alt`.
+
+## 8) “Design-to-code” notes
+
+- Tokens live in `web/src/styles/tokens.css` and are the single source for spacing, color, radius, and typography values.
+- Components (`Button`, `Card`, `Hero`, `Header`, `Footer`) rely on tokens instead of raw px to preserve rhythm as screen widths change.
+- Responsive rules mirror tokens: `.stack`, `.grid`, `.container`, and media queries share numeric values from the tokens file for predictable scaling.
+- Animations/transitions are minimal (`120–160ms ease`) and tied to hover/focus states in `global.css`; keep new interactions aligned with that timing.
+
+## 9) Screenshots & callouts
+
+- ![Home hero callout](assets/home-hero.png) Spacing uses `--space-3` between stacked sections, matching the `.stack` gap in `global.css`.
+- ![Plan a Visit callout](assets/plan-visit.png) Typography: `h2` uses `clamp()` to scale with viewport width (`global.css`).
+- ![Footer callout](assets/footer.png) Footer spacing leans on `--space-4`/`--space-6` to keep columns breathing and align with the header container.
+
+## 10) Decision log
+
+- Why Astro: content-first rendering with partial hydration keeps the site fast and lets us pull in Markdown/data without heavy bundling.
+- Why tokens: centralized spacing/color/typescale means any new component can reuse variables instead of uncoordinated values.
+- Why smoke tests: quick, cross-engine smoke tests give confidence that renders stay consistent without slowing down the full CI pipeline.
 </file>
 
 <file path="web/src/components/contact/ContactPage.astro">
@@ -8354,6 +8465,31 @@ The Media & Audio Visual team keeps the gospel in focus with live streaming, ser
 - “Facebook: [First Springfield SDA Church](https://www.facebook.com/firstspringfieldsda/)”
 </file>
 
+<file path="web/src/content/ministries/music-ministry.md">
+---
+title: "Music Ministry"
+summary: "Leading worship through choir, praise teams, and congregational music that reflects our multicultural story."
+leaderName: "Berline Guirand"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "Choir rehearsals Thursdays at 7:00 PM, with weekly preparation for Sabbath worship."
+category: "Other"
+tags: ["music", "worship", "choir", "praise"]
+---
+
+## Music Ministry
+
+Our Music Ministry invites voices, instruments, and hearts of every age to lift Jesus in worship. We celebrate a variety of musical traditions that reflect Springfield’s diverse congregational family—from gospel choirs and praise teams to orchestral and acoustic specials.
+
+### Choirs & Ensembles
+
+• Adults, youth, and children rehearse together and separately during the week so each Sabbath service includes a thoughtful blend of voices, instrumental praise, and moments for congregational singing.
+• Special music is coordinated for holidays, communion weekends, evangelism events, and community outreach services.
+
+### Participation & Contact
+
+Everyone is welcome to join, whether you read music or simply love to sing. Reach out to Music Director Berline Guirand at [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) to learn which ensemble is a good fit, discover rehearsal schedules, or request a piece for an upcoming worship service.
+</file>
+
 <file path="web/src/content/ministries/sabbath-school.md">
 ---
 title: "Sabbath School"
@@ -8428,6 +8564,32 @@ Need to send an announcement, update attendance, or ask a question about the bul
   3. Download links or embeds for the weekly bulletin/announcement PDFs (pulled from `/bulletins`).
   4. Accessibility/access instructions plus any additional microcopy the vendor was asked to provide.
 - Keep this section updated with finalized copy or design notes so the vendor can replace the temporary placeholder content as soon as the assets arrive.
+</file>
+
+<file path="web/src/content/ministries/social-ministry.md">
+---
+title: "Social Ministry"
+summary: "Hospitality, fellowship, and celebration events that help our people and neighbors feel known."
+leaderName: "Teddy Williamson · David McKenzie"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "Social events align with the church calendar and are announced in the weekly bulletin."
+category: "Outreach"
+tags: ["community", "fellowship", "hospitality", "events"]
+---
+
+## Social Ministry
+
+Our Social Ministry brings intentional hospitality to First Springfield—creating meals, fellowship nights, celebrations, and shared meals that welcome members and neighbors alike.
+
+### Events & Fellowship
+
+• Community-friendly potlucks, seasonal celebrations, and dessert socials help us stay connected after worship and during special seasons.
+• Hospitality is also woven into milestone events such as graduations, anniversaries, and fellowship after memorials or outreach programs.
+• The Social Committee partners with other ministries (like Adventist Community Services and Vacation Bible School) to make sure every gathering feels warm and well-planned.
+
+### Join the Committee
+
+To suggest a gathering, bring a recipe, or help serve, email the Social Committee (Teddy Williamson · David McKenzie) at [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com). Volunteers are welcome for setup, clean-up, decorating, and hospitality teams.
 </file>
 
 <file path="web/src/data/homeContent.ts">
@@ -10805,29 +10967,6 @@ const listItems = [
 </style>
 </file>
 
-<file path="web/tests/e2e/content-collections.spec.ts">
-import { expect, test } from "@playwright/test";
-
-test("Events hub loads", async ({ page }) => {
-  await page.goto("/events");
-  await expect(
-    page.getByRole("heading", { name: "Events", exact: true }),
-  ).toBeVisible();
-});
-
-test("Ministries hub loads", async ({ page }) => {
-  await page.goto("/ministries");
-  await expect(page.getByRole("heading", { name: "Ministries", exact: true })).toBeVisible();
-});
-
-test("Resources hub loads", async ({ page }) => {
-  await page.goto("/resources");
-  await expect(
-    page.getByRole("heading", { name: "Resources", exact: true }),
-  ).toBeVisible();
-});
-</file>
-
 <file path="web/tests/e2e/highlights-carousel.spec.ts">
 import { expect, test } from "@playwright/test";
 
@@ -11547,6 +11686,26 @@ const year = new Date().getFullYear();
     <div class="small muted">© {year} {site.name}</div>
   </div>
 </footer>
+</file>
+
+<file path="web/src/content/ministries/mens-ministry.md">
+---
+title: "Men's Ministry"
+summary: "Brotherhood, prayer, and service to strengthen men of faith."
+leaderName: "Men's Ministry Team"
+leaderEmail: "firstspringfieldsda@gmail.com"
+meetingTime: "Fridays at 7:00 PM"
+category: "Men"
+tags: ["men", "fellowship", "service"]
+---
+
+## Overview
+
+We gather for encouragement, prayer, and practical ways to serve families and the church.
+
+## How to get involved
+
+Reach out to the leader or show up on a Friday night.
 </file>
 
 <file path="web/src/content/resources/2026/03/adventurer-club-memo.md">
@@ -12415,6 +12574,43 @@ const contactEmail = site.contact.email;
 </style>
 </file>
 
+<file path="web/tests/e2e/content-collections.spec.ts">
+import { expect, test } from "@playwright/test";
+
+test("Events hub loads", async ({ page }) => {
+  await page.goto("/events");
+  await expect(
+    page.getByRole("heading", { name: "Events", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /Diabetes Undone Seminar/i }),
+  ).toBeVisible();
+});
+
+test("Ministries hub loads", async ({ page }) => {
+  await page.goto("/ministries");
+  await expect(page.getByRole("heading", { name: "Ministries", exact: true })).toBeVisible();
+});
+
+test("health ministry event detail page loads", async ({ page }) => {
+  await page.goto("/events/2026-04-20-diabetes-undone-seminar");
+
+  await expect(
+    page.getByRole("heading", { name: "Diabetes Undone Seminar", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator("main")).toContainText("Monday, April 20, 2026");
+  await expect(page.locator("main")).toContainText("First Springfield Seventh-day Adventist Church");
+  await expect(page.locator("main")).toContainText("eight weeks");
+});
+
+test("Resources hub loads", async ({ page }) => {
+  await page.goto("/resources");
+  await expect(
+    page.getByRole("heading", { name: "Resources", exact: true }),
+  ).toBeVisible();
+});
+</file>
+
 <file path="web/astro.config.mjs">
 import cloudflare from "@astrojs/cloudflare";
 import mdx from "@astrojs/mdx";
@@ -12768,340 +12964,6 @@ const exploreMinistriesHref = "/ministries";
 </style>
 </file>
 
-<file path="web/src/components/ui/HighlightsScroller.astro">
----
-import weeklyHighlights from "../../data/weekly-highlights";
-
-const highlights = weeklyHighlights.filter(
-  (item) => item.text.trim().length > 0,
-);
-const isExternal = (href?: string) =>
-  typeof href === "string" && /^https?:\/\//.test(href);
-const hasMultipleSlides = highlights.length > 1;
----
-
-{
-  highlights.length > 0 ? (
-    <section
-      class="highlights-carousel"
-      aria-label="Weekly highlights carousel"
-    >
-      <div class="highlights-carousel__header">
-        <div class="highlights-carousel__heading-group">
-          <p class="highlights-carousel__eyebrow">This week</p>
-          <h2 class="highlights-carousel__heading">Church highlights</h2>
-        </div>
-        {hasMultipleSlides ? (
-          <div
-            class="highlights-carousel__controls"
-            aria-label="Highlight slide controls"
-          >
-            <button
-              class="highlights-carousel__control"
-              data-dir="prev"
-              type="button"
-              aria-label="Previous highlight"
-            >
-              &larr;
-            </button>
-            <button
-              class="highlights-carousel__control"
-              data-dir="next"
-              type="button"
-              aria-label="Next highlight"
-            >
-              &rarr;
-            </button>
-          </div>
-        ) : null}
-      </div>
-
-      <div class="highlights-carousel__viewport">
-        <div class="highlights-carousel__track" role="list">
-          {highlights.map((item, index) => (
-            <div
-              class="highlights-carousel__slide"
-              role="listitem"
-              data-slide-index={index}
-            >
-              <article class="highlights-carousel__card">
-                <div class="highlights-carousel__badge-row">
-                  {item.badge ? (
-                    <span class="highlights-carousel__badge">{item.badge}</span>
-                  ) : null}
-                  {item.tag ? (
-                    <span class="highlights-carousel__tag">{item.tag}</span>
-                  ) : null}
-                </div>
-                <p class="highlights-carousel__text">
-                  {item.href ? (
-                    <a
-                      href={item.href}
-                      target={isExternal(item.href) ? "_blank" : undefined}
-                      rel={isExternal(item.href) ? "noreferrer" : undefined}
-                    >
-                      {item.text}
-                    </a>
-                  ) : (
-                    item.text
-                  )}
-                </p>
-                {item.ctaHref && item.ctaLabel ? (
-                  <a
-                    class="highlights-carousel__cta"
-                    href={item.ctaHref}
-                    target={item.external ? "_blank" : undefined}
-                    rel={item.external ? "noreferrer" : undefined}
-                  >
-                    {item.ctaLabel}
-                  </a>
-                ) : null}
-              </article>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {hasMultipleSlides ? (
-        <div
-          class="highlights-carousel__dots"
-          role="tablist"
-          aria-label="Highlight slide navigation"
-        >
-          {highlights.map((_, index) => (
-            <button
-              type="button"
-              role="tab"
-              class="highlights-carousel__dot"
-              data-dot-index={index}
-              aria-label={`Show highlight ${index + 1}`}
-              aria-selected={index === 0 ? "true" : "false"}
-            />
-          ))}
-        </div>
-      ) : null}
-    </section>
-  ) : null
-}
-
-<script is:inline src="/scripts/highlights-carousel.js" defer></script>
-
-<style>
-  .highlights-carousel {
-    margin: 0;
-    border-radius: var(--radius-4);
-    background:
-      radial-gradient(
-        150% 100% at 0% 0%,
-        color-mix(in oklab, var(--color-primary) 16%, transparent) 0%,
-        transparent 70%
-      ),
-      var(--color-surface);
-    box-shadow: var(--shadow-2);
-    border: 1px solid
-      color-mix(in oklab, var(--color-border) 70%, var(--color-primary) 30%);
-    position: relative;
-    overflow: hidden;
-    padding: clamp(var(--space-4), 2.2vw, var(--space-6));
-    display: grid;
-    gap: var(--space-4);
-    color: var(--color-text);
-  }
-
-  .highlights-carousel__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: end;
-    gap: var(--space-3);
-  }
-
-  .highlights-carousel__heading-group {
-    display: grid;
-    gap: 0.25rem;
-    min-width: 0;
-  }
-
-  .highlights-carousel__eyebrow {
-    margin: 0;
-    font-size: 0.75rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    font-weight: 800;
-    color: var(--color-primary);
-  }
-
-  .highlights-carousel__heading {
-    margin: 0;
-    font-size: clamp(1.2rem, 0.98rem + 0.65vw, 1.5rem);
-  }
-
-  .highlights-carousel__controls {
-    display: inline-flex;
-    gap: var(--space-2);
-  }
-
-  .highlights-carousel__control {
-    width: 2.2rem;
-    height: 2.2rem;
-    border-radius: 999px;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    color: var(--color-primary);
-    font-weight: 700;
-    cursor: pointer;
-    line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .highlights-carousel__control:hover {
-    background: var(--color-surface-muted);
-  }
-
-  .highlights-carousel__viewport {
-    overflow: hidden;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-3);
-    background: color-mix(
-      in oklab,
-      var(--color-surface) 95%,
-      var(--color-surface-muted) 5%
-    );
-  }
-
-  .highlights-carousel__track {
-    display: flex;
-    transition: transform 0.6s ease-in-out;
-    will-change: transform;
-  }
-
-  .highlights-carousel__slide {
-    flex: 0 0 100%;
-    padding: clamp(var(--space-4), 2vw, var(--space-6));
-  }
-
-  .highlights-carousel__card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-  }
-
-  .highlights-carousel__badge-row {
-    display: flex;
-    gap: var(--space-2);
-    flex-wrap: wrap;
-  }
-
-  .highlights-carousel__badge,
-  .highlights-carousel__tag {
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.11em;
-    padding: 0.28rem 0.72rem;
-    border-radius: 999px;
-  }
-
-  .highlights-carousel__badge {
-    background: color-mix(
-      in oklab,
-      var(--color-surface-muted) 70%,
-      var(--color-primary) 30%
-    );
-    color: var(--color-primary);
-  }
-
-  .highlights-carousel__tag {
-    background: var(--color-primary);
-    color: var(--color-white);
-  }
-
-  .highlights-carousel__text {
-    margin: 0;
-    font-weight: 650;
-    font-size: clamp(1.03rem, 0.94rem + 0.33vw, 1.22rem);
-    line-height: 1.42;
-    color: var(--color-text);
-  }
-
-  .highlights-carousel__text a {
-    color: var(--color-text);
-    text-decoration-color: color-mix(
-      in oklab,
-      var(--color-primary) 30%,
-      transparent 70%
-    );
-  }
-
-  .highlights-carousel__text a:hover {
-    text-decoration-color: var(--color-primary);
-  }
-
-  .highlights-carousel__cta {
-    align-self: flex-start;
-    font-weight: 700;
-    color: var(--color-primary);
-    text-decoration: none;
-    border-bottom: 2px solid
-      color-mix(in oklab, var(--color-primary) 40%, transparent 60%);
-    padding-bottom: 0.12rem;
-  }
-
-  .highlights-carousel__cta:hover {
-    border-bottom-color: var(--color-primary);
-  }
-
-  .highlights-carousel__dots {
-    display: inline-flex;
-    justify-content: center;
-    gap: clamp(var(--space-2), 1vw, var(--space-3));
-    padding: var(--space-1) var(--space-2);
-  }
-
-  .highlights-carousel__dot {
-    width: 1.5rem;
-    height: 1.5rem;
-    border-radius: 999px;
-    border: 0;
-    background: color-mix(
-      in oklab,
-      var(--color-border) 70%,
-      var(--color-text-muted) 30%
-    );
-    cursor: pointer;
-    padding: 0;
-  }
-
-  .highlights-carousel__dot[aria-selected="true"] {
-    width: 2.2rem;
-    background: var(--color-primary);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .highlights-carousel__track {
-      transition: none;
-    }
-  }
-
-  @media (max-width: 720px) {
-    .highlights-carousel {
-      gap: var(--space-3);
-      padding: var(--space-4);
-    }
-
-    .highlights-carousel__header {
-      align-items: center;
-    }
-
-    .highlights-carousel__control {
-      width: 2rem;
-      height: 2rem;
-    }
-  }
-</style>
-</file>
-
 <file path="web/src/content/ministries/youth-young-adults.md">
 ---
 title: "Youth & Young Adults Ministry"
@@ -13297,66 +13159,6 @@ const fmt = new Intl.DateTimeFormat(site.locale, {
     </div>
   </section>
 </BaseLayout>
-</file>
-
-<file path="web/tests/e2e/phase-7-a11y.spec.ts">
-import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
-
-const PAGES = [
-  "/",
-  "/components",
-  "/connect/plan-a-visit",
-  "/connect/team",
-  "/events",
-  "/resources",
-  "/calendar",
-  "/media",
-  "/search",
-];
-
-for (const path of PAGES) {
-  test(`a11y (axe) - ${path}`, async ({ page }) => {
-    await page.goto(path);
-
-    if (path === "/search") {
-      await page
-        .locator("#site-search input.pagefind-ui__search-input")
-        .waitFor();
-
-      // Ensure the Pagefind input has a real label (axe: label-title-only)
-      await page.evaluate(() => {
-        const root = document.getElementById("site-search");
-        const input = root?.querySelector(
-          "input.pagefind-ui__search-input",
-        ) as HTMLInputElement | null;
-        const label = document.getElementById(
-          "site-search-label",
-        ) as HTMLLabelElement | null;
-
-        if (!input || !label) return;
-
-        input.id = "site-search-input";
-        input.setAttribute("aria-labelledby", "site-search-label");
-        input.setAttribute("aria-label", "Search the site");
-        input.removeAttribute("title");
-      });
-    }
-
-    const results = await new AxeBuilder({ page }).analyze();
-
-    const highImpact = results.violations.filter((v) => {
-      // The new design intentionally uses color combinations that fail axe's
-      // color-contrast rule; ignore that one while still surfacing other
-      // serious/critical violations.
-      if (v.id === "color-contrast") return false;
-
-      return ["serious", "critical"].includes(v.impact ?? "");
-    });
-
-    expect(highImpact).toEqual([]);
-  });
-}
 </file>
 
 <file path="README.md">
@@ -13843,6 +13645,62 @@ test.describe("Home layout regression", () => {
 });
 </file>
 
+<file path="web/tests/e2e/phase-7-a11y.spec.ts">
+import AxeBuilder from "@axe-core/playwright";
+import { expect, test } from "@playwright/test";
+
+const PAGES = [
+  "/",
+  "/accessibility",
+  "/components",
+  "/connect/plan-a-visit",
+  "/connect/team",
+  "/events",
+  "/resources",
+  "/calendar",
+  "/media",
+  "/search",
+];
+
+for (const path of PAGES) {
+  test(`a11y (axe) - ${path}`, async ({ page }) => {
+    await page.goto(path);
+
+    if (path === "/search") {
+      await page
+        .locator("#site-search input.pagefind-ui__search-input")
+        .waitFor();
+
+      // Ensure the Pagefind input has a real label (axe: label-title-only)
+      await page.evaluate(() => {
+        const root = document.getElementById("site-search");
+        const input = root?.querySelector(
+          "input.pagefind-ui__search-input",
+        ) as HTMLInputElement | null;
+        const label = document.getElementById(
+          "site-search-label",
+        ) as HTMLLabelElement | null;
+
+        if (!input || !label) return;
+
+        input.id = "site-search-input";
+        input.setAttribute("aria-labelledby", "site-search-label");
+        input.setAttribute("aria-label", "Search the site");
+        input.removeAttribute("title");
+      });
+    }
+
+    const results = await new AxeBuilder({ page }).analyze();
+
+    const highImpact = results.violations.filter((v) =>
+      ["serious", "critical"].includes(v.impact ?? ""),
+    );
+
+    expect(highImpact).toEqual([]);
+  });
+}
+</file>
+
 <file path="web/playwright.config.ts">
 import { defineConfig, devices } from "@playwright/test";
 
@@ -13887,190 +13745,332 @@ export default defineConfig({
 });
 </file>
 
-<file path="web/src/components/sections/EventList.astro">
+<file path="web/src/components/ui/HighlightsScroller.astro">
 ---
-import Button from "../ui/Button.astro";
-import ContentCard from "../content/ContentCard.astro";
-import SectionHeading from "../ui/SectionHeading.astro";
-import { getCollection } from "astro:content";
-import { site } from "../../data/site";
+import weeklyHighlights from "../../data/weekly-highlights";
 
-type Props = {
-  title?: string;
-  limit?: number;
-  showViewAll?: boolean;
-};
-
-const {
-  title = "Upcoming Events",
-  limit = 3,
-  showViewAll = true,
-} = Astro.props;
-
-const events = await getCollection("events", ({ data }) =>
-  import.meta.env.PROD ? data.draft !== true : true,
+const highlights = weeklyHighlights.filter(
+  (item) => item.text.trim().length > 0,
 );
-
-const now = new Date();
-const upcoming = events
-  .filter((e) => e.data.start >= now)
-  .sort((a, b) => a.data.start.valueOf() - b.data.start.valueOf())
-  .slice(0, limit);
-
-const fmt = new Intl.DateTimeFormat(site.locale, {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: site.timeZone,
-});
+const isExternal = (href?: string) =>
+  typeof href === "string" && /^https?:\/\//.test(href);
+const hasMultipleSlides = highlights.length > 1;
 ---
 
-<section class="stack event-list surface-section">
-  <SectionHeading title={title}>
-    {
-      showViewAll && (
-        <Button slot="action" variant="tertiary" href="/events">
-          View all
-        </Button>
-      )
-    }
-  </SectionHeading>
+{
+  highlights.length > 0 ? (
+    <section
+      class="highlights-carousel"
+      aria-label="Weekly highlights carousel"
+    >
+      <div class="highlights-carousel__header">
+        <div class="highlights-carousel__heading-group">
+          <p class="highlights-carousel__eyebrow">This week</p>
+          <h2 class="highlights-carousel__heading">Church highlights</h2>
+        </div>
+        {hasMultipleSlides ? (
+          <div
+            class="highlights-carousel__controls"
+            aria-label="Highlight slide controls"
+          >
+            <button
+              class="highlights-carousel__control"
+              data-dir="prev"
+              type="button"
+              aria-label="Previous highlight"
+            >
+              &larr;
+            </button>
+            <button
+              class="highlights-carousel__control"
+              data-dir="next"
+              type="button"
+              aria-label="Next highlight"
+            >
+              &rarr;
+            </button>
+          </div>
+        ) : null}
+      </div>
 
-  {
-    upcoming.length === 0 ? (
-      <div class="card card--muted event-empty-state stack--tight">
-        <span class="event-empty-state__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" role="presentation">
-            <rect
-              x="3"
-              y="5"
-              width="18"
-              height="16"
-              rx="3"
-              ry="3"
-              fill="none"
-              stroke="var(--color-primary)"
-              stroke-width="1.5"
-            />
-            <line
-              x1="3"
-              y1="9"
-              x2="21"
-              y2="9"
-              stroke="var(--color-primary)"
-              stroke-width="1.5"
-            />
-            <line
-              x1="8"
-              y1="2"
-              x2="8"
-              y2="6"
-              stroke="var(--color-primary)"
-              stroke-width="1.5"
-            />
-            <line
-              x1="16"
-              y1="2"
-              x2="16"
-              y2="6"
-              stroke="var(--color-primary)"
-              stroke-width="1.5"
-            />
-          </svg>
-        </span>
-        <div class="event-empty-state__content stack--tight">
-          <h3 class="event-empty-state__title">Nothing on the calendar yet</h3>
-          <p class="event-empty-state__text">
-            No upcoming events are published yet. We&apos;re keeping the
-            schedule updated, so check back soon.
-          </p>
-        </div>
-        <div class="event-empty-state__actions cluster cluster--loose">
-          <Button variant="secondary" href="/calendar">
-            View calendar
-          </Button>
-          <Button variant="tertiary" href="/connect/contact">
-            Contact us
-          </Button>
+      <div class="highlights-carousel__viewport">
+        <div class="highlights-carousel__track" role="list">
+          {highlights.map((item, index) => (
+            <div
+              class="highlights-carousel__slide"
+              role="listitem"
+              data-slide-index={index}
+            >
+              <article class="highlights-carousel__card">
+                <div class="highlights-carousel__badge-row">
+                  {item.badge ? (
+                    <span class="highlights-carousel__badge">{item.badge}</span>
+                  ) : null}
+                  {item.tag ? (
+                    <span class="highlights-carousel__tag">{item.tag}</span>
+                  ) : null}
+                </div>
+                <p class="highlights-carousel__text">
+                  {item.href ? (
+                    <a
+                      href={item.href}
+                      target={isExternal(item.href) ? "_blank" : undefined}
+                      rel={isExternal(item.href) ? "noreferrer" : undefined}
+                    >
+                      {item.text}
+                    </a>
+                  ) : (
+                    item.text
+                  )}
+                </p>
+                {item.ctaHref && item.ctaLabel ? (
+                  <a
+                    class="highlights-carousel__cta"
+                    href={item.ctaHref}
+                    target={item.external ? "_blank" : undefined}
+                    rel={item.external ? "noreferrer" : undefined}
+                  >
+                    {item.ctaLabel}
+                  </a>
+                ) : null}
+              </article>
+            </div>
+          ))}
         </div>
       </div>
-    ) : (
-      <div class="grid--cards">
-        {upcoming.map((e) => (
-          <ContentCard
-            href={`/events/${e.id}`}
-            title={e.data.title}
-            summary={e.data.summary}
-            meta={fmt.format(e.data.start)}
-            tags={e.data.tags}
-          />
-        ))}
-      </div>
-    )
-  }
-</section>
+
+      {hasMultipleSlides ? (
+        <div
+          class="highlights-carousel__dots"
+          role="tablist"
+          aria-label="Highlight slide navigation"
+        >
+          {highlights.map((_, index) => (
+            <button
+              type="button"
+              role="tab"
+              class="highlights-carousel__dot"
+              data-dot-index={index}
+              aria-label={`Show highlight ${index + 1}`}
+              aria-selected={index === 0 ? "true" : "false"}
+            />
+          ))}
+        </div>
+      ) : null}
+    </section>
+  ) : null
+}
+
+<script is:inline src="/scripts/highlights-carousel.js" defer></script>
 
 <style>
-  .event-list :global(.grid--cards > .card) {
-    height: 100%;
+  .highlights-carousel {
+    margin: 0;
+    border-radius: var(--radius-4);
+    background:
+      radial-gradient(
+        150% 100% at 0% 0%,
+        color-mix(in oklab, var(--color-primary) 16%, transparent) 0%,
+        transparent 70%
+      ),
+      var(--color-surface);
+    box-shadow: var(--shadow-2);
+    border: 1px solid
+      color-mix(in oklab, var(--color-border) 70%, var(--color-primary) 30%);
+    position: relative;
+    overflow: hidden;
+    padding: clamp(var(--space-4), 2.2vw, var(--space-6));
+    display: grid;
+    gap: var(--space-4);
+    color: var(--color-text);
   }
 
-  .event-empty-state {
-    text-align: center;
-    justify-items: center;
-    border-color: color-mix(in oklab, var(--color-primary) 28%, var(--color-border) 72%);
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--color-surface) 70%, #ffffff 30%) 0%,
-      color-mix(in srgb, var(--color-primary-soft) 12%, var(--color-surface-muted) 88%) 100%
-    );
+  .highlights-carousel__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: var(--space-3);
   }
 
-  .event-empty-state__icon {
-    width: 56px;
-    height: 56px;
+  .highlights-carousel__heading-group {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .highlights-carousel__eyebrow {
+    margin: 0;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: var(--color-primary);
+  }
+
+  .highlights-carousel__heading {
+    margin: 0;
+    font-size: clamp(1.2rem, 0.98rem + 0.65vw, 1.5rem);
+  }
+
+  .highlights-carousel__controls {
+    display: inline-flex;
+    gap: var(--space-2);
+  }
+
+  .highlights-carousel__control {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-primary);
+    font-weight: 700;
+    cursor: pointer;
+    line-height: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
   }
 
-  .event-empty-state__icon svg {
-    width: 100%;
-    height: 100%;
+  .highlights-carousel__control:hover {
+    background: var(--color-surface-muted);
   }
 
-  .event-empty-state__content {
-    text-align: center;
+  .highlights-carousel__viewport {
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-3);
+    background: color-mix(
+      in oklab,
+      var(--color-surface) 95%,
+      var(--color-surface-muted) 5%
+    );
   }
 
-  .event-empty-state__title {
-    margin: 0;
-    font-size: clamp(1.16rem, 1rem + 0.48vw, 1.35rem);
-    color: var(--color-text);
+  .highlights-carousel__track {
+    display: flex;
+    transition: transform 0.6s ease-in-out;
+    will-change: transform;
   }
 
-  .event-empty-state__text {
-    margin: 0;
-    color: var(--color-text-muted);
-    max-width: 58ch;
+  .highlights-carousel__slide {
+    flex: 0 0 100%;
+    padding: clamp(var(--space-4), 2vw, var(--space-6));
   }
 
-  .event-empty-state__actions {
-    width: min(320px, 100%);
-    justify-content: center;
-    gap: var(--space-4);
+  .highlights-carousel__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
   }
 
-  .event-empty-state__actions a,
-  .event-empty-state__actions button {
-    flex: 1;
+  .highlights-carousel__badge-row {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
   }
 
-  .event-empty-state__actions .btn--tertiary {
-    color: var(--color-text);
+  .highlights-carousel__badge,
+  .highlights-carousel__tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.11em;
+    padding: 0.28rem 0.72rem;
+    border-radius: 999px;
   }
 
-  .event-empty-state__actions .btn--tertiary:hover {
+  .highlights-carousel__badge {
+    background: var(--color-primary-soft);
     color: var(--color-primary);
+  }
+
+  .highlights-carousel__tag {
+    background: var(--color-primary);
+    color: var(--color-white);
+  }
+
+  .highlights-carousel__text {
+    margin: 0;
+    font-weight: 650;
+    font-size: clamp(1.03rem, 0.94rem + 0.33vw, 1.22rem);
+    line-height: 1.42;
+    color: var(--color-text);
+  }
+
+  .highlights-carousel__text a {
+    color: var(--color-text);
+    text-decoration-color: color-mix(
+      in oklab,
+      var(--color-primary) 30%,
+      transparent 70%
+    );
+  }
+
+  .highlights-carousel__text a:hover {
+    text-decoration-color: var(--color-primary-hover);
+  }
+
+  .highlights-carousel__cta {
+    align-self: flex-start;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-decoration: none;
+    border-bottom: 2px solid
+      color-mix(in oklab, var(--color-primary) 40%, transparent 60%);
+    padding-bottom: 0.12rem;
+  }
+
+  .highlights-carousel__cta:hover {
+    border-bottom-color: var(--color-primary-hover);
+  }
+
+  .highlights-carousel__dots {
+    display: inline-flex;
+    justify-content: center;
+    gap: clamp(var(--space-2), 1vw, var(--space-3));
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .highlights-carousel__dot {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    border: 0;
+    background: color-mix(
+      in oklab,
+      var(--color-border) 70%,
+      var(--color-text-muted) 30%
+    );
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .highlights-carousel__dot[aria-selected="true"] {
+    width: 2.2rem;
+    background: var(--color-primary);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .highlights-carousel__track {
+      transition: none;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .highlights-carousel {
+      gap: var(--space-3);
+      padding: var(--space-4);
+    }
+
+    .highlights-carousel__header {
+      align-items: center;
+    }
+
+    .highlights-carousel__control {
+      width: 2rem;
+      height: 2rem;
+    }
   }
 </style>
 </file>
@@ -14300,6 +14300,194 @@ test.describe("Smoke - mobile device", () => {
     );
   });
 });
+</file>
+
+<file path="web/src/components/sections/EventList.astro">
+---
+import Button from "../ui/Button.astro";
+import ContentCard from "../content/ContentCard.astro";
+import SectionHeading from "../ui/SectionHeading.astro";
+import { getCollection } from "astro:content";
+import { site } from "../../data/site";
+
+type Props = {
+  title?: string;
+  limit?: number;
+  showViewAll?: boolean;
+};
+
+const {
+  title = "Upcoming Events",
+  limit = 3,
+  showViewAll = true,
+} = Astro.props;
+
+const events = await getCollection("events", ({ data }) =>
+  import.meta.env.PROD ? data.draft !== true : true,
+);
+
+const now = new Date();
+const upcoming = events
+  .filter((e) => e.data.start >= now)
+  .sort((a, b) => a.data.start.valueOf() - b.data.start.valueOf())
+  .slice(0, limit);
+
+const fmt = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: site.timeZone,
+});
+---
+
+<section class="stack event-list surface-section">
+  <SectionHeading title={title}>
+    {
+      showViewAll && (
+        <Button slot="action" variant="tertiary" href="/events">
+          View all
+        </Button>
+      )
+    }
+  </SectionHeading>
+
+  {
+    upcoming.length === 0 ? (
+      <div class="card card--muted event-empty-state stack--tight">
+        <span class="event-empty-state__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="presentation">
+            <rect
+              x="3"
+              y="5"
+              width="18"
+              height="16"
+              rx="3"
+              ry="3"
+              fill="none"
+              stroke="var(--color-primary)"
+              stroke-width="1.5"
+            />
+            <line
+              x1="3"
+              y1="9"
+              x2="21"
+              y2="9"
+              stroke="var(--color-primary)"
+              stroke-width="1.5"
+            />
+            <line
+              x1="8"
+              y1="2"
+              x2="8"
+              y2="6"
+              stroke="var(--color-primary)"
+              stroke-width="1.5"
+            />
+            <line
+              x1="16"
+              y1="2"
+              x2="16"
+              y2="6"
+              stroke="var(--color-primary)"
+              stroke-width="1.5"
+            />
+          </svg>
+        </span>
+        <div class="event-empty-state__content stack--tight">
+          <h3 class="event-empty-state__title">Nothing on the calendar yet</h3>
+          <p class="event-empty-state__text">
+            No upcoming events are published yet. We&apos;re keeping the
+            schedule updated, so check back soon.
+          </p>
+        </div>
+        <div class="event-empty-state__actions cluster cluster--loose">
+          <Button variant="secondary" href="/calendar">
+            View calendar
+          </Button>
+          <Button variant="tertiary" href="/connect/contact">
+            Contact us
+          </Button>
+        </div>
+      </div>
+    ) : (
+      <div class="grid--cards">
+        {upcoming.map((e) => (
+          <ContentCard
+            href={`/events/${e.id}`}
+            title={e.data.title}
+            summary={e.data.summary}
+            meta={fmt.format(e.data.start)}
+            tags={e.data.tags}
+          />
+        ))}
+      </div>
+    )
+  }
+</section>
+
+<style>
+  .event-list :global(.grid--cards > .card) {
+    height: 100%;
+  }
+
+  .event-empty-state {
+    text-align: center;
+    justify-items: center;
+    border-color: color-mix(in oklab, var(--color-primary) 28%, var(--color-border) 72%);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-surface) 70%, #ffffff 30%) 0%,
+      color-mix(in srgb, var(--color-primary-soft) 12%, var(--color-surface-muted) 88%) 100%
+    );
+  }
+
+  .event-empty-state__icon {
+    width: 56px;
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .event-empty-state__icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .event-empty-state__content {
+    text-align: center;
+  }
+
+  .event-empty-state__title {
+    margin: 0;
+    font-size: clamp(1.16rem, 1rem + 0.48vw, 1.35rem);
+    color: var(--color-text);
+  }
+
+  .event-empty-state__text {
+    margin: 0;
+    color: var(--color-text-muted);
+    max-width: 58ch;
+  }
+
+  .event-empty-state__actions {
+    width: min(320px, 100%);
+    justify-content: center;
+    gap: var(--space-4);
+  }
+
+  .event-empty-state__actions a,
+  .event-empty-state__actions button {
+    flex: 1;
+  }
+
+  .event-empty-state__actions .btn--tertiary {
+    color: var(--color-text);
+  }
+
+  .event-empty-state__actions .btn--tertiary:hover {
+    color: var(--color-primary-hover);
+  }
+</style>
 </file>
 
 <file path="web/src/components/ui/Hero.astro">
@@ -14888,151 +15076,6 @@ const activeRecurringGroups = getActiveRecurringGroupKeys(groupedRecurring);
 </style>
 </file>
 
-<file path="web/src/components/ui/Button.astro">
----
-export type Variant = "primary" | "secondary" | "tertiary" | "ghost";
-export type Size = "sm" | "md" | "lg";
-
-type Props = {
-  href?: string;
-  external?: boolean;
-  variant?: Variant;
-  size?: Size;
-  disabled?: boolean;
-  autoFocus?: boolean;
-} & Record<string, unknown>;
-
-const {
-  href,
-  external = false,
-  variant = "primary",
-  size = "md",
-  disabled = false,
-  autoFocus = false,
-  class: classNameOverride = "",
-  ...rest
-} = Astro.props as Props;
-
-const baseClass = `btn btn--${variant} btn--${size}`;
-const className = [baseClass, classNameOverride].filter(Boolean).join(" ");
----
-
-{
-  href ? (
-    <a
-      class={className}
-      href={href}
-      target={external ? "_blank" : undefined}
-      rel={external ? "noopener noreferrer" : undefined}
-      {...rest}
-    >
-      <slot />
-    </a>
-  ) : (
-    <button
-      class={className}
-      type="button"
-      disabled={disabled}
-      autofocus={autoFocus}
-      {...rest}
-    >
-      <slot />
-    </button>
-  )
-}
-
-<style>
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    border-radius: var(--radius-2);
-    text-decoration: none;
-    font-weight: 700;
-    border: 1px solid transparent;
-    cursor: pointer;
-    min-height: var(--target-min);
-    transition:
-      background-color 200ms ease,
-      color 200ms ease,
-      border-color 200ms ease,
-      transform 200ms ease,
-      box-shadow 200ms ease,
-      filter 200ms ease;
-  }
-
-  .btn--sm {
-    font-size: var(--font-size-0);
-    padding: var(--space-2) var(--space-3);
-  }
-
-  .btn--md {
-    font-size: var(--font-size-1);
-    padding: var(--space-2) var(--space-4);
-  }
-
-  .btn--lg {
-    font-size: var(--font-size-2);
-    padding: var(--space-3) var(--space-6);
-  }
-
-  .btn--primary {
-    background-image: var(--color-gradient-brand);
-    background-size: 220% 220%;
-    color: var(--color-white);
-    border-color: transparent;
-    box-shadow: 0 14px 28px rgba(31, 41, 55, 0.18);
-  }
-
-  .btn--primary:hover {
-    transform: translateY(-1px);
-    filter: brightness(1.05);
-    box-shadow: 0 18px 32px rgba(31, 41, 55, 0.22);
-  }
-
-  .btn--secondary {
-    background: var(--color-surface);
-    border-color: var(--color-border);
-    color: var(--color-primary);
-  }
-
-  .btn--secondary:hover {
-    background: color-mix(in srgb, var(--color-surface) 72%, var(--color-primary-soft) 28%);
-  }
-
-  .btn--tertiary {
-    background: transparent;
-    border-color: transparent;
-    color: var(--color-link);
-    text-decoration: underline;
-    text-underline-offset: 0.18em;
-    text-decoration-thickness: 0.18em;
-  }
-
-  .btn--tertiary:hover {
-    color: var(--color-primary);
-    text-decoration-thickness: 0.21em;
-  }
-
-  .btn--ghost {
-    background: transparent;
-    border-color: color-mix(in srgb, var(--color-border) 60%, var(--color-primary) 40%);
-    color: var(--color-text);
-  }
-
-  .btn--ghost:hover {
-    background: color-mix(in srgb, var(--color-surface) 60%, var(--color-primary-soft) 40%);
-    color: var(--color-primary);
-  }
-
-  .btn:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
-  }
-</style>
-</file>
-
 <file path="web/src/components/ui/Card.astro">
 ---
 type Props = {
@@ -15248,6 +15291,151 @@ const showAlert = Boolean(alertConfig.enabled && alertConfig.title && alertConfi
     ) : null}
   </body>
 </html>
+</file>
+
+<file path="web/src/components/ui/Button.astro">
+---
+export type Variant = "primary" | "secondary" | "tertiary" | "ghost";
+export type Size = "sm" | "md" | "lg";
+
+type Props = {
+  href?: string;
+  external?: boolean;
+  variant?: Variant;
+  size?: Size;
+  disabled?: boolean;
+  autoFocus?: boolean;
+} & Record<string, unknown>;
+
+const {
+  href,
+  external = false,
+  variant = "primary",
+  size = "md",
+  disabled = false,
+  autoFocus = false,
+  class: classNameOverride = "",
+  ...rest
+} = Astro.props as Props;
+
+const baseClass = `btn btn--${variant} btn--${size}`;
+const className = [baseClass, classNameOverride].filter(Boolean).join(" ");
+---
+
+{
+  href ? (
+    <a
+      class={className}
+      href={href}
+      target={external ? "_blank" : undefined}
+      rel={external ? "noopener noreferrer" : undefined}
+      {...rest}
+    >
+      <slot />
+    </a>
+  ) : (
+    <button
+      class={className}
+      type="button"
+      disabled={disabled}
+      autofocus={autoFocus}
+      {...rest}
+    >
+      <slot />
+    </button>
+  )
+}
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    border-radius: var(--radius-2);
+    text-decoration: none;
+    font-weight: 700;
+    border: 1px solid transparent;
+    cursor: pointer;
+    min-height: var(--target-min);
+    transition:
+      background-color 200ms ease,
+      color 200ms ease,
+      border-color 200ms ease,
+      transform 200ms ease,
+      box-shadow 200ms ease,
+      filter 200ms ease;
+  }
+
+  .btn--sm {
+    font-size: var(--font-size-0);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .btn--md {
+    font-size: var(--font-size-1);
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .btn--lg {
+    font-size: var(--font-size-2);
+    padding: var(--space-3) var(--space-6);
+  }
+
+  .btn--primary {
+    background-image: var(--color-gradient-brand);
+    background-size: 220% 220%;
+    color: var(--color-white);
+    border-color: transparent;
+    box-shadow: 0 14px 28px rgba(31, 41, 55, 0.18);
+  }
+
+  .btn--primary:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: 0 18px 32px rgba(31, 41, 55, 0.22);
+  }
+
+  .btn--secondary {
+    background: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-primary);
+  }
+
+  .btn--secondary:hover {
+    background: color-mix(in srgb, var(--color-surface) 72%, var(--color-primary-soft) 28%);
+  }
+
+  .btn--tertiary {
+    background: transparent;
+    border-color: transparent;
+    color: var(--color-link);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+    text-decoration-thickness: 0.18em;
+  }
+
+  .btn--tertiary:hover {
+    color: var(--color-primary-hover);
+    text-decoration-thickness: 0.21em;
+  }
+
+  .btn--ghost {
+    background: transparent;
+    border-color: color-mix(in srgb, var(--color-border) 60%, var(--color-primary) 40%);
+    color: var(--color-text);
+  }
+
+  .btn--ghost:hover {
+    background: color-mix(in srgb, var(--color-surface) 60%, var(--color-primary-soft) 40%);
+    color: var(--color-primary-hover);
+  }
+
+  .btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+</style>
 </file>
 
 <file path="web/src/components/global/Footer.astro">
@@ -15691,153 +15879,6 @@ const accessibilityHref = "/accessibility";
 }
 </file>
 
-<file path="web/src/styles/tokens.css">
-/* Design tokens: colors, typography, spacing, radius, shadows
-   - Keep these as the single source of truth for styling.
-   - All component/page CSS should reference variables from here.
-*/
-
-:root {
-  /* Typography */
-  --font-family-sans: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, "Noto Sans", "Liberation Sans", sans-serif;
-  --font-family-display: "Bebas Neue", "BebasNeue", var(--font-family-sans);
-  --font-family-script: "Signature", var(--font-family-display);
-
-  /* Font sizes (step scale) */
-  --font-size-0: 0.9rem;
-  --font-size-1: 0.98rem;
-  --font-size-2: 1.1rem;
-  --font-size-3: 1.28rem;
-  --font-size-4: 1.55rem;
-  --font-size-5: 2rem;
-
-  /* Type ramp tokens */
-  --type-scale-h1-size: var(--font-size-5);
-  --type-scale-h1-line-height: 1.25;
-  --type-scale-h1-weight: 700;
-  --type-scale-h1-letter-spacing: -0.01em;
-
-  --type-scale-h2-size: var(--font-size-4);
-  --type-scale-h2-line-height: 1.32;
-  --type-scale-h2-weight: 600;
-  --type-scale-h2-letter-spacing: 0;
-
-  --type-scale-h3-size: var(--font-size-3);
-  --type-scale-h3-line-height: 1.45;
-  --type-scale-h3-weight: 600;
-
-  --type-scale-body-size: 1.05rem;
-  --type-scale-body-line-height: 1.65;
-  --type-scale-body-letter-spacing: 0;
-
-  --type-scale-small-size: 0.82rem;
-  --type-scale-small-line-height: 1.45;
-
-  /* Spacing scale (fixes missing vars used across the repo) */
-  --space-0: 0;
-  --space-1: 0.25rem;  /* 4px */
-  --space-2: 0.5rem;   /* 8px */
-  --space-3: 0.75rem;  /* 12px */
-  --space-4: 1rem;     /* 16px */
-  --space-5: 1.25rem;  /* 20px  (was missing) */
-  --space-6: 1.5rem;   /* 24px */
-  --space-7: 1.75rem;  /* 28px  (was missing) */
-  --space-8: 2rem;     /* 32px */
-  --space-9: 2.25rem;  /* 36px */
-  --space-10: 2.5rem;  /* 40px  (was missing) */
-  --space-11: 2.75rem; /* 44px */
-  --space-12: 3rem;    /* 48px */
-  --space-13: 3.25rem; /* 52px */
-  --space-16: 4rem;    /* 64px */
-  --space-18: 4.5rem;
-  --space-20: 5rem;
-
-  --section-gap: clamp(var(--space-9), 3vw, var(--space-11));
-  --section-pad-vertical: clamp(var(--space-6), 3.5vw, var(--space-9));
-  --section-pad-horizontal: clamp(var(--space-5), 2vw, var(--space-7));
-
-  /* Radii */
-  --radius-2: 0.5rem;
-  --radius-3: 0.75rem;
-  --radius-4: 1rem;
-
-  /* Shadows */
-  --shadow-1: 0 1px 2px rgba(18, 27, 45, 0.06), 0 10px 24px rgba(18, 27, 45, 0.06);
-  --shadow-2: 0 8px 20px rgba(18, 27, 45, 0.1), 0 20px 48px rgba(18, 27, 45, 0.08);
-  --shadow-card: 0 14px 36px rgba(18, 27, 45, 0.08);
-  --shadow-cta: 0 10px 24px rgba(18, 27, 45, 0.18);
-
-  /* Layout */
-  --container-max: 84rem;
-  --container-pad: 1.75rem;
-  --target-min: 44px;
-
-  /* Brand */
-  --color-gradient-brand: linear-gradient(135deg, #5c3fd6 0%, #7357ec 55%, #947cff 100%);
-  --color-primary: #5c3fd6;
-  --color-primary-hover: #4528b7;
-  --color-primary-soft: #8b78ff;
-  --color-cta-primary: var(--color-primary);
-  --color-cta-primary-dark: var(--color-primary-hover);
-  --color-cta-secondary: #f4f1ff;
-  --color-link: var(--color-primary);
-  --color-link-muted: color-mix(in srgb, var(--color-primary) 70%, #ffffff 30%);
-  --color-secondary-link: var(--color-link-muted);
-  --color-primary-cta: var(--color-cta-primary);
-  --color-primary-cta-dark: var(--color-cta-primary-dark);
-  --color-primary-cta-soft: var(--color-cta-secondary);
-  --color-primary-link: rgba(255, 255, 255, 0.95);
-
-  --color-section-surface: #ffffff;
-  --color-section-surface-alt: #f7f8fc;
-  --color-section-muted: #f1f3fb;
-  --color-section-border: #d9e0ec;
-  --color-photo-overlay: rgba(15, 23, 42, 0.55);
-
-  /* Neutrals */
-  --color-black: #0f172a;
-  --color-text: #1f2937;
-  --color-white: #ffffff;
-  --color-gray-50: #f8fafc;
-  --color-gray-100: #eff3f8;
-  --color-gray-200: #dfe6ef;
-  --color-gray-300: #cad5e3;
-  --color-gray-600: #4b5563;
-
-  /* Surfaces */
-  --color-surface: #ffffff;
-  --color-surface-alt: var(--color-section-surface-alt);
-  --color-surface-2: #eef3f9;
-  --color-surface-muted: #f5f7fb;
-  --color-bg: #eff4f8;
-  --color-border: #d5ddea;
-  --color-border-muted: #e4eaf2;
-  --color-border-strong: color-mix(in srgb, var(--color-border) 72%, var(--color-primary) 28%);
-
-  /* Text accents */
-  --color-text-muted: #586274;
-  --color-muted: var(--color-text-muted);
-
-  /* Semantic colors */
-  --color-info-border: #224aa8;
-  --color-info-bg: #edf3ff;
-  --color-warn-border: #f59e0b;
-  --color-warn-bg: #fff7ed;
-  --color-danger: #b00020;
-  --color-danger-border: #b91c1c;
-  --color-danger-bg: #fee2e2;
-  --color-success-border: #34d399;
-  --color-success-bg: #ecfdf5;
-  --color-secondary: var(--color-primary-soft);
-  --color-primary-700: var(--color-primary-hover);
-
-  /* Focus */
-  --color-focus: #244bb2;
-  --focus-ring: 3px solid color-mix(in srgb, var(--color-focus) 78%, var(--color-white) 22%);
-}
-</file>
-
 <file path="web/src/components/sections/HeroBanner.astro">
 ---
 import type { ImageMetadata } from "astro";
@@ -16066,6 +16107,153 @@ const hasWelcomeSlot = Boolean(Astro.slots?.welcome);
     }
   }
 </style>
+</file>
+
+<file path="web/src/styles/tokens.css">
+/* Design tokens: colors, typography, spacing, radius, shadows
+   - Keep these as the single source of truth for styling.
+   - All component/page CSS should reference variables from here.
+*/
+
+:root {
+  /* Typography */
+  --font-family-sans: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  --font-family-display: "Bebas Neue", "BebasNeue", var(--font-family-sans);
+  --font-family-script: "Signature", var(--font-family-display);
+
+  /* Font sizes (step scale) */
+  --font-size-0: 0.9rem;
+  --font-size-1: 0.98rem;
+  --font-size-2: 1.1rem;
+  --font-size-3: 1.28rem;
+  --font-size-4: 1.55rem;
+  --font-size-5: 2rem;
+
+  /* Type ramp tokens */
+  --type-scale-h1-size: var(--font-size-5);
+  --type-scale-h1-line-height: 1.25;
+  --type-scale-h1-weight: 700;
+  --type-scale-h1-letter-spacing: -0.01em;
+
+  --type-scale-h2-size: var(--font-size-4);
+  --type-scale-h2-line-height: 1.32;
+  --type-scale-h2-weight: 600;
+  --type-scale-h2-letter-spacing: 0;
+
+  --type-scale-h3-size: var(--font-size-3);
+  --type-scale-h3-line-height: 1.45;
+  --type-scale-h3-weight: 600;
+
+  --type-scale-body-size: 1.05rem;
+  --type-scale-body-line-height: 1.65;
+  --type-scale-body-letter-spacing: 0;
+
+  --type-scale-small-size: 0.82rem;
+  --type-scale-small-line-height: 1.45;
+
+  /* Spacing scale (fixes missing vars used across the repo) */
+  --space-0: 0;
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px  (was missing) */
+  --space-6: 1.5rem;   /* 24px */
+  --space-7: 1.75rem;  /* 28px  (was missing) */
+  --space-8: 2rem;     /* 32px */
+  --space-9: 2.25rem;  /* 36px */
+  --space-10: 2.5rem;  /* 40px  (was missing) */
+  --space-11: 2.75rem; /* 44px */
+  --space-12: 3rem;    /* 48px */
+  --space-13: 3.25rem; /* 52px */
+  --space-16: 4rem;    /* 64px */
+  --space-18: 4.5rem;
+  --space-20: 5rem;
+
+  --section-gap: clamp(var(--space-9), 3vw, var(--space-11));
+  --section-pad-vertical: clamp(var(--space-6), 3.5vw, var(--space-9));
+  --section-pad-horizontal: clamp(var(--space-5), 2vw, var(--space-7));
+
+  /* Radii */
+  --radius-2: 0.5rem;
+  --radius-3: 0.75rem;
+  --radius-4: 1rem;
+
+  /* Shadows */
+  --shadow-1: 0 1px 2px rgba(18, 27, 45, 0.06), 0 10px 24px rgba(18, 27, 45, 0.06);
+  --shadow-2: 0 8px 20px rgba(18, 27, 45, 0.1), 0 20px 48px rgba(18, 27, 45, 0.08);
+  --shadow-card: 0 14px 36px rgba(18, 27, 45, 0.08);
+  --shadow-cta: 0 10px 24px rgba(18, 27, 45, 0.18);
+
+  /* Layout */
+  --container-max: 84rem;
+  --container-pad: 1.75rem;
+  --target-min: 44px;
+
+  /* Brand */
+  --color-gradient-brand: linear-gradient(135deg, #005EA2 0%, #1F5A89 55%, #274863 100%);
+  --color-primary: #005EA2;
+  --color-primary-hover: #274863;
+  --color-primary-soft: #E6F0F8;
+  --color-cta-primary: var(--color-primary);
+  --color-cta-primary-dark: var(--color-primary-hover);
+  --color-cta-secondary: #EAF4FB;
+  --color-link: #005EA2;
+  --color-link-muted: color-mix(in srgb, var(--color-primary) 70%, #ffffff 30%);
+  --color-secondary-link: var(--color-link-muted);
+  --color-primary-cta: var(--color-cta-primary);
+  --color-primary-cta-dark: var(--color-cta-primary-dark);
+  --color-primary-cta-soft: var(--color-cta-secondary);
+  --color-primary-link: rgba(255, 255, 255, 0.95);
+
+  --color-section-surface: #ffffff;
+  --color-section-surface-alt: #f7f8fc;
+  --color-section-muted: #f1f3fb;
+  --color-section-border: #d9e0ec;
+  --color-photo-overlay: rgba(15, 23, 42, 0.55);
+
+  /* Neutrals */
+  --color-black: #0f172a;
+  --color-text: #1f2937;
+  --color-white: #ffffff;
+  --color-gray-50: #f8fafc;
+  --color-gray-100: #eff3f8;
+  --color-gray-200: #dfe6ef;
+  --color-gray-300: #cad5e3;
+  --color-gray-600: #4b5563;
+
+  /* Surfaces */
+  --color-surface: #ffffff;
+  --color-surface-alt: var(--color-section-surface-alt);
+  --color-surface-2: #eef3f9;
+  --color-surface-muted: #f5f7fb;
+  --color-bg: #eff4f8;
+  --color-border: #d5ddea;
+  --color-border-muted: #e4eaf2;
+  --color-border-strong: color-mix(in srgb, var(--color-border) 72%, var(--color-primary) 28%);
+
+  /* Text accents */
+  --color-text-muted: #586274;
+  --color-muted: var(--color-text-muted);
+
+  /* Semantic colors */
+  --color-info-border: #224aa8;
+  --color-info-bg: #edf3ff;
+  --color-warn-border: #f59e0b;
+  --color-warn-bg: #fff7ed;
+  --color-danger: #b00020;
+  --color-danger-border: #b91c1c;
+  --color-danger-bg: #fee2e2;
+  --color-success-border: #34d399;
+  --color-success-bg: #ecfdf5;
+  --color-secondary: var(--color-primary-hover);
+  --color-primary-700: var(--color-primary-hover);
+
+  /* Focus */
+  --color-focus: #274863;
+  --focus-ring: 3px solid color-mix(in srgb, var(--color-focus) 78%, var(--color-white) 22%);
+}
 </file>
 
 <file path="web/src/components/global/Header.astro">
@@ -16420,14 +16608,10 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
   }
 
   .nav a[aria-current="page"] {
-    background: color-mix(
-      in srgb,
-      var(--color-primary) 25%,
-      var(--color-primary-soft) 75%
-    );
+    background: var(--color-primary-hover);
     color: var(--color-white);
     opacity: 1;
-    box-shadow: 0 8px 20px rgba(13, 8, 55, 0.25);
+    box-shadow: 0 8px 20px rgba(39, 72, 99, 0.25);
   }
 
   .cta {
@@ -16532,13 +16716,9 @@ const brandAriaLabel = `${site.shortName} – ${site.name}`;
   }
 
   .menu__link[aria-current="page"] {
-    background: color-mix(
-      in srgb,
-      var(--color-primary) 24%,
-      var(--color-primary-soft) 76%
-    );
+    background: var(--color-primary-hover);
     color: var(--color-white);
-    box-shadow: 0 8px 18px rgba(13, 8, 55, 0.22);
+    box-shadow: 0 8px 18px rgba(39, 72, 99, 0.22);
   }
 
   .menu__divider {
@@ -16688,7 +16868,7 @@ body {
   font-family: var(--font-family-sans);
   color: var(--color-text);
   background:
-    radial-gradient(circle at top, rgba(139, 120, 255, 0.12), transparent 28%),
+    radial-gradient(circle at top, rgba(0, 94, 162, 0.12), transparent 28%),
     linear-gradient(180deg, #f8fafd 0%, var(--color-bg) 100%);
   background-attachment: scroll;
   font-size: var(--type-scale-body-size);
@@ -16715,7 +16895,7 @@ a {
 }
 
 a:hover {
-  color: var(--color-primary);
+  color: var(--color-primary-hover);
   text-decoration-thickness: 0.19em;
 }
 
@@ -16973,7 +17153,7 @@ hr {
   border-color: color-mix(
     in srgb,
     var(--color-border) 70%,
-    var(--color-primary) 30%
+    var(--color-primary-hover) 30%
   );
 }
 
