@@ -11,12 +11,12 @@ test.describe("Highlights carousel", () => {
         timeout?: number,
         ...args: any[]
       ) => {
-        const adjusted = timeout === 6500 ? 1000 : timeout;
+        const adjusted = timeout === 1200 ? 100 : timeout;
         return originalSetTimeout(handler, adjusted, ...args);
       }) as typeof window.setTimeout;
     });
 
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     const track = page.locator(".highlights-carousel__track");
     await expect(track).toBeVisible();
 
@@ -25,13 +25,12 @@ test.describe("Highlights carousel", () => {
     expect(slideCount).toBeGreaterThan(1);
     const firstSlideText = (await slides.nth(0).textContent())?.trim();
 
-    await page.waitForTimeout(1200);
-    const transformAfterAdvance = await track.evaluate(
-      (el) => el.style.transform,
-    );
-    expect(transformAfterAdvance).toBe("translateX(-100%)");
+    await expect
+      .poll(() => track.evaluate((el) => el.style.transform), {
+        timeout: 2000,
+      })
+      .toBe("translateX(-100%)");
 
-    await page.waitForTimeout(1200);
     const secondSlideText = (await slides.nth(1).textContent())?.trim();
     if (firstSlideText) {
       expect(secondSlideText).not.toBe(firstSlideText);
