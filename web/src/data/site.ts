@@ -1,5 +1,6 @@
 import siteLinks from "./site-links.json";
 import { recurringActivities } from "./activities";
+import { trustedGoogleCalendarEmbedUrl } from "../lib/embeds";
 import { isExternalUrl } from "../lib/links";
 
 export type NavItem = {
@@ -78,7 +79,11 @@ const MISSION = {
 };
 
 // Official portal links live in `site-links.json` so teams have a single editable file.
-const portals: PortalLinks = siteLinks as PortalLinks;
+const rawPortals = siteLinks as PortalLinks;
+const portals: PortalLinks = {
+  ...rawPortals,
+  calendarEmbedUrl: trustedGoogleCalendarEmbedUrl(rawPortals.calendarEmbedUrl),
+};
 
 const serviceSchedule: ScheduleItem[] = recurringActivities
   .filter(
