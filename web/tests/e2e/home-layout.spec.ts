@@ -48,7 +48,7 @@ test.describe("Home layout regression", () => {
       page.getByRole("heading", { name: "Live calendar preview", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByRole("button", { name: "Load live calendar", exact: true }),
+      page.locator('iframe[title="Live campus calendar"]'),
     ).toBeVisible();
 
     await expect(

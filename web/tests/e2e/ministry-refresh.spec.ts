@@ -79,7 +79,7 @@ test("calendar, ministries, and contact stay usable on narrow mobile widths", as
   }
 
   await page.goto("/calendar");
-  await expect(page.getByRole("button", { name: "Load live calendar", exact: true })).toBeVisible();
+  await expect(page.locator('iframe[title="Live campus calendar"]')).toBeVisible();
 
   await page.goto("/connect/contact");
   await expect(page.locator(".contact-topics__row--head")).toBeHidden();

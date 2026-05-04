@@ -1,6 +1,4 @@
 ---
-import Button from "../ui/Button.astro";
-
 type Props = {
   title?: string;
   description?: string;
@@ -19,41 +17,27 @@ const {
 
 const hasEmbed = typeof embedUrl === "string" && embedUrl.trim().length > 0;
 const fallbackNote = hasEmbed
-  ? "This embed shows the live campus schedule."
+  ? ""
   : "The live calendar embed is pending; consult the annual calendar page while we finalize the official feed.";
 const displayNote = note ?? fallbackNote;
 const iframeHeight = compact ? 280 : 520;
-const iframeTitle = `${title} preview`;
+const iframeTitle = "Live campus calendar";
 ---
 <section class="live-calendar stack surface-section">
   <div>
     <h2>{title}</h2>
     <p class="muted small">{description}</p>
   </div>
-  <div class="live-calendar__embed" aria-live="polite">
+  <div class="live-calendar__embed">
     {hasEmbed ? (
-      <div
-        class="live-calendar__embed-placeholder live-calendar__embed-placeholder--embed"
-        data-live-calendar-embed
-        data-live-calendar-embed-url={embedUrl}
-        data-live-calendar-iframe-title={iframeTitle}
-        data-live-calendar-iframe-height={iframeHeight}
-        style={`min-height:${iframeHeight}px`}
-      >
-        <p class="live-calendar__embed-placeholder-title">Load the live campus calendar</p>
-        <p class="live-calendar__embed-placeholder-copy">
-          The shared calendar runs on Google&apos;s embed and stays inactive until you explicitly load it, keeping
-          third-party cookies dormant until you decide to view the feed.
-        </p>
-        <div class="live-calendar__embed-placeholder-actions">
-          <Button data-live-calendar-trigger variant="secondary">
-            Load live calendar
-          </Button>
-          <p class="muted small live-calendar__embed-placeholder-note">
-            Loading the embed will open the current schedule straight from Google Calendar.
-          </p>
-        </div>
-      </div>
+      <iframe
+        src={embedUrl}
+        title={iframeTitle}
+        loading="lazy"
+        referrerpolicy="no-referrer"
+        allowfullscreen
+        height={iframeHeight}
+      ></iframe>
     ) : (
       <div class="live-calendar__embed-placeholder" style={`min-height:${iframeHeight}px`}>
         <p class="live-calendar__embed-placeholder-title">Live calendar coming soon</p>
@@ -65,7 +49,7 @@ const iframeTitle = `${title} preview`;
       </div>
     )}
   </div>
-  <p class="muted live-calendar__note">{displayNote}</p>
+  {displayNote ? <p class="muted live-calendar__note">{displayNote}</p> : null}
 </section>
 
 <style>
@@ -86,6 +70,7 @@ const iframeTitle = `${title} preview`;
   .live-calendar__embed iframe {
     width: 100%;
     display: block;
+    border: 0;
   }
 
   .live-calendar__embed-placeholder {
@@ -105,21 +90,6 @@ const iframeTitle = `${title} preview`;
   .live-calendar__embed-placeholder-copy {
     margin: 0;
     line-height: 1.4;
-  }
-
-  .live-calendar__embed-placeholder--embed {
-    align-items: flex-start;
-  }
-
-  .live-calendar__embed-placeholder-actions {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  .live-calendar__embed-placeholder-note {
-    margin: 0;
-    max-width: 40rem;
   }
 
   .live-calendar__embed-placeholder-link {
@@ -144,57 +114,3 @@ const iframeTitle = `${title} preview`;
     }
   }
 </style>
-
-<script is:inline type="module">
-  const loadLiveCalendarIframe = (container) => {
-    if (!container || container.dataset.liveCalendarLoaded === "true") {
-      return;
-    }
-    const iframeUrl = container.dataset.liveCalendarEmbedUrl;
-    if (!iframeUrl) {
-      return;
-    }
-    const iframe = document.createElement("iframe");
-    iframe.src = iframeUrl;
-    iframe.title = container.dataset.liveCalendarIframeTitle || "Live calendar preview";
-    iframe.loading = "lazy";
-    iframe.allowFullscreen = true;
-    iframe.referrerPolicy = "no-referrer";
-    iframe.style.border = "0";
-    iframe.style.width = "100%";
-    const height = container.dataset.liveCalendarIframeHeight;
-    if (height) {
-      iframe.setAttribute("height", height);
-    }
-    container.innerHTML = "";
-    container.appendChild(iframe);
-    container.dataset.liveCalendarLoaded = "true";
-  };
-
-  const attachLiveCalendarTriggers = () => {
-    document.querySelectorAll("[data-live-calendar-embed]").forEach((container) => {
-      if (container.dataset.liveCalendarInit === "true") {
-        return;
-      }
-      container.dataset.liveCalendarInit = "true";
-      const trigger = container.querySelector("[data-live-calendar-trigger]");
-      if (!trigger) {
-        return;
-      }
-      trigger.addEventListener(
-        "click",
-        (event) => {
-          event.preventDefault();
-          loadLiveCalendarIframe(container);
-        },
-        { once: true },
-      );
-    });
-  };
-
-  if (document.readyState === "loading") {
-    window.addEventListener("DOMContentLoaded", attachLiveCalendarTriggers);
-  } else {
-    attachLiveCalendarTriggers();
-  }
-</script>

@@ -13,7 +13,7 @@ test("calendar highlights and featured dates render with the live preview", asyn
     page.getByRole("heading", { name: "Live event calendar", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Load live calendar", exact: true }),
+    page.locator('iframe[title="Live campus calendar"]'),
   ).toBeVisible();
 
   const highlight = page.locator(".calendar-highlight");
