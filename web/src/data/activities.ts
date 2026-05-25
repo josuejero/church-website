@@ -25,7 +25,7 @@ export const recurringActivities: RecurringActivity[] = [
     cadence: "Weekly study groups for every age",
     day: "Saturday",
     time: "10:00 AM",
-    link: "/ministries/adult-sabbath-school",
+    link: "/ministries/sabbath-school",
     note: "Classes for children, youth, and adults in-person",
     category: "service",
   },
