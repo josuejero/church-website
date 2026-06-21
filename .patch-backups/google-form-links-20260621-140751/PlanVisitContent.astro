@@ -2,9 +2,6 @@
 import Schedule from "./ui/Schedule.astro";
 import Button from "./ui/Button.astro";
 import { site } from "../data/site";
-
-const contactFormUrl = site.portals.contactFormUrl;
-const hasContactForm = Boolean(contactFormUrl && contactFormUrl !== "TBD");
 ---
 
 <div class="stack text-on-dark">
@@ -36,19 +33,13 @@ const hasContactForm = Boolean(contactFormUrl && contactFormUrl !== "TBD");
   </section>
 
   <section class="card stack">
-    <h2>Fill out the Connect form</h2>
+    <h2>Submit a Connect Card</h2>
     <p class="muted">
       Share a few details before your visit so our hospitality team can welcome you, pray with you,
       and help you get settled.
     </p>
     <div class="cluster">
-      <Button
-        href={hasContactForm ? contactFormUrl : "/connect/connect-card"}
-        external={hasContactForm}
-        variant="primary"
-      >
-        Fill out Connect form
-      </Button>
+      <Button href="/connect/connect-card" variant="primary">Submit a Connect Card</Button>
       <Button href="/connect/contact" variant="secondary">Contact hospitality</Button>
     </div>
   </section>

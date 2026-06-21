@@ -55,10 +55,10 @@ export const homeHeroConfig: HeroConfig = {
 
 export const homeHeroMeta = {
   copy:
-    "First Springfield Seventh-day Adventist Church gathers for Sabbath worship at 11 AM each Saturday at 1118 Sumner Ave, Springfield, MA. Fill out the Connect form and our hospitality team will follow up before your visit.",
+    "First Springfield Seventh-day Adventist Church gathers for Sabbath worship at 11 AM each Saturday at 1118 Sumner Ave, Springfield, MA. Submit a Connect Card and our hospitality team will follow up before your visit.",
   cta: {
-    label: "Fill out Connect form",
-    href: "/connect/contact",
+    label: "Submit a Connect Card",
+    href: "/connect/connect-card",
   },
 };
 

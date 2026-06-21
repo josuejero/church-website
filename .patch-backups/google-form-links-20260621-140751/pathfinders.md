@@ -55,6 +55,6 @@ Pathfinders welcomes youth ages 10-15 and helps them grow in leadership, teamwor
 
 ## Registration, resources, and contact
 
-Use the resources below to review the current Adventurer memo, complete registration, check payment guidance, and confirm dates on the campus calendar. If your family needs help deciding where to start, email [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) or submit a [Connect form](/connect/contact).
+Use the resources below to review the current Adventurer memo, complete registration, check payment guidance, and confirm dates on the campus calendar. If your family needs help deciding where to start, email [firstspringfieldsda@gmail.com](mailto:firstspringfieldsda@gmail.com) or submit a [Connect Card](/connect/connect-card).
 
 For the latest confirmed meeting dates, special outings, and shared ministry events, always check the [campus calendar](/calendar).

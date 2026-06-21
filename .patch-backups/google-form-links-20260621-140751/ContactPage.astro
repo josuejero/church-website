@@ -14,8 +14,8 @@ const sections = buildContactSections({ hasContactForm, contactFormUrl });
 <div class="stack text-on-dark">
   <h1>Contact & Connect</h1>
   <p class="muted">
-    The main hub for directions, service times, and topics you might need. When you’re ready, fill out
-    the Connect form and our hospitality team will follow up before your visit.
+    The main hub for directions, service times, and topics you might need. When you’re ready, submit a
+    Connect Card and our hospitality team will follow up before your visit.
   </p>
 
   <section class="card connect-card-teaser" aria-labelledby="connect-card-teaser-title">
@@ -29,12 +29,8 @@ const sections = buildContactSections({ hasContactForm, contactFormUrl });
         </p>
       </div>
       <div class="connect-card-teaser__actions">
-        <Button
-          href={hasContactForm && contactFormUrl ? contactFormUrl : "/connect/connect-card"}
-          external={hasContactForm && Boolean(contactFormUrl)}
-          variant="primary"
-        >
-          Fill out Connect form
+        <Button href="/connect/connect-card" variant="primary">
+          Submit a Connect Card
         </Button>
       </div>
     </div>

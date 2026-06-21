@@ -1,0 +1,39 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import ConnectCardForm from "../../../components/connect/ConnectCardForm.astro";
+import { usesCustomFormAction } from "../../../lib/connectCard";
+---
+
+<BaseLayout
+  title="Connect Card"
+  description="Submit a Connect Card to let the team know how to pray for you, follow up, or support your next steps."
+>
+  <div class="stack connect-card">
+    <div class="connect-card__intro">
+      <h1>Connect Card</h1>
+      <p id="connect-card-summary" class="muted">
+        Tell us about your visit window, how we can pray for you, and which ministries you’d like to explore.
+        We’ll ask for your preferred follow-up method and keep your information private unless you say otherwise.
+      </p>
+      {!usesCustomFormAction ? (
+        <div class="connect-card__warning" role="status">
+          <strong>Built-in Connect Card backend is active.</strong> Before publishing, configure
+          <code>PRIVATE_CONNECT_CARD_FORWARD_URL</code> and <code>PRIVATE_TURNSTILE_SECRET_KEY</code>
+          (and optionally <code>CONNECT_CARD_NOTIFY_EMAILS</code>) so submissions forward and trigger alerts.
+        </div>
+      ) : null}
+    </div>
+
+    <ConnectCardForm />
+  </div>
+</BaseLayout>
+
+<style>
+  .connect-card {
+    max-width: 52rem;
+  }
+
+  .connect-card__intro + .connect-card__form {
+    margin-top: var(--space-6);
+  }
+</style>

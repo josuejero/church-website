@@ -1,39 +1,44 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
-import ConnectCardForm from "../../../components/connect/ConnectCardForm.astro";
-import { usesCustomFormAction } from "../../../lib/connectCard";
+import Button from "../../../components/ui/Button.astro";
+import { site } from "../../../data/site";
+
+const contactFormUrl = site.portals.contactFormUrl;
+const hasContactForm = Boolean(contactFormUrl && contactFormUrl !== "TBD");
 ---
 
 <BaseLayout
-  title="Connect Card"
-  description="Submit a Connect Card to let the team know how to pray for you, follow up, or support your next steps."
+  title="Connect Form"
+  description="Fill out the Connect form to let the team know how to pray for you, follow up, or support your next steps."
 >
   <div class="stack connect-card">
     <div class="connect-card__intro">
-      <h1>Connect Card</h1>
-      <p id="connect-card-summary" class="muted">
-        Tell us about your visit window, how we can pray for you, and which ministries you’d like to explore.
-        We’ll ask for your preferred follow-up method and keep your information private unless you say otherwise.
+      <h1>Connect Form</h1>
+      <p class="muted">
+        Share your contact information, prayer needs, ministry interests, or questions, and someone from the church will follow up.
       </p>
-      {!usesCustomFormAction ? (
-        <div class="connect-card__warning" role="status">
-          <strong>Built-in Connect Card backend is active.</strong> Before publishing, configure
-          <code>PRIVATE_CONNECT_CARD_FORWARD_URL</code> and <code>PRIVATE_TURNSTILE_SECRET_KEY</code>
-          (and optionally <code>CONNECT_CARD_NOTIFY_EMAILS</code>) so submissions forward and trigger alerts.
-        </div>
-      ) : null}
     </div>
 
-    <ConnectCardForm />
+    <section class="card stack">
+      {hasContactForm ? (
+        <Button href={contactFormUrl} external variant="primary">
+          Open Connect form
+        </Button>
+      ) : (
+        <Button href="/connect/contact" variant="primary">
+          Contact the church
+        </Button>
+      )}
+
+      <Button href="/connect/prayer" variant="secondary">
+        Submit a prayer request instead
+      </Button>
+    </section>
   </div>
 </BaseLayout>
 
 <style>
   .connect-card {
     max-width: 52rem;
-  }
-
-  .connect-card__intro + .connect-card__form {
-    margin-top: var(--space-6);
   }
 </style>
