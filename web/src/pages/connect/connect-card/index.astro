@@ -1,44 +1,52 @@
----
+﻿---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Button from "../../../components/ui/Button.astro";
-import { site } from "../../../data/site";
 
-const contactFormUrl = site.portals.contactFormUrl;
-const hasContactForm = Boolean(contactFormUrl && contactFormUrl !== "TBD");
+const connectFormUrl = "https://docs.google.com/forms/d/e/1FAIpQLSe8tLdlnVMI7tGSlVptPOlY4oE6nqm0ihw71NVCwIfZFaE0ag/viewform?usp=header";
 ---
 
 <BaseLayout
-  title="Connect Form"
-  description="Fill out the Connect form to let the team know how to pray for you, follow up, or support your next steps."
+  title="Connect Card"
+  description="Open the First Springfield SDA Connect Card in Google Forms."
 >
-  <div class="stack connect-card">
-    <div class="connect-card__intro">
-      <h1>Connect Form</h1>
+  <section class="stack connect-card-bridge" aria-labelledby="connect-card-title">
+    <div class="connect-card-bridge__intro stack--tight">
+      <p class="muted small">Google Forms</p>
+      <h1 id="connect-card-title">Connect Card</h1>
       <p class="muted">
-        Share your contact information, prayer needs, ministry interests, or questions, and someone from the church will follow up.
+        The Connect Card is hosted in Google Forms. Use it to share your visit plans,
+        prayer needs, ministry interests, or the best way for the church team to follow up.
       </p>
     </div>
 
-    <section class="card stack">
-      {hasContactForm ? (
-        <Button href={contactFormUrl} external variant="primary">
+    <article class="card stack--tight">
+      <h2>Open the Connect form</h2>
+      <p class="muted">
+        The form opens in a new tab on Google Forms. Please avoid sending urgent or sensitive
+        information through this form.
+      </p>
+      <div class="cluster">
+        <Button href={connectFormUrl} external>
           Open Connect form
         </Button>
-      ) : (
-        <Button href="/connect/contact" variant="primary">
-          Contact the church
+        <Button href="/connect/contact" variant="secondary">
+          Contact us instead
         </Button>
-      )}
+      </div>
+    </article>
 
-      <Button href="/connect/prayer" variant="secondary">
-        Submit a prayer request instead
-      </Button>
-    </section>
-  </div>
+    <p class="muted small">
+      If the Google Form does not load, use the contact page and someone from the church team will help.
+    </p>
+  </section>
 </BaseLayout>
 
 <style>
-  .connect-card {
+  .connect-card-bridge {
     max-width: 52rem;
+  }
+
+  .connect-card-bridge__intro {
+    margin-bottom: var(--space-4);
   }
 </style>

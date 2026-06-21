@@ -55,6 +55,9 @@ The content is organized as follows:
 .patch-backups/google-form-links-20260621-140751/pathfinders.md
 .patch-backups/google-form-links-20260621-140751/PlanVisitContent.astro
 .patch-backups/google-form-links-20260621-140751/site-links.json
+.patch-backups/google-form-test-fixes-20260621-142158/connect-card.spec.ts
+.patch-backups/google-form-test-fixes-20260621-142158/contact-page.spec.ts
+.patch-backups/google-form-test-fixes-20260621-142158/home-layout.spec.ts
 .repomixignore
 CODE_OF_CONDUCT.md
 cold-dawn-85a2/.editorconfig
@@ -94,6 +97,7 @@ lighthouserc-ci.cjs
 package.json
 README.md
 scripts/apply-google-form-links.mjs
+scripts/fix-google-form-e2e-tests.mjs
 SECURITY.md
 web/.env.example
 web/.github/workflows/ci.yml
@@ -308,7 +312,6 @@ web/src/styles/a11y.css
 web/src/styles/global.css
 web/src/styles/partials/calendar-event-page.css
 web/src/styles/tokens.css
-web/test-results/.last-run 2.json
 web/test-results/.last-run.json
 web/tests/e2e/announcements-filter.spec.ts
 web/tests/e2e/annual-calendar.spec.ts
@@ -882,6 +885,123 @@ import { site } from "../data/site";
   "oldWebsiteUrl": "https://firstspringfieldma.adventistchurch.org/",
   "calendarEmbedUrl": "https://calendar.google.com/calendar/embed?src=firstspringfieldsda%40gmail.com&ctz=America%2FNew_York"
 }
+</file>
+
+<file path=".patch-backups/google-form-test-fixes-20260621-142158/connect-card.spec.ts">
+import { expect, test } from "@playwright/test";
+
+test("connect card keeps hidden address summary updated and enforces interest selection", async ({ page }) => {
+  await page.goto("/connect/connect-card");
+
+  await page.fill("#address-street", "123 Maple Ave");
+  await page.fill("#address-city", "Springfield");
+  await page.fill("#address-state", "MA");
+  await page.fill("#address-zip", "01118");
+  await page.fill("#address-country", "USA");
+
+  await expect(page.locator("#address-summary")).toHaveValue(/123 Maple Ave, Springfield, MA, 01118, USA/);
+
+  await page.fill("#full-name", "Test User");
+  await page.fill("#phone", "1234567890");
+  await page.fill("#visit-date", "2026-03-05");
+  await page.check("#visited-before-yes");
+  await page.selectOption("#connection-reason", "first-time-visit");
+  await page.selectOption("#preferred-contact", "email");
+
+  await page.click("button.primary-action");
+
+  const interestError = page.locator("#interests-error");
+  await expect(interestError).toBeVisible();
+  await expect(interestError).toContainText("Select at least one interest");
+});
+</file>
+
+<file path=".patch-backups/google-form-test-fixes-20260621-142158/contact-page.spec.ts">
+import { expect, test } from "@playwright/test";
+
+test("contact page displays core sections and CTAs", async ({ page }) => {
+  await page.goto("/connect/contact");
+  await expect(page.getByRole("heading", { name: "Address" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Phone" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Email" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Watch & Give" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Message us" })).toBeVisible();
+
+  await expect(page.getByRole("link", { name: "Plan a Visit" })).toBeVisible();
+  const watchGiveSection = page.locator('section[aria-labelledby="contact-watch-give-title"]');
+  await expect(
+    watchGiveSection.getByRole("link", { name: "Watch Live" }),
+  ).toBeVisible();
+
+  await expect(page.getByRole("heading", { name: "Connect Card" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Serve" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Submit a Connect Card" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Volunteer" })).toBeVisible();
+});
+</file>
+
+<file path=".patch-backups/google-form-test-fixes-20260621-142158/home-layout.spec.ts">
+import { expect, test } from "@playwright/test";
+
+test.describe("Home layout regression", () => {
+  test("hero, visit section, cards, calendar, and giving block render", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+
+    const hero = page.locator("section.hero").first();
+    const nextStepCards = page.locator("section.home-card-area");
+
+    await expect(
+      hero.getByRole("heading", { name: "Welcome", exact: true }),
+    ).toBeVisible();
+    await expect(
+      hero.getByRole("link", { name: "Plan a Visit", exact: true }),
+    ).toBeVisible();
+    await expect(
+      hero.getByRole("link", { name: "Submit a Connect Card", exact: true }),
+    ).toBeVisible();
+
+    await expect(
+      page.getByRole("heading", { name: "Plan your visit", exact: true }),
+    ).toBeVisible();
+    await expect(page.locator(".home-visit__address")).toContainText("1118 Sumner Ave");
+    await expect(page.locator(".home-visit__list")).toBeVisible();
+
+    await expect(
+      page.getByRole("heading", { name: "Next steps", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /I[’']m visiting/, exact: false }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Watch online/i, exact: false }),
+    ).toBeVisible();
+    await expect(
+      nextStepCards.getByRole("link", { name: /Contact us/, exact: false }),
+    ).toBeVisible();
+
+    await expect(
+      page.getByRole("heading", { name: "Upcoming events", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "View all", exact: true }),
+    ).toBeVisible();
+
+    await expect(
+      page.getByRole("heading", { name: "Live calendar preview", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.locator('iframe[title="Live campus calendar"]'),
+    ).toBeVisible();
+
+    await expect(
+      page.getByRole("heading", { name: "Giving", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Give online", exact: true }),
+    ).toBeVisible();
+  });
+});
 </file>
 
 <file path="CODE_OF_CONDUCT.md">
@@ -1975,6 +2095,75 @@ replaceOrThrow(
 );
 
 console.log("Google Form links and Connect form routing were updated.");
+</file>
+
+<file path="scripts/fix-google-form-e2e-tests.mjs">
+import fs from "node:fs";
+
+function write(path, content) {
+  fs.writeFileSync(path, content.replace(/\n/g, "\r\n"), "utf8");
+}
+
+function replaceOrThrow(path, oldText, newText) {
+  const text = fs.readFileSync(path, "utf8");
+  if (!text.includes(oldText)) {
+    throw new Error(`Could not find expected text in ${path}`);
+  }
+  fs.writeFileSync(path, text.replace(oldText, newText), "utf8");
+}
+
+/**
+ * The custom on-site Connect Card form was replaced with a bridge page.
+ * This test should now verify the bridge page and its CTAs instead of old form internals.
+ */
+write(
+  "web/tests/e2e/connect-card.spec.ts",
+  `import { expect, test } from "@playwright/test";
+
+test("connect form bridge page links to configured next steps", async ({ page }) => {
+  await page.goto("/connect/connect-card");
+
+  await expect(
+    page.getByRole("heading", { name: "Connect Form", exact: true }),
+  ).toBeVisible();
+
+  await expect(
+    page.getByText("Share your contact information, prayer needs, ministry interests, or questions"),
+  ).toBeVisible();
+
+  const connectForm = page.getByRole("link", { name: "Open Connect form", exact: true });
+  await expect(connectForm).toBeVisible();
+  await expect(connectForm).toHaveAttribute("href", /docs\\.google\\.com\\/forms/);
+  await expect(connectForm).toHaveAttribute("target", "_blank");
+
+  await expect(
+    page.getByRole("link", { name: "Submit a prayer request instead", exact: true }),
+  ).toHaveAttribute("href", "/connect/prayer");
+});
+`,
+);
+
+/**
+ * Contact page CTA label changed from "Submit a Connect Card" to "Fill out Connect form".
+ */
+replaceOrThrow(
+  "web/tests/e2e/contact-page.spec.ts",
+  `  await expect(page.getByRole("link", { name: "Submit a Connect Card" })).toBeVisible();`,
+  `  const connectForm = page.getByRole("link", { name: "Fill out Connect form" });
+  await expect(connectForm).toBeVisible();
+  await expect(connectForm).toHaveAttribute("href", /docs\\.google\\.com\\/forms/);`,
+);
+
+/**
+ * Home hero CTA label changed from "Submit a Connect Card" to "Fill out Connect form".
+ */
+replaceOrThrow(
+  "web/tests/e2e/home-layout.spec.ts",
+  `      hero.getByRole("link", { name: "Submit a Connect Card", exact: true }),`,
+  `      hero.getByRole("link", { name: "Fill out Connect form", exact: true }),`,
+);
+
+console.log("Updated E2E tests for Google Form Connect flow.");
 </file>
 
 <file path="SECURITY.md">
@@ -4787,35 +4976,6 @@ test("announcements filter chips update view and archive list", async ({ page })
 });
 </file>
 
-<file path="web/tests/e2e/connect-card.spec.ts">
-import { expect, test } from "@playwright/test";
-
-test("connect card keeps hidden address summary updated and enforces interest selection", async ({ page }) => {
-  await page.goto("/connect/connect-card");
-
-  await page.fill("#address-street", "123 Maple Ave");
-  await page.fill("#address-city", "Springfield");
-  await page.fill("#address-state", "MA");
-  await page.fill("#address-zip", "01118");
-  await page.fill("#address-country", "USA");
-
-  await expect(page.locator("#address-summary")).toHaveValue(/123 Maple Ave, Springfield, MA, 01118, USA/);
-
-  await page.fill("#full-name", "Test User");
-  await page.fill("#phone", "1234567890");
-  await page.fill("#visit-date", "2026-03-05");
-  await page.check("#visited-before-yes");
-  await page.selectOption("#connection-reason", "first-time-visit");
-  await page.selectOption("#preferred-contact", "email");
-
-  await page.click("button.primary-action");
-
-  const interestError = page.locator("#interests-error");
-  await expect(interestError).toBeVisible();
-  await expect(interestError).toContainText("Select at least one interest");
-});
-</file>
-
 <file path="web/tests/unit/activity-utils.spec.ts">
 import { expect, test } from "vitest";
 import {
@@ -7288,6 +7448,31 @@ const rssUrl = "/resources/announcements/rss.xml";
 </style>
 </file>
 
+<file path="web/tests/e2e/connect-card.spec.ts">
+import { expect, test } from "@playwright/test";
+
+test("connect form bridge page links to configured next steps", async ({ page }) => {
+  await page.goto("/connect/connect-card");
+
+  await expect(
+    page.getByRole("heading", { name: "Connect Form", exact: true }),
+  ).toBeVisible();
+
+  await expect(
+    page.getByText("Share your contact information, prayer needs, ministry interests, or questions"),
+  ).toBeVisible();
+
+  const connectForm = page.getByRole("link", { name: "Open Connect form", exact: true });
+  await expect(connectForm).toBeVisible();
+  await expect(connectForm).toHaveAttribute("href", /docs\.google\.com\/forms/);
+  await expect(connectForm).toHaveAttribute("target", "_blank");
+
+  await expect(
+    page.getByRole("link", { name: "Submit a prayer request instead", exact: true }),
+  ).toHaveAttribute("href", "/connect/prayer");
+});
+</file>
+
 <file path="web/tests/e2e/header-layout.spec.ts">
 import { test, expect } from "@playwright/test";
 
@@ -9661,30 +9846,6 @@ test("calendar highlights and featured dates render with the live preview", asyn
 });
 </file>
 
-<file path="web/tests/e2e/contact-page.spec.ts">
-import { expect, test } from "@playwright/test";
-
-test("contact page displays core sections and CTAs", async ({ page }) => {
-  await page.goto("/connect/contact");
-  await expect(page.getByRole("heading", { name: "Address" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Phone" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Email" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Watch & Give" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Message us" })).toBeVisible();
-
-  await expect(page.getByRole("link", { name: "Plan a Visit" })).toBeVisible();
-  const watchGiveSection = page.locator('section[aria-labelledby="contact-watch-give-title"]');
-  await expect(
-    watchGiveSection.getByRole("link", { name: "Watch Live" }),
-  ).toBeVisible();
-
-  await expect(page.getByRole("heading", { name: "Connect Card" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Serve" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Submit a Connect Card" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Volunteer" })).toBeVisible();
-});
-</file>
-
 <file path="web/tests/e2e/dark-surface-contrast.spec.ts">
 import { expect, test, type Page } from "@playwright/test";
 
@@ -11379,6 +11540,32 @@ const contactEmail = site.contact.email;
 </style>
 </file>
 
+<file path="web/tests/e2e/contact-page.spec.ts">
+import { expect, test } from "@playwright/test";
+
+test("contact page displays core sections and CTAs", async ({ page }) => {
+  await page.goto("/connect/contact");
+  await expect(page.getByRole("heading", { name: "Address" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Phone" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Email" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Watch & Give" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Message us" })).toBeVisible();
+
+  await expect(page.getByRole("link", { name: "Plan a Visit" })).toBeVisible();
+  const watchGiveSection = page.locator('section[aria-labelledby="contact-watch-give-title"]');
+  await expect(
+    watchGiveSection.getByRole("link", { name: "Watch Live" }),
+  ).toBeVisible();
+
+  await expect(page.getByRole("heading", { name: "Connect Card" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Serve" })).toBeVisible();
+  const connectForm = page.getByRole("link", { name: "Fill out Connect form" });
+  await expect(connectForm).toBeVisible();
+  await expect(connectForm).toHaveAttribute("href", /docs\.google\.com\/forms/);
+  await expect(page.getByRole("link", { name: "Volunteer", exact: true })).toBeVisible();
+});
+</file>
+
 <file path="web/tests/e2e/phase-5-media-portals.spec.ts">
 import { expect, test } from "@playwright/test";
 
@@ -12929,13 +13116,6 @@ const contactEmail = site.contact.email;
     margin-top: var(--space-4);
   }
 </style>
-</file>
-
-<file path="web/test-results/.last-run 2.json">
-{
-  "status": "passed",
-  "failedTests": []
-}
 </file>
 
 <file path="web/tests/e2e/content-collections.spec.ts">
@@ -14642,70 +14822,6 @@ const showClubResourceCards = id === "pathfinders";
 </BaseLayout>
 </file>
 
-<file path="web/tests/e2e/home-layout.spec.ts">
-import { expect, test } from "@playwright/test";
-
-test.describe("Home layout regression", () => {
-  test("hero, visit section, cards, calendar, and giving block render", async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/");
-
-    const hero = page.locator("section.hero").first();
-    const nextStepCards = page.locator("section.home-card-area");
-
-    await expect(
-      hero.getByRole("heading", { name: "Welcome", exact: true }),
-    ).toBeVisible();
-    await expect(
-      hero.getByRole("link", { name: "Plan a Visit", exact: true }),
-    ).toBeVisible();
-    await expect(
-      hero.getByRole("link", { name: "Submit a Connect Card", exact: true }),
-    ).toBeVisible();
-
-    await expect(
-      page.getByRole("heading", { name: "Plan your visit", exact: true }),
-    ).toBeVisible();
-    await expect(page.locator(".home-visit__address")).toContainText("1118 Sumner Ave");
-    await expect(page.locator(".home-visit__list")).toBeVisible();
-
-    await expect(
-      page.getByRole("heading", { name: "Next steps", exact: true }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: /I[’']m visiting/, exact: false }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: /Watch online/i, exact: false }),
-    ).toBeVisible();
-    await expect(
-      nextStepCards.getByRole("link", { name: /Contact us/, exact: false }),
-    ).toBeVisible();
-
-    await expect(
-      page.getByRole("heading", { name: "Upcoming events", exact: true }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: "View all", exact: true }),
-    ).toBeVisible();
-
-    await expect(
-      page.getByRole("heading", { name: "Live calendar preview", exact: true }),
-    ).toBeVisible();
-    await expect(
-      page.locator('iframe[title="Live campus calendar"]'),
-    ).toBeVisible();
-
-    await expect(
-      page.getByRole("heading", { name: "Giving", exact: true }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: "Give online", exact: true }),
-    ).toBeVisible();
-  });
-});
-</file>
-
 <file path="web/tests/e2e/mobile.smoke.spec.ts">
 import { test, expect } from "@playwright/test";
 
@@ -15184,6 +15300,70 @@ const contactFormUrl = hasContactForm ? site.portals.contactFormUrl : undefined;
 >
   <ContactPage hasContactForm={hasContactForm} contactFormUrl={contactFormUrl} />
 </BaseLayout>
+</file>
+
+<file path="web/tests/e2e/home-layout.spec.ts">
+import { expect, test } from "@playwright/test";
+
+test.describe("Home layout regression", () => {
+  test("hero, visit section, cards, calendar, and giving block render", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+
+    const hero = page.locator("section.hero").first();
+    const nextStepCards = page.locator("section.home-card-area");
+
+    await expect(
+      hero.getByRole("heading", { name: "Welcome", exact: true }),
+    ).toBeVisible();
+    await expect(
+      hero.getByRole("link", { name: "Plan a Visit", exact: true }),
+    ).toBeVisible();
+    await expect(
+      hero.getByRole("link", { name: "Fill out Connect form", exact: true }),
+    ).toBeVisible();
+
+    await expect(
+      page.getByRole("heading", { name: "Plan your visit", exact: true }),
+    ).toBeVisible();
+    await expect(page.locator(".home-visit__address")).toContainText("1118 Sumner Ave");
+    await expect(page.locator(".home-visit__list")).toBeVisible();
+
+    await expect(
+      page.getByRole("heading", { name: "Next steps", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /I[’']m visiting/, exact: false }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Watch online/i, exact: false }),
+    ).toBeVisible();
+    await expect(
+      nextStepCards.getByRole("link", { name: /Contact us/, exact: false }),
+    ).toBeVisible();
+
+    await expect(
+      page.getByRole("heading", { name: "Upcoming events", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "View all", exact: true }),
+    ).toBeVisible();
+
+    await expect(
+      page.getByRole("heading", { name: "Live calendar preview", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.locator('iframe[title="Live campus calendar"]'),
+    ).toBeVisible();
+
+    await expect(
+      page.getByRole("heading", { name: "Giving", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Give online", exact: true }),
+    ).toBeVisible();
+  });
+});
 </file>
 
 <file path="web/src/components/sections/RecurringActivities.astro">
