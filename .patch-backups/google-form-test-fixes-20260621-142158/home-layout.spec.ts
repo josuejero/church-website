@@ -15,7 +15,7 @@ test.describe("Home layout regression", () => {
       hero.getByRole("link", { name: "Plan a Visit", exact: true }),
     ).toBeVisible();
     await expect(
-      hero.getByRole("link", { name: "Fill out Connect form", exact: true }),
+      hero.getByRole("link", { name: "Submit a Connect Card", exact: true }),
     ).toBeVisible();
 
     await expect(

@@ -16,9 +16,6 @@ test("contact page displays core sections and CTAs", async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: "Connect Card" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Serve" })).toBeVisible();
-  const connectForm = page.getByRole("link", { name: "Fill out Connect form" });
-  await expect(connectForm).toBeVisible();
-  await expect(connectForm).toHaveAttribute("href", /docs\.google\.com\/forms/);
-  await expect(page.getByRole("link", { name: "Volunteer", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Submit a Connect Card" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Volunteer" })).toBeVisible();
 });
-
