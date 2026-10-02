@@ -7,7 +7,7 @@ import { announcementTagLabels } from "../../../data/announcement-tags";
 import { getArchiveMonths, getSortedAnnouncements } from "../../../lib/announcements";
 
 export async function getStaticPaths() {
-  const announcements = await getSortedAnnouncements();
+  const announcements = await getSortedAnnouncements({ includeExpired: true });
   return announcements.map((entry) => ({ params: { id: entry.id } }));
 }
 
