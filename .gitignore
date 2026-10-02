@@ -9,3 +9,8 @@ web/.wrangler/tmp/
 
 # OS
 .DS_Store
+
+# QA artifacts
+web/.lighthouseci/
+web/playwright-report/
+web/test-results/
