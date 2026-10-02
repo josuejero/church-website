@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("calendar highlights and featured dates render with the live preview", async ({
+test("annual calendar content and featured dates render with the live preview", async ({
   page,
 }) => {
   await page.goto("/calendar");
@@ -16,9 +16,12 @@ test("calendar highlights and featured dates render with the live preview", asyn
     page.locator('iframe[title="Live campus calendar"]'),
   ).toBeVisible();
 
-  const highlight = page.locator(".calendar-highlight");
-  await expect(highlight).toBeVisible();
-  await expect(highlight).toContainText("Location:");
+  await expect(
+    page.getByRole("heading", {
+      name: "Camp Meeting: Atlantic Union",
+      exact: true,
+    }),
+  ).toBeVisible();
 
   const updated = page.locator(".annual-calendar__updated");
   await expect(updated).toContainText("Last updated");
