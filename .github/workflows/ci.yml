@@ -60,7 +60,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const core = require("@actions/core");
             const manifest = JSON.parse(process.env.MANIFEST_JSON || "[]");
             const entry = manifest[0] || {};
             const summary = entry.summary || {};
