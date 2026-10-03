@@ -4,5 +4,9 @@
   "checkFragments": true,
   "timeout": 30000,
   "concurrency": 50,
-  "skip": ["^mailto:", "^tel:", "^https?://"]
+  "skip": [
+    "^mailto:",
+    "^tel:",
+    "^https?://(?!(?:localhost|127\\.0\\.0\\.1|\\[::1\\])(?::\\d+)?(?:/|$))"
+  ]
 }
