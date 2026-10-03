@@ -4,7 +4,7 @@ import { getSortedAnnouncements } from "../../../lib/announcements";
 
 const siteUrl = process.env.PUBLIC_SITE_URL ?? "http://localhost:4321";
 
-export async function get() {
+export async function GET() {
   const announcements = await getSortedAnnouncements();
 
   return rss({
