@@ -80,7 +80,6 @@ export const recurringActivities: RecurringActivity[] = [
     id: "board-meeting",
     title: "Board meeting",
     cadence: "Second Tuesday of every month",
-    link: "/ministries/board-meeting",
     note: "Members only",
     category: "event",
   },
