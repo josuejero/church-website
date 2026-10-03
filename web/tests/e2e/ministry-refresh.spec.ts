@@ -42,15 +42,18 @@ test("health ministry page renders approved content and seminar details", async 
   ).toBeVisible();
 });
 
-test("combined Pathfinders page carries shared club resources", async ({ page }) => {
+test("combined Pathfinders page keeps placeholder registration unavailable and carries shared resources", async ({ page }) => {
   await page.goto("/ministries/pathfinders");
 
   await expect(page.getByRole("heading", { name: "Adventurers", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Pathfinders", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Registration, resources, and contact", exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Register Now", exact: true })).toBeVisible();
+  await expect(page.getByText("The registration form is not currently available from this site.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Register Now", exact: true })).toHaveCount(0);
+  await expect(page.locator('a[href="https://example.com/adventurer-registration"]')).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Contact the church", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "View Memo", exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "View campus calendar", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "View campus calendar", exact: true }).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "Payment & dues", exact: true })).toBeVisible();
 });
 
