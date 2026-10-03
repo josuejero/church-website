@@ -8,6 +8,10 @@ on:
 jobs:
   web:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     defaults:
       run:
         working-directory: web
@@ -60,7 +64,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const core = require("@actions/core");
             const manifest = JSON.parse(process.env.MANIFEST_JSON || "[]");
             const entry = manifest[0] || {};
             const summary = entry.summary || {};
@@ -100,7 +103,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
           body: ${{ steps.lhci-summary.outputs.body }}
-          tag: lighthouse-ci
 
       - name: Upload Lighthouse artifacts
         if: always()
