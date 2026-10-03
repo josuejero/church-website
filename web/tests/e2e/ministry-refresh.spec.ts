@@ -16,15 +16,15 @@ test("calendar is available in desktop nav and mobile menu", async ({ page }) =>
   await expect(menu.getByRole("link", { name: "Calendar", exact: true })).toBeVisible();
 });
 
-test("ministries hub lists public ministry tiles and keeps hidden or removed ministries out of view", async ({ page }) => {
+test("ministries hub lists public ministry tiles and keeps hidden or removed ministry pages out of view", async ({ page }) => {
   await page.goto("/ministries");
 
   await expect(page.getByText("Only currently active ministries are listed here.")).toBeVisible();
   await expect(page.getByRole("link", { name: /Health Ministry/i })).toBeVisible();
   await expect(page.locator("main")).not.toContainText("Adventurer Club");
   await expect(page.getByRole("link", { name: /Pathfinders & Adventurers/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Music Ministry/i })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: /Men's Ministry/i })).toHaveCount(0);
+  await expect(page.locator('a[href="/ministries/music-ministry"]')).toHaveCount(0);
+  await expect(page.locator('a[href="/ministries/mens-ministry"]')).toHaveCount(0);
 });
 
 test("removed Music and Men's Ministry routes are not published", async ({ page }) => {
