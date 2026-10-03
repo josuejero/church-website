@@ -7,6 +7,9 @@ const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://${HOST}:${PORT}/`;
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
+  reporter: process.env.CI
+    ? [["dot"], ["html", { outputFolder: "playwright-report", open: "never" }]]
+    : "list",
   use: {
     baseURL: BASE_URL,
     trace: "retain-on-failure",

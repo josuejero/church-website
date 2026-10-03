@@ -8,6 +8,10 @@ on:
 jobs:
   web:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     defaults:
       run:
         working-directory: web
@@ -23,7 +27,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: web/package-lock.json
 
@@ -40,6 +44,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: E2E tests
+        id: e2e
         run: npm run test:e2e:ci
 
       - name: Internal link check
@@ -60,7 +65,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const core = require("@actions/core");
             const manifest = JSON.parse(process.env.MANIFEST_JSON || "[]");
             const entry = manifest[0] || {};
             const summary = entry.summary || {};
@@ -100,17 +104,17 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
           body: ${{ steps.lhci-summary.outputs.body }}
-          tag: lighthouse-ci
 
       - name: Upload Lighthouse artifacts
-        if: always()
+        if: always() && steps.lighthouse.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
           name: lighthouseci
-          path: web/.lighthouseci
+          path: .lighthouseci
+          include-hidden-files: true
 
       - name: Upload Playwright report
-        if: always()
+        if: always() && steps.e2e.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
