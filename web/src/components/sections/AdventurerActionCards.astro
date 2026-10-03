@@ -9,6 +9,7 @@ const props = Astro.props as {
 const showMemoCard = props.showMemoCard !== false;
 const showCalendarCard = props.showCalendarCard !== false;
 const { registration, memo, calendar, guideText } = adventurerConfig;
+const registrationIsPlaceholder = new URL(registration.url).hostname === "example.com";
 ---
 
 <section class="grid--cards adventurer-cta" aria-label="Adventurer action cards">
@@ -17,14 +18,27 @@ const { registration, memo, calendar, guideText } = adventurerConfig;
   <article class="card card--link adventurer-cta__card">
     <div class="card__body stack--tight">
       <div>
-        <h3>Register for the Springfield Junior Pioneers Adventurer Club Registration &amp; Health Form</h3>
-        <p>The secure external form gathers the information noted above so we can confirm enrollment, share updates, and coordinate volunteers.</p>
+        <h3>Springfield Junior Pioneers Adventurer Club registration</h3>
+        {registrationIsPlaceholder ? (
+          <p>The registration form is not currently available from this site. Check the campus calendar or contact the church for current registration information.</p>
+        ) : (
+          <p>The secure external form gathers the information noted above so we can confirm enrollment, share updates, and coordinate volunteers.</p>
+        )}
       </div>
       <div class="adventurer-cta__action">
-        <Button variant="primary" href={registration.url} external aria-describedby="adventurer-register-note">
-          {registration.ctaLabel}
-        </Button>
-        <p class="muted small adventurer-cta__note" id="adventurer-register-note">{registration.note}</p>
+        {registrationIsPlaceholder ? (
+          <div class="cluster">
+            <Button variant="secondary" href={calendar.ctaHref}>View campus calendar</Button>
+            <Button variant="ghost" href="/connect/contact">Contact the church</Button>
+          </div>
+        ) : (
+          <>
+            <Button variant="primary" href={registration.url} external aria-describedby="adventurer-register-note">
+              {registration.ctaLabel}
+            </Button>
+            <p class="muted small adventurer-cta__note" id="adventurer-register-note">{registration.note}</p>
+          </>
+        )}
       </div>
     </div>
   </article>
