@@ -111,6 +111,7 @@ jobs:
         with:
           name: lighthouseci
           path: .lighthouseci
+          include-hidden-files: true
 
       - name: Upload Playwright report
         if: always() && steps.e2e.outcome != 'skipped'
